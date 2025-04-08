@@ -19,7 +19,6 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlTypes;
 using System.Text;
-using System.Text.Json.Serialization;
 using Apache.Arrow.Adbc.Drivers.Apache;
 using Apache.Arrow.Adbc.Drivers.Apache.Hive2;
 using Apache.Arrow.Adbc.Drivers.Apache.Spark;
@@ -39,11 +38,9 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
 
         public override string TestConfigVariable => "SPARK_TEST_CONFIG_FILE";
 
-        public override string SqlDataResourceLocation => ServerType == SparkServerType.Databricks
-            ? "Spark/Resources/SparkData-Databricks.sql"
-            : "Spark/Resources/SparkData.sql";
+        public override string SqlDataResourceLocation => "Spark/Resources/SparkData.sql";
 
-        public override int ExpectedColumnCount => ServerType == SparkServerType.Databricks ? 19 : 17;
+        public override int ExpectedColumnCount => 17;
 
         public override AdbcDriver CreateNewDriver() => new SparkDriver();
 
@@ -153,13 +150,13 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
 
         public override string VendorVersion => ((HiveServer2Connection)Connection).VendorVersion;
 
-        public override bool SupportsDelete => ServerType == SparkServerType.Databricks;
+        public override bool SupportsDelete => false;
 
-        public override bool SupportsUpdate => ServerType == SparkServerType.Databricks;
+        public override bool SupportsUpdate => false;
 
-        public override bool SupportCatalogName => ServerType == SparkServerType.Databricks;
+        public override bool SupportCatalogName => false;
 
-        public override bool ValidateAffectedRows => ServerType == SparkServerType.Databricks;
+        public override bool ValidateAffectedRows => false;
 
         public override string GetInsertStatement(string tableName, string columnName, string? value) =>
             string.Format("INSERT INTO {0} ({1}) SELECT {2};", tableName, columnName, value ?? "NULL");
@@ -167,7 +164,7 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
         public override SampleDataBuilder GetSampleDataBuilder()
         {
             SampleDataBuilder sampleDataBuilder = new();
-            bool dataTypeIsFloat = ServerType == SparkServerType.Databricks || DataTypeConversion.HasFlag(DataTypeConversion.Scalar);
+            bool dataTypeIsFloat = DataTypeConversion.HasFlag(DataTypeConversion.Scalar);
             Type floatNetType = dataTypeIsFloat ? typeof(float) : typeof(double);
             Type floatArrowType = dataTypeIsFloat ? typeof(FloatType) : typeof(DoubleType);
             object floatValue;
