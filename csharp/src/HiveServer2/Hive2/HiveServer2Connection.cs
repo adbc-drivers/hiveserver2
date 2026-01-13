@@ -1668,10 +1668,10 @@ namespace AdbcDrivers.HiveServer2.Hive2
             public HiveInfoArrowStream(Schema schema, IReadOnlyList<IArrowArray> data)
             {
                 this.schema = schema;
-                batch = new RecordBatch(schema, data, data[0].Length);
+                this.batch = new RecordBatch(schema, data, data[0].Length);
             }
 
-            public Schema Schema { get { return schema; } }
+            public Schema Schema { get { return this.schema; } }
 
             public ValueTask<RecordBatch?> ReadNextRecordBatchAsync(CancellationToken cancellationToken = default)
             {
@@ -1682,8 +1682,8 @@ namespace AdbcDrivers.HiveServer2.Hive2
 
             public void Dispose()
             {
-                batch?.Dispose();
-                batch = null;
+                this.batch?.Dispose();
+                this.batch = null;
             }
         }
 

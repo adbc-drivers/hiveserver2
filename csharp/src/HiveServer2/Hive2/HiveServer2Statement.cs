@@ -292,33 +292,33 @@ namespace AdbcDrivers.HiveServer2.Hive2
                     }
                     break;
                 case ApacheParameters.CatalogName:
-                    CatalogName = value;
+                    this.CatalogName = value;
                     break;
                 case ApacheParameters.SchemaName:
-                    SchemaName = value;
+                    this.SchemaName = value;
                     break;
                 case ApacheParameters.TableName:
-                    TableName = value;
+                    this.TableName = value;
                     break;
                 case ApacheParameters.TableTypes:
-                    TableTypes = value;
+                    this.TableTypes = value;
                     break;
                 case ApacheParameters.ColumnName:
-                    ColumnName = value;
+                    this.ColumnName = value;
                     break;
                 case ApacheParameters.ForeignCatalogName:
-                    ForeignCatalogName = value;
+                    this.ForeignCatalogName = value;
                     break;
                 case ApacheParameters.ForeignSchemaName:
-                    ForeignSchemaName = value;
+                    this.ForeignSchemaName = value;
                     break;
                 case ApacheParameters.ForeignTableName:
-                    ForeignTableName = value;
+                    this.ForeignTableName = value;
                     break;
                 case ApacheParameters.EscapePatternWildcards:
                     if (ApacheUtility.BooleanIsValid(key, value, out bool escapePatternWildcards))
                     {
-                        EscapePatternWildcards = escapePatternWildcards;
+                        this.EscapePatternWildcards = escapePatternWildcards;
                     }
                     break;
                 default:
@@ -510,7 +510,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
 
         protected virtual async Task<QueryResult> GetTablesAsync(CancellationToken cancellationToken = default)
         {
-            List<string>? tableTypesList = TableTypes?.Split(',').ToList();
+            List<string>? tableTypesList = this.TableTypes?.Split(',').ToList();
             IResponse response = await Connection.GetTablesAsync(
                 EscapePatternWildcardsInName(CatalogName),
                 EscapePatternWildcardsInName(SchemaName),
