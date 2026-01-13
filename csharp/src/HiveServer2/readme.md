@@ -1,5 +1,10 @@
 ﻿<!--
 
+ Copyright (c) 2025 ADBC Drivers Contributors
+
+ This file has been modified from its original version, which is
+ under the Apache License:
+
  Licensed to the Apache Software Foundation (ASF) under one or more
  contributor license agreements.  See the NOTICE file distributed with
  this work for additional information regarding copyright ownership.
@@ -17,7 +22,7 @@
 
 -->
 
-# Thrift-based Apache connectors
+# HiverServer2 (Thrift-based) connectors
 
 This library contains code for ADBC drivers built on top of the Thrift protocol with Arrow support:
 
