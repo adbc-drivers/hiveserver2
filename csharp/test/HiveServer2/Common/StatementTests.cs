@@ -538,7 +538,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
                 Assert.Equal(StringType.Default, queryResult.Stream.Schema.FieldsList[5].DataType); // FK_SCHEMA_NAME
                 Assert.Equal(StringType.Default, queryResult.Stream.Schema.FieldsList[6].DataType); // FK_TABLE_NAME
                 Assert.Equal(StringType.Default, queryResult.Stream.Schema.FieldsList[7].DataType); // FK_COLUMN_NAME
-                // Databricks return Int16(SmallInt)
+
                 Assert.True(queryResult.Stream.Schema.FieldsList[8].DataType is Int32Type or Int16Type, "FK_INDEX should be either Int32 or Int16"); // FK_INDEX
                 Assert.Equal(expectedBatchLength, batch.Length);
                 actualBatchLength += batch.Length;

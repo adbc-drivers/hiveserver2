@@ -104,26 +104,6 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
 
             string[] queries = GetQueries();
 
-            //List<int> expectedResults = TestEnvironment.ServerType != SparkServerType.Databricks
-            //    ?
-            //    [
-            //        -1, // CREATE TABLE
-            //        1,  // INSERT
-            //        1,  // INSERT
-            //        1,  // INSERT
-            //        //1,  // UPDATE
-            //        //1,  // DELETE
-            //    ]
-            //    :
-            //    [
-            //        -1, // CREATE TABLE
-            //        1,  // INSERT
-            //        1,  // INSERT
-            //        1,  // INSERT
-            //        1,  // UPDATE
-            //        1,  // DELETE
-            //    ];
-
             var expectedResults = GetUpdateExpectedResults();
             for (int i = 0; i < queries.Length; i++)
             {
