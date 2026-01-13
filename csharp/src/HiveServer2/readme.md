@@ -22,7 +22,7 @@
 
 -->
 
-# Thrift-based Apache connectors
+# HiverServer2 (Thrift-based) connectors
 
 This library contains code for ADBC drivers built on top of the Thrift protocol with Arrow support:
 
