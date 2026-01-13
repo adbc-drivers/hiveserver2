@@ -17,12 +17,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Reflection;
-using Apache.Arrow.Adbc.Drivers.Apache.Spark;
+using AdbcDrivers.HiveServer2.Spark;
 using Xunit;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
+namespace AdbcDrivers.Tests.HiveServer2.Spark
 {
     /// <summary>
     /// Tests for the SparkHttpConnection user agent functionality.

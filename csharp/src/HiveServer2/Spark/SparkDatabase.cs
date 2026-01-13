@@ -18,8 +18,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Apache.Arrow.Adbc;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
+namespace AdbcDrivers.HiveServer2.Spark
 {
     internal class SparkDatabase : AdbcDatabase
     {

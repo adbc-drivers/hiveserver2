@@ -17,14 +17,16 @@
 
 using System;
 using System.Collections.Generic;
-using Apache.Arrow.Adbc.Drivers.Apache;
-using Apache.Arrow.Adbc.Drivers.Apache.Hive2;
-using Apache.Arrow.Adbc.Drivers.Apache.Spark;
+using AdbcDrivers.HiveServer2;
+using AdbcDrivers.HiveServer2.Hive2;
+using AdbcDrivers.HiveServer2.Spark;
+using Apache.Arrow.Adbc;
+using Apache.Arrow.Adbc.Tests;
 using Thrift.Transport;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
+namespace AdbcDrivers.Tests.HiveServer2.Spark
 {
     /// <summary>
     /// Class for testing the Spark ADBC connection tests.

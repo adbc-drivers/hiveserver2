@@ -18,10 +18,11 @@
 using System;
 using System.Globalization;
 using System.Text;
-using Apache.Arrow.Adbc.Drivers.Apache.Hive2;
+using AdbcDrivers.HiveServer2.Hive2;
+using Apache.Arrow;
 using Xunit;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Hive2
+namespace AdbcDrivers.Tests.HiveServer2.Hive2
 {
     public class HiveServer2ReaderTest
     {

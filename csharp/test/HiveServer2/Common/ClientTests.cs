@@ -18,11 +18,12 @@
 using System;
 using System.Collections.Generic;
 using Apache.Arrow.Adbc.Client;
+using Apache.Arrow.Adbc.Tests;
 using Apache.Arrow.Adbc.Tests.Xunit;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Common
+namespace AdbcDrivers.Tests.HiveServer2.Common
 {
     /// <summary>
     /// Class for testing the ADBC Client using the Spark ADBC driver.
@@ -52,14 +53,14 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Common
         [SkippableFact, Order(1)]
         public void CanClientExecuteUpdate()
         {
-            using (Adbc.Client.AdbcConnection adbcConnection = GetAdbcConnection())
+            using (AdbcConnection adbcConnection = GetAdbcConnection())
             {
                 adbcConnection.Open();
 
                 string[] queries = GetQueries();
 
                 var expectedResults = GetUpdateExpectedResults();
-                Tests.ClientTests.CanClientExecuteUpdate(adbcConnection, TestConfiguration, queries, expectedResults);
+                ClientTests.CanClientExecuteUpdate(adbcConnection, TestConfiguration, queries, expectedResults);
             }
         }
 
@@ -71,9 +72,9 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Common
         [SkippableFact, Order(2)]
         public void CanClientGetSchema()
         {
-            using (Adbc.Client.AdbcConnection adbcConnection = GetAdbcConnection())
+            using (AdbcConnection adbcConnection = GetAdbcConnection())
             {
-                Tests.ClientTests.CanClientGetSchema(adbcConnection, TestConfiguration, $"SELECT * FROM {FormatTableName}");
+                ClientTests.CanClientGetSchema(adbcConnection, TestConfiguration, $"SELECT * FROM {FormatTableName}");
             }
         }
 
@@ -84,9 +85,9 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Common
         [SkippableFact, Order(3)]
         public void CanClientExecuteQuery()
         {
-            using (Adbc.Client.AdbcConnection adbcConnection = GetAdbcConnection())
+            using (AdbcConnection adbcConnection = GetAdbcConnection())
             {
-                Tests.ClientTests.CanClientExecuteQuery(adbcConnection, TestConfiguration);
+                ClientTests.CanClientExecuteQuery(adbcConnection, TestConfiguration);
             }
         }
 
@@ -97,9 +98,9 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Common
         [SkippableFact, Order(5)]
         public void CanClientExecuteEmptyQuery()
         {
-            using (Adbc.Client.AdbcConnection adbcConnection = GetAdbcConnection())
+            using (AdbcConnection adbcConnection = GetAdbcConnection())
             {
-                Tests.ClientTests.CanClientExecuteQuery(
+                ClientTests.CanClientExecuteQuery(
                     adbcConnection,
                     TestConfiguration,
                     customQuery: $"SELECT * FROM {FormatTableName} WHERE FALSE",
@@ -114,18 +115,18 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Common
         [SkippableFact, Order(4)]
         public void VerifyTypesAndValues()
         {
-            using (Adbc.Client.AdbcConnection dbConnection = GetAdbcConnection())
+            using (AdbcConnection dbConnection = GetAdbcConnection())
             {
                 SampleDataBuilder sampleDataBuilder = GetSampleDataBuilder();
 
-                Tests.ClientTests.VerifyTypesAndValues(dbConnection, sampleDataBuilder);
+                ClientTests.VerifyTypesAndValues(dbConnection, sampleDataBuilder);
             }
         }
 
         [SkippableFact]
         public void VerifySchemaTablesWithNoConstraints()
         {
-            using (Adbc.Client.AdbcConnection adbcConnection = GetAdbcConnection(includeTableConstraints: false))
+            using (AdbcConnection adbcConnection = GetAdbcConnection(includeTableConstraints: false))
             {
                 adbcConnection.Open();
 
@@ -140,7 +141,7 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Common
         [SkippableFact]
         public void VerifySchemaTables()
         {
-            using (Adbc.Client.AdbcConnection adbcConnection = GetAdbcConnection())
+            using (AdbcConnection adbcConnection = GetAdbcConnection())
             {
                 adbcConnection.Open();
 
@@ -206,7 +207,7 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Common
         [SkippableFact]
         public void VerifyTimeoutsSet()
         {
-            using (Adbc.Client.AdbcConnection adbcConnection = GetAdbcConnection())
+            using (AdbcConnection adbcConnection = GetAdbcConnection())
             {
                 int timeout = 99;
                 using AdbcCommand cmd = adbcConnection.CreateCommand();
@@ -224,9 +225,9 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Common
             }
         }
 
-        private Adbc.Client.AdbcConnection GetAdbcConnection(bool includeTableConstraints = true)
+        private AdbcConnection GetAdbcConnection(bool includeTableConstraints = true)
         {
-            return new Adbc.Client.AdbcConnection(
+            return new AdbcConnection(
                 NewDriver, GetDriverParameters(TestConfiguration),
                 []
             );

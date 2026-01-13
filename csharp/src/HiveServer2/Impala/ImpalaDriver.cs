@@ -16,8 +16,9 @@
 */
 
 using System.Collections.Generic;
+using Apache.Arrow.Adbc;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache.Impala
+namespace AdbcDrivers.HiveServer2.Impala
 {
     public class ImpalaDriver : AdbcDriver
     {

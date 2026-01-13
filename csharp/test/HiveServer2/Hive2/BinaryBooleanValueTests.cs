@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Hive2
+namespace AdbcDrivers.Tests.HiveServer2.Hive2
 {
     public class BinaryBooleanValueTests : Common.BinaryBooleanValueTests<ApacheTestConfiguration, HiveServer2TestEnvironment>
     {

@@ -22,7 +22,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Apache.Arrow.Types;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
+namespace AdbcDrivers.HiveServer2.Hive2
 {
     /// <summary>
     /// Interface for the SQL type name parser.

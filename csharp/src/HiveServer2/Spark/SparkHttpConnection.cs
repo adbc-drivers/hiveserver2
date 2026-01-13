@@ -24,7 +24,10 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Apache.Arrow.Adbc.Drivers.Apache.Hive2;
+using AdbcDrivers.HiveServer2.Hive2;
+using AdbcDrivers.HiveServer2.Thrift;
+using Apache.Arrow;
+using Apache.Arrow.Adbc;
 using Apache.Arrow.Ipc;
 using Apache.Hive.Service.Rpc.Thrift;
 using Thrift;
@@ -32,7 +35,7 @@ using Thrift.Protocol;
 using Thrift.Transport;
 using Thrift.Transport.Client;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
+namespace AdbcDrivers.HiveServer2.Spark
 {
     internal class SparkHttpConnection : SparkConnection
     {
@@ -108,7 +111,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
             // HostName or Uri is required parameter
             Properties.TryGetValue(AdbcOptions.Uri, out string? uri);
             Properties.TryGetValue(SparkParameters.HostName, out string? hostName);
-            if ((Uri.CheckHostName(hostName) == UriHostNameType.Unknown)
+            if (Uri.CheckHostName(hostName) == UriHostNameType.Unknown
                 && (string.IsNullOrEmpty(uri) || !Uri.TryCreate(uri, UriKind.Absolute, out Uri? _)))
             {
                 throw new ArgumentException(
@@ -139,7 +142,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
             Properties.TryGetValue(SparkParameters.ConnectTimeoutMilliseconds, out string? connectTimeoutMs);
             if (connectTimeoutMs != null)
             {
-                ConnectTimeoutMilliseconds = int.TryParse(connectTimeoutMs, NumberStyles.Integer, CultureInfo.InvariantCulture, out int connectTimeoutMsValue) && (connectTimeoutMsValue >= 0)
+                ConnectTimeoutMilliseconds = int.TryParse(connectTimeoutMs, NumberStyles.Integer, CultureInfo.InvariantCulture, out int connectTimeoutMsValue) && connectTimeoutMsValue >= 0
                     ? connectTimeoutMsValue
                     : throw new ArgumentOutOfRangeException(SparkParameters.ConnectTimeoutMilliseconds, connectTimeoutMs, $"must be a value of 0 (infinite) or between 1 .. {int.MaxValue}. default is 30000 milliseconds.");
             }

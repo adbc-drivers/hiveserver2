@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-namespace Apache.Arrow.Adbc.Drivers.Apache
+namespace AdbcDrivers.HiveServer2
 {
     /// <summary>
     /// Options common to all Apache drivers.

@@ -21,7 +21,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache
+namespace AdbcDrivers.HiveServer2
 {
     internal class ApacheUtility
     {
@@ -73,7 +73,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache
 
         public static bool QueryTimeoutIsValid(string key, string value, out int queryTimeoutSeconds)
         {
-            if (!string.IsNullOrEmpty(value) && int.TryParse(value, out int queryTimeout) && (queryTimeout >= 0))
+            if (!string.IsNullOrEmpty(value) && int.TryParse(value, out int queryTimeout) && queryTimeout >= 0)
             {
                 queryTimeoutSeconds = queryTimeout;
                 return true;

@@ -17,11 +17,11 @@
 
 using System;
 using System.Collections.Generic;
-using Apache.Arrow.Adbc.Drivers.Apache.Hive2;
+using AdbcDrivers.HiveServer2.Hive2;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Hive2
+namespace AdbcDrivers.Tests.HiveServer2.Hive2
 {
     public class SqlTypeNameParserTests(ITestOutputHelper outputHelper)
     {

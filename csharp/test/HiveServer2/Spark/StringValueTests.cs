@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
+namespace AdbcDrivers.Tests.HiveServer2.Spark
 {
     public class StringValueTests(ITestOutputHelper output)
         : Common.StringValueTests<SparkTestConfiguration, SparkTestEnvironment>(output, new SparkTestEnvironment.Factory())

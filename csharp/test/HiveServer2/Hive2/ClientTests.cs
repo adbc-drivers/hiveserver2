@@ -18,7 +18,7 @@
 using System.Collections.Generic;
 using Xunit.Abstractions;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Hive2
+namespace AdbcDrivers.Tests.HiveServer2.Hive2
 {
     public class ClientTests : Common.ClientTests<ApacheTestConfiguration, HiveServer2TestEnvironment>
     {

@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-namespace Apache.Arrow.Adbc.Drivers.Apache
+namespace AdbcDrivers.HiveServer2.Thrift.Sasl
 {
     /// <summary>
     /// Represents the status of a SASL negotiation between client and server.

@@ -16,8 +16,9 @@
 */
 
 using System;
+using Apache.Arrow.Adbc;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
+namespace AdbcDrivers.HiveServer2.Hive2
 {
     public class HiveServer2Exception : AdbcException
     {

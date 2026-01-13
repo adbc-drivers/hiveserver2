@@ -20,15 +20,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Apache.Arrow.Adbc.Drivers.Apache.Hive2;
+using AdbcDrivers.HiveServer2.Hive2;
+using Apache.Arrow;
+using Apache.Arrow.Adbc;
+using Apache.Arrow.Adbc.Tests;
 using Apache.Arrow.Adbc.Tests.Metadata;
 using Apache.Arrow.Adbc.Tests.Xunit;
 using Apache.Arrow.Ipc;
 using Xunit;
 using Xunit.Abstractions;
-using ColumnTypeId = Apache.Arrow.Adbc.Drivers.Apache.Hive2.HiveServer2Connection.ColumnTypeId;
+using ColumnTypeId = AdbcDrivers.HiveServer2.Hive2.HiveServer2Connection.ColumnTypeId;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Common
+namespace AdbcDrivers.Tests.HiveServer2.Common
 {
     /// <summary>
     /// Class for testing the Spark ADBC driver connection tests.
@@ -552,7 +555,7 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Common
 
             QueryResult queryResult = statement.ExecuteQuery();
 
-            Tests.DriverTests.CanExecuteQuery(queryResult, TestConfiguration.ExpectedResultsCount);
+            DriverTests.CanExecuteQuery(queryResult, TestConfiguration.ExpectedResultsCount);
         }
 
         /// <summary>
@@ -568,7 +571,7 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Common
             statement.SqlQuery = TestConfiguration.Query;
             QueryResult queryResult = await statement.ExecuteQueryAsync();
 
-            await Tests.DriverTests.CanExecuteQueryAsync(queryResult, TestConfiguration.ExpectedResultsCount);
+            await DriverTests.CanExecuteQueryAsync(queryResult, TestConfiguration.ExpectedResultsCount);
         }
 
         /// <summary>
@@ -607,7 +610,7 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Common
             statement.SqlQuery = $"SELECT * from {FormatTableName} WHERE FALSE";
             QueryResult queryResult = await statement.ExecuteQueryAsync();
 
-            await Tests.DriverTests.CanExecuteQueryAsync(queryResult, 0);
+            await DriverTests.CanExecuteQueryAsync(queryResult, 0);
         }
 
         internal virtual string FormatTableName => TestConfiguration.Metadata.Table;

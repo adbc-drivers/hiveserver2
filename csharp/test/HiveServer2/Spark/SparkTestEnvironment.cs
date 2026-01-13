@@ -19,13 +19,15 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlTypes;
 using System.Text;
-using Apache.Arrow.Adbc.Drivers.Apache;
-using Apache.Arrow.Adbc.Drivers.Apache.Hive2;
-using Apache.Arrow.Adbc.Drivers.Apache.Spark;
-using Apache.Arrow.Adbc.Tests.Drivers.Apache.Common;
+using AdbcDrivers.HiveServer2;
+using AdbcDrivers.HiveServer2.Hive2;
+using AdbcDrivers.HiveServer2.Spark;
+using AdbcDrivers.Tests.HiveServer2.Common;
+using Apache.Arrow.Adbc;
+using Apache.Arrow.Adbc.Tests;
 using Apache.Arrow.Types;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
+namespace AdbcDrivers.Tests.HiveServer2.Spark
 {
     public class SparkTestEnvironment : CommonTestEnvironment<SparkTestConfiguration>
     {
@@ -264,7 +266,7 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
                         new("big_decimal", typeof(SqlDecimal), typeof(Decimal128Type), SqlDecimal.Parse("9.9999999999999999999999999999999999999")),
                         new("is_active", typeof(bool), typeof(BooleanType), true),
                         new("name", typeof(string), typeof(StringType), "John Doe"),
-                        new("data", typeof(byte[]), typeof(BinaryType), UTF8Encoding.UTF8.GetBytes("abc123")),
+                        new("data", typeof(byte[]), typeof(BinaryType), Encoding.UTF8.GetBytes("abc123")),
                         new("date", typeof(DateTime), typeof(Date32Type), new DateTime(2023, 9, 8)),
                         new("timestamp", typeof(DateTimeOffset), typeof(TimestampType), new DateTimeOffset(new DateTime(2023, 9, 8, 12, 34, 56), TimeSpan.Zero)),
                         new("interval", typeof(string), typeof(StringType), "178956969-11"),

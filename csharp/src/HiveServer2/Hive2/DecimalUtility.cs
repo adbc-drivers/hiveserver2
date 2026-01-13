@@ -20,7 +20,7 @@ using System.Buffers.Text;
 using System.Numerics;
 using System.Text;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
+namespace AdbcDrivers.HiveServer2.Hive2
 {
     internal static class DecimalUtility
     {

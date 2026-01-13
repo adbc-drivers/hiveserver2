@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Hive2
+namespace AdbcDrivers.Tests.HiveServer2.Hive2
 {
     public class StringValueTests(ITestOutputHelper output)
         : Common.StringValueTests<ApacheTestConfiguration, HiveServer2TestEnvironment>(output, new HiveServer2TestEnvironment.Factory())

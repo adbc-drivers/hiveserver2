@@ -15,7 +15,7 @@
 * limitations under the License.
 */
 
-namespace Apache.Arrow.Adbc.Drivers.Apache
+namespace AdbcDrivers.HiveServer2.Thrift.Sasl
 {
     /// <summary>
     /// Defines the contract for implementing SASL authentication mechanisms (e.g., PLAIN, GSSAPI).

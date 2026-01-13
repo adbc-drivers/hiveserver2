@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Impala
+namespace AdbcDrivers.Tests.HiveServer2.Impala
 {
     public class BinaryBooleanValueTests : Common.BinaryBooleanValueTests<ApacheTestConfiguration, ImpalaTestEnvironment>
     {

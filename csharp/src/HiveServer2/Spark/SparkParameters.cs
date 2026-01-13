@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
+namespace AdbcDrivers.HiveServer2.Spark
 {
     /// <summary>
     /// Parameters used for connecting to Spark data sources.

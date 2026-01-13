@@ -19,10 +19,12 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
-using Apache.Arrow.Adbc.Drivers.Apache.Hive2;
+using AdbcDrivers.HiveServer2.Hive2;
+using AdbcDrivers.HiveServer2.Thrift.Sasl;
+using Apache.Arrow;
+using Apache.Arrow.Adbc;
 using Apache.Arrow.Ipc;
 using Apache.Hive.Service.Rpc.Thrift;
 using Thrift;
@@ -30,7 +32,7 @@ using Thrift.Protocol;
 using Thrift.Transport;
 using Thrift.Transport.Client;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache.Impala
+namespace AdbcDrivers.HiveServer2.Impala
 {
     internal class ImpalaStandardConnection : ImpalaConnection
     {

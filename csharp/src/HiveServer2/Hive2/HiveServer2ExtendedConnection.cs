@@ -19,10 +19,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using AdbcDrivers.HiveServer2.Thrift;
+using Apache.Arrow;
+using Apache.Arrow.Adbc;
 using Apache.Arrow.Ipc;
 using Apache.Hive.Service.Rpc.Thrift;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
+namespace AdbcDrivers.HiveServer2.Hive2
 {
     internal abstract class HiveServer2ExtendedConnection : HiveServer2Connection
     {

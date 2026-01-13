@@ -22,13 +22,15 @@ using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using AdbcDrivers.HiveServer2.Thrift.Sasl;
+using Apache.Arrow.Adbc;
 using Apache.Hive.Service.Rpc.Thrift;
 using Thrift;
 using Thrift.Protocol;
 using Thrift.Transport;
 using Thrift.Transport.Client;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
+namespace AdbcDrivers.HiveServer2.Hive2
 {
     internal class HiveServer2StandardConnection : HiveServer2ExtendedConnection
     {

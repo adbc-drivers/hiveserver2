@@ -18,12 +18,12 @@
 using System;
 using System.Security.Authentication;
 using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 using Thrift;
 using Thrift.Transport;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache
+namespace AdbcDrivers.HiveServer2.Thrift.Sasl
 {
     internal class TSaslTransport : TEndpointTransport
     {
@@ -152,17 +152,17 @@ namespace Apache.Arrow.Adbc.Drivers.Apache
 
         private int DecodeBigEndian(byte[] buf, int offset)
         {
-            return ((buf[offset] & 0xff) << 24)
-                 | ((buf[offset + 1] & 0xff) << 16)
-                 | ((buf[offset + 2] & 0xff) << 8)
-                 | (buf[offset + 3] & 0xff);
+            return (buf[offset] & 0xff) << 24
+                 | (buf[offset + 1] & 0xff) << 16
+                 | (buf[offset + 2] & 0xff) << 8
+                 | buf[offset + 3] & 0xff;
         }
 
         private void EncodeBigEndian(int value, byte[] buf, int offset)
         {
-            buf[offset] = (byte)((value >> 24) & 0xff);
-            buf[offset + 1] = (byte)((value >> 16) & 0xff);
-            buf[offset + 2] = (byte)((value >> 8) & 0xff);
+            buf[offset] = (byte)(value >> 24 & 0xff);
+            buf[offset + 1] = (byte)(value >> 16 & 0xff);
+            buf[offset + 2] = (byte)(value >> 8 & 0xff);
             buf[offset + 3] = (byte)(value & 0xff);
         }
     }

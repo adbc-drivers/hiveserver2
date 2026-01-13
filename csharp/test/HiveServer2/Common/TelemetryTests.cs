@@ -19,12 +19,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Apache.Arrow.Adbc;
 using Apache.Arrow.Adbc.Telemetry.Traces.Listeners;
+using Apache.Arrow.Adbc.Tests;
 using Apache.Arrow.Adbc.Tracing;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Common
+namespace AdbcDrivers.Tests.HiveServer2.Common
 {
     public abstract class TelemetryTests<TConfig, TEnv> : TestBase<TConfig, TEnv>
         where TConfig : TestConfiguration

@@ -16,10 +16,11 @@
 */
 
 using System;
+using AdbcDrivers.HiveServer2.Thrift;
 using Apache.Arrow.Types;
 using Apache.Hive.Service.Rpc.Thrift;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
+namespace AdbcDrivers.HiveServer2.Hive2
 {
     internal class HiveServer2SchemaParser : SchemaParser
     {

@@ -21,7 +21,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
+namespace AdbcDrivers.HiveServer2.Hive2
 {
     /// <summary>
     /// Default implementation of proxy configuration for HTTP connections

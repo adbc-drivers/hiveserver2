@@ -22,12 +22,13 @@ using System.Data.SqlTypes;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Apache.Arrow;
 using Apache.Arrow.Adbc.Tracing;
 using Apache.Arrow.Types;
 using Apache.Hive.Service.Rpc.Thrift;
 using Thrift.Transport;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
+namespace AdbcDrivers.HiveServer2.Hive2
 {
     internal class HiveServer2Reader : TracingReader
     {
@@ -110,7 +111,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
                     int rowCount = GetRowCount(response.Results, columnCount);
                     activity?.AddEvent(SemanticConventions.Messaging.Batch.Response, [new(SemanticConventions.Db.Response.ReturnedRows, rowCount)]);
 
-                    if ((_statement.EnableBatchSizeStopCondition && _statement.BatchSize > 0 && rowCount < _statement.BatchSize) || rowCount == 0)
+                    if (_statement.EnableBatchSizeStopCondition && _statement.BatchSize > 0 && rowCount < _statement.BatchSize || rowCount == 0)
                     {
                         // This is the last batch
                         _hasNoMoreData = true;
@@ -121,7 +122,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
                 }
                 catch (Exception ex)
                     when (ApacheUtility.ContainsException(ex, out OperationCanceledException? _) ||
-                         (ApacheUtility.ContainsException(ex, out TTransportException? _) && cancellationToken.IsCancellationRequested))
+                         ApacheUtility.ContainsException(ex, out TTransportException? _) && cancellationToken.IsCancellationRequested)
                 {
                     throw new TimeoutException("The query execution timed out. Consider increasing the query timeout value.", ex);
                 }

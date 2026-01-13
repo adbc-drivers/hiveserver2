@@ -15,9 +15,10 @@
 * limitations under the License.
 */
 
-using Apache.Arrow.Adbc.Drivers.Apache.Hive2;
+using AdbcDrivers.HiveServer2.Hive2;
+using Apache.Arrow.Adbc;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache.Impala
+namespace AdbcDrivers.HiveServer2.Impala
 {
     internal class ImpalaStatement : HiveServer2Statement
     {

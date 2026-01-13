@@ -17,11 +17,12 @@
 
 using System.Data.SqlTypes;
 using System.Threading.Tasks;
-using Apache.Arrow.Adbc.Drivers.Apache.Hive2;
+using AdbcDrivers.HiveServer2.Hive2;
+using Apache.Arrow.Adbc.Tests;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Common
+namespace AdbcDrivers.Tests.HiveServer2.Common
 {
     // TODO: When supported, use prepared statements instead of SQL string literals
     //      Which will better test how the driver handles values sent/received

@@ -20,10 +20,13 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
-using Apache.Arrow.Adbc.Drivers.Apache.Hive2;
+using AdbcDrivers.HiveServer2.Hive2;
+using AdbcDrivers.HiveServer2.Thrift;
+using Apache.Arrow;
+using Apache.Arrow.Adbc;
 using Apache.Hive.Service.Rpc.Thrift;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
+namespace AdbcDrivers.HiveServer2.Spark
 {
     internal abstract class SparkConnection : HiveServer2Connection
     {
@@ -144,7 +147,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
             int rowCount = HiveServer2Reader.GetRowCount(rowSet, columnCount);
             IReadOnlyList<IArrowArray> data = HiveServer2Reader.GetArrowArrayData(rowSet, columnCount, schema, DataTypeConversion);
 
-            result = new QueryResult(rowCount, new HiveServer2Connection.HiveInfoArrowStream(schema, data));
+            result = new QueryResult(rowCount, new HiveInfoArrowStream(schema, data));
             return true;
         }
 

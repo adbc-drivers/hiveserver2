@@ -20,7 +20,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Apache.Hive.Service.Rpc.Thrift;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2.Client
+namespace AdbcDrivers.HiveServer2.Hive2
 {
     /// <summary>
     /// A thread-safe wrapper for TCLIService.IAsync client that ensures all operations

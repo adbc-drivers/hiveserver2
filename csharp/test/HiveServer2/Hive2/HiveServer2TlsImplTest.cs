@@ -18,10 +18,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Apache.Arrow.Adbc.Drivers.Apache.Hive2;
+using AdbcDrivers.HiveServer2.Hive2;
+using Apache.Arrow.Adbc;
 using Xunit;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Hive2
+namespace AdbcDrivers.Tests.HiveServer2.Hive2
 {
     public class HiveServer2TlsImplTest
     {
@@ -48,7 +49,7 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Hive2
         public static IEnumerable<object?[]> GetHttpTlsOptionsTestData()
         {
             // Tls is enabled by default
-            yield return new object?[] { new Dictionary<string, string> {  }, new TlsProperties { IsTlsEnabled = true } };
+            yield return new object?[] { new Dictionary<string, string> { }, new TlsProperties { IsTlsEnabled = true } };
             yield return new object?[] { new Dictionary<string, string> { { HttpTlsOptions.IsTlsEnabled, "abc" } }, new TlsProperties { IsTlsEnabled = true } };
 
             yield return new object?[] { new Dictionary<string, string> { { HttpTlsOptions.IsTlsEnabled, "False" } }, new TlsProperties { IsTlsEnabled = false } };

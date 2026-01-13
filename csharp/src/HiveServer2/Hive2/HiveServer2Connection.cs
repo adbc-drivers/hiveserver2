@@ -27,7 +27,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Apache.Arrow.Adbc.Drivers.Apache.Thrift;
+using AdbcDrivers.HiveServer2.Thrift;
+using Apache.Arrow;
+using Apache.Arrow.Adbc;
 using Apache.Arrow.Adbc.Extensions;
 using Apache.Arrow.Adbc.Telemetry.Traces.Listeners;
 using Apache.Arrow.Adbc.Telemetry.Traces.Listeners.FileListener;
@@ -39,7 +41,7 @@ using Thrift;
 using Thrift.Protocol;
 using Thrift.Transport;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
+namespace AdbcDrivers.HiveServer2.Hive2
 {
     internal abstract class HiveServer2Connection : TracingConnection
     {
@@ -632,7 +634,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
                             string typeName = typeNameList[i];
                             short nullable = (short)nullableList[i];
                             string? isAutoIncrementString = isAutoIncrementList[i];
-                            bool isAutoIncrement = (!string.IsNullOrEmpty(isAutoIncrementString) && (isAutoIncrementString.Equals("YES", StringComparison.InvariantCultureIgnoreCase) || isAutoIncrementString.Equals("TRUE", StringComparison.InvariantCultureIgnoreCase)));
+                            bool isAutoIncrement = !string.IsNullOrEmpty(isAutoIncrementString) && (isAutoIncrementString.Equals("YES", StringComparison.InvariantCultureIgnoreCase) || isAutoIncrementString.Equals("TRUE", StringComparison.InvariantCultureIgnoreCase));
                             string isNullable = isNullableList[i] ?? "YES";
                             string columnDefault = columnDefaultList[i] ?? "";
                             // Spark/Databricks reports ordinal index zero-indexed, instead of one-indexed
@@ -855,7 +857,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
                     throw new ArgumentOutOfRangeException(
                         AdbcOptions.Uri,
                         hostOptionName,
-                        $"Conflicting server arguments. Please provide only one of the following options: '{Adbc.AdbcOptions.Uri}' or '{hostOptionName}'.");
+                        $"Conflicting server arguments. Please provide only one of the following options: '{AdbcOptions.Uri}' or '{hostOptionName}'.");
                 }
 
                 var uriValue = new Uri(uri);
@@ -1381,7 +1383,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
                         int? columnSize = columns[6].I32Val.Values.GetValue(i);
                         int? decimalDigits = columns[8].I32Val.Values.GetValue(i);
                         bool nullable = columns[10].I32Val.Values.GetValue(i) == 1;
-                        IArrowType dataType = HiveServer2Connection.GetArrowType(columnType!.Value, typeName, isColumnSizeValid, columnSize, decimalDigits);
+                        IArrowType dataType = GetArrowType(columnType!.Value, typeName, isColumnSizeValid, columnSize, decimalDigits);
                         fields[i] = new Field(columnName, dataType, nullable);
                     }
                     return new Schema(fields, null);
@@ -1538,7 +1540,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
                     switch (code)
                     {
                         case AdbcInfoCode.DriverName:
-                            infoNameBuilder.Append((UInt32)code);
+                            infoNameBuilder.Append((uint)code);
                             typeBuilder.Append(strValTypeID);
                             offsetBuilder.Append(offset++);
                             stringInfoBuilder.Append(InfoDriverName);
@@ -1546,7 +1548,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
                             tagValue = () => InfoDriverName;
                             break;
                         case AdbcInfoCode.DriverVersion:
-                            infoNameBuilder.Append((UInt32)code);
+                            infoNameBuilder.Append((uint)code);
                             typeBuilder.Append(strValTypeID);
                             offsetBuilder.Append(offset++);
                             stringInfoBuilder.Append(ProductVersion);
@@ -1554,7 +1556,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
                             tagValue = () => ProductVersion;
                             break;
                         case AdbcInfoCode.DriverArrowVersion:
-                            infoNameBuilder.Append((UInt32)code);
+                            infoNameBuilder.Append((uint)code);
                             typeBuilder.Append(strValTypeID);
                             offsetBuilder.Append(offset++);
                             stringInfoBuilder.Append(InfoDriverArrowVersion);
@@ -1562,7 +1564,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
                             tagValue = () => InfoDriverArrowVersion;
                             break;
                         case AdbcInfoCode.VendorName:
-                            infoNameBuilder.Append((UInt32)code);
+                            infoNameBuilder.Append((uint)code);
                             typeBuilder.Append(strValTypeID);
                             offsetBuilder.Append(offset++);
                             string vendorName = VendorName;
@@ -1571,7 +1573,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
                             tagValue = () => vendorName;
                             break;
                         case AdbcInfoCode.VendorVersion:
-                            infoNameBuilder.Append((UInt32)code);
+                            infoNameBuilder.Append((uint)code);
                             typeBuilder.Append(strValTypeID);
                             offsetBuilder.Append(offset++);
                             string? vendorVersion = VendorVersion;
@@ -1580,7 +1582,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
                             tagValue = () => vendorVersion;
                             break;
                         case AdbcInfoCode.VendorSql:
-                            infoNameBuilder.Append((UInt32)code);
+                            infoNameBuilder.Append((uint)code);
                             typeBuilder.Append(boolValTypeId);
                             offsetBuilder.Append(offset++);
                             stringInfoBuilder.AppendNull();
@@ -1588,7 +1590,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
                             tagValue = () => InfoVendorSql;
                             break;
                         default:
-                            infoNameBuilder.Append((UInt32)code);
+                            infoNameBuilder.Append((uint)code);
                             typeBuilder.Append(strValTypeID);
                             offsetBuilder.Append(offset++);
                             stringInfoBuilder.AppendNull();
@@ -1596,7 +1598,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
                             nullCount++;
                             break;
                     }
-                    Tracing.ActivityExtensions.AddTag(activity, tagKey, tagValue);
+                    ActivityExtensions.AddTag(activity, tagKey, tagValue);
                 }
 
                 StructType entryType = new StructType(
@@ -1666,10 +1668,10 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
             public HiveInfoArrowStream(Schema schema, IReadOnlyList<IArrowArray> data)
             {
                 this.schema = schema;
-                this.batch = new RecordBatch(schema, data, data[0].Length);
+                batch = new RecordBatch(schema, data, data[0].Length);
             }
 
-            public Schema Schema { get { return this.schema; } }
+            public Schema Schema { get { return schema; } }
 
             public ValueTask<RecordBatch?> ReadNextRecordBatchAsync(CancellationToken cancellationToken = default)
             {
@@ -1680,8 +1682,8 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
 
             public void Dispose()
             {
-                this.batch?.Dispose();
-                this.batch = null;
+                batch?.Dispose();
+                batch = null;
             }
         }
 
@@ -1690,7 +1692,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
             public static bool IsOperationCanceledOrCancellationRequested(Exception ex, CancellationToken cancellationToken)
             {
                 return ApacheUtility.ContainsException(ex, out OperationCanceledException? _) ||
-                       (ApacheUtility.ContainsException(ex, out TTransportException? _) && cancellationToken.IsCancellationRequested);
+                       ApacheUtility.ContainsException(ex, out TTransportException? _) && cancellationToken.IsCancellationRequested;
             }
         }
 

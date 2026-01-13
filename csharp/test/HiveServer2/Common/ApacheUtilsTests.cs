@@ -17,10 +17,10 @@
 
 
 using System;
-using Apache.Arrow.Adbc.Drivers.Apache;
+using AdbcDrivers.HiveServer2;
 using Xunit;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Common
+namespace AdbcDrivers.Tests.HiveServer2.Common
 {
     public class ApacheUtilsTests
     {

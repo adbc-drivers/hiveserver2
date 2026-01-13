@@ -21,11 +21,13 @@ using System.Collections.Generic;
 using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Text;
-using Apache.Arrow.Adbc.Drivers.Apache.Hive2;
+using AdbcDrivers.HiveServer2.Hive2;
+using Apache.Arrow;
+using Apache.Arrow.Types;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Hive2
+namespace AdbcDrivers.Tests.HiveServer2.Hive2
 {
     /// <summary>
     /// Class for testing the Decimal Utilities tests.
@@ -62,7 +64,7 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Hive2
             string testValueString = "99999999999999999999999999999999999999";
             int byteWidth = 16;
             byte[] buffer = new byte[byteWidth];
-            Decimal128Array.Builder builder = new(new Types.Decimal128Type(38, 0));
+            Decimal128Array.Builder builder = new(new Decimal128Type(38, 0));
             stopwatch.Restart();
             for (int i = 0; i < testCount; i++)
             {
@@ -78,7 +80,7 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Hive2
             stopwatch.Stop();
             _outputHelper.WriteLine($"Decimal128Builder.Append: {testCount} iterations took {stopwatch.ElapsedMilliseconds} elapsed milliseconds");
 
-            builder = new(new Types.Decimal128Type(38, 0));
+            builder = new(new Decimal128Type(38, 0));
             stopwatch.Restart();
             for (int i = 0; i < testCount; i++)
             {

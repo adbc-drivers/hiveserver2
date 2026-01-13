@@ -16,11 +16,12 @@
 */
 
 using System;
-using Apache.Arrow.Adbc.Drivers.Apache.Hive2;
+using AdbcDrivers.HiveServer2.Hive2;
+using Apache.Arrow;
 using Apache.Arrow.Types;
 using Apache.Hive.Service.Rpc.Thrift;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache
+namespace AdbcDrivers.HiveServer2.Thrift
 {
     internal abstract class SchemaParser
     {

@@ -15,7 +15,9 @@
 * limitations under the License.
 */
 
-namespace Apache.Arrow.Adbc.Drivers.Apache.Thrift
+using Apache.Arrow;
+
+namespace AdbcDrivers.HiveServer2.Thrift
 {
     internal static class BitmapUtilities
     {

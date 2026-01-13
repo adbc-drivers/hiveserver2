@@ -18,7 +18,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache.Impala
+namespace AdbcDrivers.HiveServer2.Impala
 {
     internal class ImpalaConnectionFactory
     {

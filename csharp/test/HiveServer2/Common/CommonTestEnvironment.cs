@@ -16,9 +16,11 @@
 */
 
 using System;
-using Apache.Arrow.Adbc.Drivers.Apache.Hive2;
+using AdbcDrivers.HiveServer2.Hive2;
+using Apache.Arrow.Adbc;
+using Apache.Arrow.Adbc.Tests;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Common
+namespace AdbcDrivers.Tests.HiveServer2.Common
 {
     public abstract class CommonTestEnvironment<TConfig> : TestEnvironment<TConfig>
         where TConfig : TestConfiguration

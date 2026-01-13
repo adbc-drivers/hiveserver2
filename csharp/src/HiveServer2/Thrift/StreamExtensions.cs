@@ -17,13 +17,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Thrift.Transport;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache.Thrift
+namespace AdbcDrivers.HiveServer2.Thrift
 {
     internal static class StreamExtensions
     {

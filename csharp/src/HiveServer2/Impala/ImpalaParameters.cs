@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-namespace Apache.Arrow.Adbc.Drivers.Apache.Impala
+namespace AdbcDrivers.HiveServer2.Impala
 {
     /// <summary>
     /// Parameters used for connecting to Impala data sources.

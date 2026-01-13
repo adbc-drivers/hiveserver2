@@ -18,7 +18,7 @@
 using System;
 using System.Text;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache
+namespace AdbcDrivers.HiveServer2.Thrift.Sasl
 {
     /// <summary>
     /// Implements the SASL PLAIN mechanism for simple username/password authentication.

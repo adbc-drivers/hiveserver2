@@ -18,7 +18,7 @@
 using System.Collections.Generic;
 using Xunit.Abstractions;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
+namespace AdbcDrivers.Tests.HiveServer2.Spark
 {
     public class ClientTests : Common.ClientTests<SparkTestConfiguration, SparkTestEnvironment>
     {

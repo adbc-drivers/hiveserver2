@@ -21,13 +21,15 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Apache.Arrow;
+using Apache.Arrow.Adbc;
 using Apache.Arrow.Adbc.Tracing;
 using Apache.Arrow.Ipc;
 using Apache.Arrow.Types;
 using Apache.Hive.Service.Rpc.Thrift;
 using Thrift.Transport;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
+namespace AdbcDrivers.HiveServer2.Hive2
 {
     internal class HiveServer2Statement : TracingStatement, IHiveServer2Statement
     {
@@ -201,7 +203,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
 
                     // Check if the affected rows columns are returned in the result.
                     Field affectedRowsField = stream.Schema.GetFieldByName(NumberOfAffectedRowsColumnName);
-                    if (affectedRowsField != null && affectedRowsField.DataType.TypeId != Types.ArrowTypeId.Int64)
+                    if (affectedRowsField != null && affectedRowsField.DataType.TypeId != ArrowTypeId.Int64)
                     {
                         throw new AdbcException($"Unexpected data type for column: '{NumberOfAffectedRowsColumnName}'", new ArgumentException(NumberOfAffectedRowsColumnName));
                     }
@@ -290,33 +292,33 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
                     }
                     break;
                 case ApacheParameters.CatalogName:
-                    this.CatalogName = value;
+                    CatalogName = value;
                     break;
                 case ApacheParameters.SchemaName:
-                    this.SchemaName = value;
+                    SchemaName = value;
                     break;
                 case ApacheParameters.TableName:
-                    this.TableName = value;
+                    TableName = value;
                     break;
                 case ApacheParameters.TableTypes:
-                    this.TableTypes = value;
+                    TableTypes = value;
                     break;
                 case ApacheParameters.ColumnName:
-                    this.ColumnName = value;
+                    ColumnName = value;
                     break;
                 case ApacheParameters.ForeignCatalogName:
-                    this.ForeignCatalogName = value;
+                    ForeignCatalogName = value;
                     break;
                 case ApacheParameters.ForeignSchemaName:
-                    this.ForeignSchemaName = value;
+                    ForeignSchemaName = value;
                     break;
                 case ApacheParameters.ForeignTableName:
-                    this.ForeignTableName = value;
+                    ForeignTableName = value;
                     break;
                 case ApacheParameters.EscapePatternWildcards:
                     if (ApacheUtility.BooleanIsValid(key, value, out bool escapePatternWildcards))
                     {
-                        this.EscapePatternWildcards = escapePatternWildcards;
+                        EscapePatternWildcards = escapePatternWildcards;
                     }
                     break;
                 default:
@@ -508,7 +510,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
 
         protected virtual async Task<QueryResult> GetTablesAsync(CancellationToken cancellationToken = default)
         {
-            List<string>? tableTypesList = this.TableTypes?.Split(',').ToList();
+            List<string>? tableTypesList = TableTypes?.Split(',').ToList();
             IResponse response = await Connection.GetTablesAsync(
                 EscapePatternWildcardsInName(CatalogName),
                 EscapePatternWildcardsInName(SchemaName),
@@ -1106,6 +1108,6 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
 
         private static bool IsCancellation(Exception ex, CancellationToken cancellationToken) =>
             ApacheUtility.ContainsException(ex, out OperationCanceledException? _) ||
-            (ApacheUtility.ContainsException(ex, out TTransportException? _) && cancellationToken.IsCancellationRequested);
+            ApacheUtility.ContainsException(ex, out TTransportException? _) && cancellationToken.IsCancellationRequested;
     }
 }

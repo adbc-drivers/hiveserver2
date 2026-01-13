@@ -15,10 +15,10 @@
 * limitations under the License.
 */
 
-using Apache.Arrow.Adbc.Tests.Drivers.Apache.Common;
+using AdbcDrivers.Tests.HiveServer2.Common;
 using Xunit.Abstractions;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Hive2;
+namespace AdbcDrivers.Tests.HiveServer2.Hive2;
 
 public class TelemetryTests : TelemetryTests<ApacheTestConfiguration, HiveServer2TestEnvironment>
 {

@@ -15,10 +15,10 @@
 * limitations under the License.
 */
 
-using Apache.Arrow.Adbc.Tests.Drivers.Apache.Common;
+using AdbcDrivers.Tests.HiveServer2.Common;
 using Xunit.Abstractions;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Impala
+namespace AdbcDrivers.Tests.HiveServer2.Impala
 {
     public class TelemetryTests : TelemetryTests<ApacheTestConfiguration, ImpalaTestEnvironment>
     {

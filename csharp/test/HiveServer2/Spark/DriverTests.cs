@@ -17,11 +17,13 @@
 
 using System;
 using System.Collections.Generic;
-using Apache.Arrow.Adbc.Drivers.Apache.Spark;
+using AdbcDrivers.HiveServer2.Spark;
+using Apache.Arrow.Adbc;
+using Apache.Arrow.Adbc.Tests.Metadata;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
+namespace AdbcDrivers.Tests.HiveServer2.Spark
 {
     public class DriverTests : Common.DriverTests<SparkTestConfiguration, SparkTestEnvironment>
     {
@@ -133,7 +135,7 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
             return GetPatterns(tableName);
         }
 
-        protected override bool TypeHasDecimalDigits(Metadata.AdbcColumn column)
+        protected override bool TypeHasDecimalDigits(AdbcColumn column)
         {
             switch (column.XdbcDataType!.Value)
             {
@@ -145,7 +147,7 @@ namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
             }
         }
 
-        protected override bool TypeHasColumnSize(Metadata.AdbcColumn column)
+        protected override bool TypeHasColumnSize(AdbcColumn column)
         {
             switch (column.XdbcDataType!.Value)
             {

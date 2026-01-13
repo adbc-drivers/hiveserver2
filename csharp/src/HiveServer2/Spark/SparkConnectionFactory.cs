@@ -18,7 +18,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache.Spark
+namespace AdbcDrivers.HiveServer2.Spark
 {
     internal class SparkConnectionFactory
     {

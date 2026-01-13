@@ -16,8 +16,9 @@
 */
 
 using System.Text.Json.Serialization;
+using Apache.Arrow.Adbc.Tests;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache
+namespace AdbcDrivers.Tests.HiveServer2
 {
     public class ApacheTestConfiguration : TestConfiguration
     {

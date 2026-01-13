@@ -17,7 +17,7 @@
 
 using Xunit.Abstractions;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Hive2
+namespace AdbcDrivers.Tests.HiveServer2.Hive2
 {
     public class DateTimeValueTests : Common.DateTimeValueTests<ApacheTestConfiguration, HiveServer2TestEnvironment>
     {

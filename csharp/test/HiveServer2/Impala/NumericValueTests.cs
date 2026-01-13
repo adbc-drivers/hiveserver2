@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Impala
+namespace AdbcDrivers.Tests.HiveServer2.Impala
 {
     public class NumericValueTests : Common.NumericValueTests<ApacheTestConfiguration, ImpalaTestEnvironment>
     {

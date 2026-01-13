@@ -18,13 +18,16 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Apache.Arrow.Adbc.Drivers.Apache;
+using AdbcDrivers.HiveServer2;
+using Apache.Arrow;
+using Apache.Arrow.Adbc;
+using Apache.Arrow.Adbc.Tests;
 using Apache.Arrow.Adbc.Tests.Xunit;
 using Apache.Arrow.Types;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Common
+namespace AdbcDrivers.Tests.HiveServer2.Common
 {
     /// <summary>
     /// Class for testing the Snowflake ADBC driver connection tests.

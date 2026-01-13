@@ -22,8 +22,9 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using Apache.Arrow.Adbc;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
+namespace AdbcDrivers.HiveServer2.Hive2
 {
     class TlsProperties
     {
@@ -152,7 +153,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
 
             if (string.IsNullOrEmpty(tlsProperties.TrustedCertificatePath))
             {
-                return !policyErrors.HasFlag(SslPolicyErrors.RemoteCertificateChainErrors) || (tlsProperties.AllowSelfSigned && IsSelfSigned(cert2));
+                return !policyErrors.HasFlag(SslPolicyErrors.RemoteCertificateChainErrors) || tlsProperties.AllowSelfSigned && IsSelfSigned(cert2);
             }
 
             X509Certificate2 trustedRoot = new X509Certificate2(tlsProperties.TrustedCertificatePath);
@@ -163,7 +164,7 @@ namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
             customChain.ChainPolicy.RevocationMode = X509RevocationMode.Online;
 
             bool chainValid = customChain.Build(cert2);
-            return chainValid || (tlsProperties.AllowSelfSigned && IsSelfSigned(cert2));
+            return chainValid || tlsProperties.AllowSelfSigned && IsSelfSigned(cert2);
         }
     }
 }

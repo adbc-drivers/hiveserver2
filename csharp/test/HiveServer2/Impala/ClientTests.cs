@@ -18,7 +18,7 @@
 using System.Collections.Generic;
 using Xunit.Abstractions;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Impala
+namespace AdbcDrivers.Tests.HiveServer2.Impala
 {
     public class ClientTests : Common.ClientTests<ApacheTestConfiguration, ImpalaTestEnvironment>
     {

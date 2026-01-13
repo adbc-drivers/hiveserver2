@@ -17,7 +17,7 @@
 
 using System;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
+namespace AdbcDrivers.HiveServer2.Hive2
 {
     [Flags]
     internal enum DataTypeConversion

@@ -18,13 +18,13 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Apache.Arrow.Adbc.Tests.Drivers.Apache.Common;
+using AdbcDrivers.Tests.HiveServer2.Common;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Spark
+namespace AdbcDrivers.Tests.HiveServer2.Spark
 {
-    public class StatementTests : Common.StatementTests<SparkTestConfiguration, SparkTestEnvironment>
+    public class StatementTests : StatementTests<SparkTestConfiguration, SparkTestEnvironment>
     {
         public StatementTests(ITestOutputHelper? outputHelper)
             : base(outputHelper, new SparkTestEnvironment.Factory())

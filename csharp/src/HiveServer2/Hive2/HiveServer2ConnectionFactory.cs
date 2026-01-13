@@ -18,7 +18,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2
+namespace AdbcDrivers.HiveServer2.Hive2
 {
     internal class HiveServer2ConnectionFactory
     {

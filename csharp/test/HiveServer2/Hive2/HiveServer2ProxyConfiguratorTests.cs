@@ -19,9 +19,10 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using AdbcDrivers.HiveServer2.Hive2;
 using Xunit;
 
-namespace Apache.Arrow.Adbc.Drivers.Apache.Hive2.Tests
+namespace AdbcDrivers.Tests.HiveServer2.Hive2
 {
     public class HiveServer2ProxyConfiguratorTests
     {

@@ -17,13 +17,14 @@
 
 using System;
 using System.Collections.Generic;
-using Apache.Arrow.Adbc.Drivers.Apache;
-using Apache.Arrow.Adbc.Drivers.Apache.Impala;
+using AdbcDrivers.HiveServer2;
+using AdbcDrivers.HiveServer2.Impala;
+using Apache.Arrow.Adbc;
 using Apache.Arrow.Adbc.Tests.Metadata;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Apache.Arrow.Adbc.Tests.Drivers.Apache.Impala
+namespace AdbcDrivers.Tests.HiveServer2.Impala
 {
     public class DriverTests : Common.DriverTests<ApacheTestConfiguration, ImpalaTestEnvironment>
     {
