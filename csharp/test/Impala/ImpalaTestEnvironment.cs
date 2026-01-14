@@ -141,7 +141,33 @@ namespace AdbcDrivers.Tests.HiveServer2.Impala
                     }
                 }
             }
-
+            if (testConfiguration.StandardOptions != null)
+            {
+                if (testConfiguration.StandardOptions.Tls != null)
+                {
+                    TlsTestConfiguration tlsOptions = testConfiguration.StandardOptions.Tls;
+                    if (tlsOptions.Enabled.HasValue)
+                    {
+                        parameters.Add(StandardTlsOptions.IsTlsEnabled, tlsOptions.Enabled.Value.ToString());
+                    }
+                    if (tlsOptions.AllowSelfSigned.HasValue)
+                    {
+                        parameters.Add(StandardTlsOptions.AllowSelfSigned, tlsOptions.AllowSelfSigned.Value.ToString());
+                    }
+                    if (tlsOptions.AllowHostnameMismatch.HasValue)
+                    {
+                        parameters.Add(StandardTlsOptions.AllowHostnameMismatch, tlsOptions.AllowHostnameMismatch.Value.ToString());
+                    }
+                    if (tlsOptions.DisableServerCertificateValidation.HasValue)
+                    {
+                        parameters.Add(StandardTlsOptions.DisableServerCertificateValidation, tlsOptions.DisableServerCertificateValidation.Value.ToString());
+                    }
+                    if (!string.IsNullOrEmpty(tlsOptions.TrustedCertificatePath))
+                    {
+                        parameters.Add(StandardTlsOptions.TrustedCertificatePath, tlsOptions.TrustedCertificatePath!);
+                    }
+                }
+            }
             return parameters;
         }
 

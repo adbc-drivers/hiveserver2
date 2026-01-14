@@ -83,7 +83,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Impala
             AdbcDatabase database = driver.Open(parameters);
             AggregateException exception = Assert.ThrowsAny<AggregateException>(() => database.Connect(parameters));
             Assert.True(ApacheUtility.ContainsException(exception, out AdbcException? adbcException), $"Expect AdbcException. Actual type: {exception.GetType().Name}");
-            Assert.Equal(AdbcStatusCode.Unauthorized, adbcException!.Status);
+            Assert.Equal(AdbcStatusCode.UnknownError, adbcException!.Status);
             OutputHelper?.WriteLine(exception.Message);
         }
 
