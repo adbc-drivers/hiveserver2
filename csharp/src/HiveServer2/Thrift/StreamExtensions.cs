@@ -33,9 +33,6 @@ namespace AdbcDrivers.HiveServer2.Thrift
     {
         public static void WriteInt32LittleEndian(int value, Span<byte> buffer, int offset)
         {
-            if (buffer == null)
-                throw new ArgumentNullException(nameof(buffer));
-
             if (offset < 0 || offset > buffer.Length - sizeof(int))
                 throw new ArgumentOutOfRangeException(nameof(offset), "Offset is outside the bounds of the buffer.");
 
@@ -88,9 +85,6 @@ namespace AdbcDrivers.HiveServer2.Thrift
 
         public static void ReverseEndiannessInt16(Span<byte> buffer, int offset)
         {
-            if (buffer == null)
-                throw new ArgumentNullException(nameof(buffer));
-
             if (offset < 0 || offset > buffer.Length - sizeof(short))
                 throw new ArgumentOutOfRangeException(nameof(offset), "Offset is outside the bounds of the buffer.");
 
