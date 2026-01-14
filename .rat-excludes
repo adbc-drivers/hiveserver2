@@ -16,4 +16,5 @@
 .gitmodules
 */*.csproj
 */*.sln
+*/*.json
 csharp/AdbcDrivers.snk
