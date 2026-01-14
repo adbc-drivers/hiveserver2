@@ -60,6 +60,7 @@ jobs:
           - macos-latest  # ARM
         dotnet:
           - '8.0.x'
+          - '4.7.x'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
