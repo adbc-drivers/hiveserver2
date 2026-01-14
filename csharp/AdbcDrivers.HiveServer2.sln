@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36811.4
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdbcDrivers.HiveServer2", "src\HiveServer2\AdbcDrivers.HiveServer2.csproj", "{17121675-6414-DFF1-1AF8-85E4B30CDE83}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdbcDrivers.HiveServer2", "src\AdbcDrivers.HiveServer2.csproj", "{17121675-6414-DFF1-1AF8-85E4B30CDE83}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdbcDrivers.Tests.HiveServer2", "test\HiveServer2\AdbcDrivers.Tests.HiveServer2.csproj", "{39E0E966-CE2D-104F-9504-5EB6DE205CDE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdbcDrivers.Tests.HiveServer2", "test\AdbcDrivers.Tests.HiveServer2.csproj", "{39E0E966-CE2D-104F-9504-5EB6DE205CDE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dependencies", "Dependencies", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
