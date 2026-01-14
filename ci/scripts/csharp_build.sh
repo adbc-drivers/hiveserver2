@@ -23,7 +23,7 @@
 
 set -ex
 
-source_dir=${1}/csharp/src/HiveServer2
+source_dir=${1}/csharp/src
 
 pushd ${source_dir}
 dotnet build AdbcDrivers.HiveServer2.csproj
