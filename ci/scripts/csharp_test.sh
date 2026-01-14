@@ -24,7 +24,7 @@
 set -ex
 
 # Run HiveServer2 driver unit tests
-source_dir=${1}/csharp/test/HiveServer2
+source_dir=${1}/csharp/test
 
 pushd ${source_dir}
 dotnet test --filter "FullyQualifiedName~AdbcDrivers.Tests.HiveServer2.Common"
