@@ -17,7 +17,7 @@
 # ADBC Drivers for HiveServer2-based Servers
 
 This repository contains [ADBC drivers](https://arrow.apache.org/adbc/) for
-Databricks, implemented in different languages.
+HiveServer2-based servers (Hive, Impala, and Spark), implemented in C# language.
 
 ## Installation
 
