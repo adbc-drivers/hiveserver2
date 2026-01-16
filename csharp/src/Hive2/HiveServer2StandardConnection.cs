@@ -22,6 +22,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
@@ -102,6 +103,8 @@ namespace AdbcDrivers.HiveServer2.Hive2
 
         protected override TTransport CreateTransport()
         {
+            Activity? activity = Activity.Current;
+
             // Required properties (validated previously)
             Properties.TryGetValue(HiveServer2Parameters.HostName, out string? hostName);
             Properties.TryGetValue(HiveServer2Parameters.Port, out string? port);
@@ -141,11 +144,13 @@ namespace AdbcDrivers.HiveServer2.Hive2
             {
                 baseTransport = new TSocketTransport(hostName!, portValue, connectClient, config: thriftConfig);
             }
+            activity?.AddTag(ActivityKeys.Encrypted, TlsOptions.IsTlsEnabled);
 
             TBufferedTransport bufferedTransport = new TBufferedTransport(baseTransport);
             switch (authTypeValue)
             {
                 case HiveServer2AuthType.None:
+                    activity?.AddTag(ActivityKeys.TransportType, "buffered_socket");
                     return bufferedTransport;
 
                 case HiveServer2AuthType.Basic:
@@ -159,6 +164,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
 
                     PlainSaslMechanism saslMechanism = new(username, password);
                     TSaslTransport saslTransport = new(bufferedTransport, saslMechanism, config: thriftConfig);
+                    activity?.AddTag(ActivityKeys.TransportType, "sasl_buffered_socket");
                     return new TFramedTransport(saslTransport);
 
                 default:

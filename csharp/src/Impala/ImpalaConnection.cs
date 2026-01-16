@@ -127,5 +127,22 @@ namespace AdbcDrivers.HiveServer2.Impala
                 DecimalDigits = DecimalDigits,
             };
         }
+
+        protected static new class ActivityKeys
+        {
+            private const string Prefix = "impala.";
+
+            public const string AuthType = Prefix + HiveServer2.ActivityKeys.AuthType;
+            public const string Encrypted = Prefix + HiveServer2.ActivityKeys.Encrypted;
+            public const string TransportType = Prefix + HiveServer2.ActivityKeys.TransportType;
+            public const string Host = Prefix + HiveServer2.ActivityKeys.Host;
+            public const string Port = Prefix + HiveServer2.ActivityKeys.Port;
+            public static class Http
+            {
+                public const string AuthScheme = Prefix + HiveServer2.ActivityKeys.Http.AuthScheme;
+                public const string UserAgent = Prefix + HiveServer2.ActivityKeys.Http.UserAgent;
+                public const string Uri = Prefix + HiveServer2.ActivityKeys.Http.Uri;
+            }
+        }
     }
 }

@@ -198,5 +198,22 @@ namespace AdbcDrivers.HiveServer2.Spark
                 DecimalDigits = DecimalDigits,
             };
         }
+
+        protected static new class ActivityKeys
+        {
+            private const string Prefix = "spark.";
+
+            public const string Encrypted = Prefix + HiveServer2.ActivityKeys.Encrypted;
+            public const string TransportType = Prefix + HiveServer2.ActivityKeys.TransportType;
+            public const string Host = Prefix + HiveServer2.ActivityKeys.Host;
+            public const string Port = Prefix + HiveServer2.ActivityKeys.Port;
+            public const string AuthType = Prefix + HiveServer2.ActivityKeys.AuthType;
+            public static class Http
+            {
+                public const string UserAgent = Prefix + HiveServer2.ActivityKeys.Http.UserAgent;
+                public const string Uri = Prefix + HiveServer2.ActivityKeys.Http.Uri;
+                public const string AuthScheme = Prefix + HiveServer2.ActivityKeys.Http.AuthScheme;
+            }
+        }
     }
 }
