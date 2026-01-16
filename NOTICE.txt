@@ -1,6 +1,6 @@
 ADBC Drivers for HiveServer2-based drivers (Spark, Impala, and Hive)
 
-Copyright 2025 ADBC Drivers Contributors
+Copyright 2026 ADBC Drivers Contributors
 
 This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
