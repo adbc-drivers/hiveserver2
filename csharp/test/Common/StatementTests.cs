@@ -22,12 +22,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using AdbcDrivers.HiveServer2;
 using Apache.Arrow;
 using Apache.Arrow.Adbc;
 using Apache.Arrow.Adbc.Tests;
 using Apache.Arrow.Adbc.Tests.Xunit;
+using Apache.Arrow.Adbc.Tracing;
 using Apache.Arrow.Types;
 using Xunit;
 using Xunit.Abstractions;
@@ -338,6 +340,50 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
                 actualBatchLength += batch.Length;
             }
             Assert.Equal(TestConfiguration.Metadata.ExpectedColumnCount, actualBatchLength);
+        }
+
+        [SkippableFact]
+        public void CanSetOptionTraceParent()
+        {
+            // Create a statement
+            using var connection = NewConnection();
+            using var statement = connection.CreateStatement();
+
+            const string traceId = "4bf92f3577b34da6a3ce929d0e0e4736";
+            const string spanId = "00f067aa0ba902b7";
+            const string traceParent = $"00-{traceId}-{spanId}-01";
+
+            // Set the trace parent via SetOption
+            statement.SetOption(AdbcOptions.Telemetry.TraceParent, traceParent);
+
+            // Ensure the trace parent sets the TraceId on subsequent activities ...
+            IActivityTracer? statementTracer = statement as IActivityTracer;
+            Assert.NotNull(statementTracer);
+            Assert.Equal(traceParent, statementTracer.TraceParent);
+
+            // Ensure we have a listener to validate the activity
+            using ActivityListener listener = new()
+            {
+                Sample = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllDataAndRecorded,
+                ShouldListenTo = (activitySource) => true /* activitySource.Name == tracer.Trace.ActivitySourceName */,
+                ActivityStopped = (activity) =>
+                {
+                    Assert.NotNull(activity);
+                    Assert.Equal(traceParent, activity.ParentId);
+                    Assert.Equal(traceId, activity.TraceId.ToString());
+                    Assert.NotEqual(spanId, activity.SpanId.ToString());
+                }
+            };
+            ActivitySource.AddActivityListener(listener);
+
+            // Trace some activity and validate
+            statementTracer.TraceActivity(activity =>
+            {
+                Assert.NotNull(activity);
+                Assert.Equal(traceParent, activity.ParentId);
+                Assert.Equal(traceId, activity.TraceId.ToString());
+                Assert.NotEqual(spanId, activity.SpanId.ToString());
+            });
         }
 
         /// <summary>
