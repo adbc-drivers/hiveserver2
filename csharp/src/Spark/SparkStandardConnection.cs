@@ -22,6 +22,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
@@ -112,6 +113,8 @@ namespace AdbcDrivers.HiveServer2.Spark
 
         protected override TTransport CreateTransport()
         {
+            Activity? activity = Activity.Current;
+
             // Assumption: hostName and port have already been validated.
             Properties.TryGetValue(SparkParameters.HostName, out string? hostName);
             Properties.TryGetValue(SparkParameters.Port, out string? port);
@@ -145,15 +148,21 @@ namespace AdbcDrivers.HiveServer2.Spark
                 {
                     baseTransport = new TTlsSocketTransport(hostName!, portValue, config: thriftConfig, 0, trustedCert, certValidator);
                 }
+                activity?.AddTag(ActivityKeys.Encrypted, trustedCert != null);
             }
             else
             {
                 baseTransport = new TSocketTransport(hostName!, portValue, connectClient, config: thriftConfig);
+                activity?.AddTag(ActivityKeys.Encrypted, false);
             }
+            activity?.AddTag(ActivityKeys.Host, hostName);
+            activity?.AddTag(ActivityKeys.Port, port);
+
             TBufferedTransport bufferedTransport = new TBufferedTransport(baseTransport);
             switch (authTypeValue)
             {
                 case SparkAuthType.None:
+                    activity?.AddTag(ActivityKeys.TransportType, "buffered_socket");
                     return bufferedTransport;
 
                 case SparkAuthType.Basic:
@@ -167,6 +176,7 @@ namespace AdbcDrivers.HiveServer2.Spark
 
                     PlainSaslMechanism saslMechanism = new(username, password);
                     TSaslTransport saslTransport = new(bufferedTransport, saslMechanism, config: thriftConfig);
+                    activity?.AddTag(ActivityKeys.TransportType, "sasl_buffered_socket");
                     return new TFramedTransport(saslTransport);
 
                 default:
@@ -182,6 +192,8 @@ namespace AdbcDrivers.HiveServer2.Spark
 
         protected override TOpenSessionReq CreateSessionRequest()
         {
+            Activity? activity = Activity.Current;
+
             // Assumption: user name and password have already been validated.
             Properties.TryGetValue(AdbcOptions.Username, out string? username);
             Properties.TryGetValue(AdbcOptions.Password, out string? password);
@@ -210,6 +222,13 @@ namespace AdbcDrivers.HiveServer2.Spark
                     request.Password = password!;
                     break;
             }
+
+            authTypeValue = authTypeValue == SparkAuthType.Empty && !string.IsNullOrEmpty(username)
+                ? !string.IsNullOrEmpty(password)
+                    ? SparkAuthType.Basic
+                    : SparkAuthType.UsernameOnly
+                : authTypeValue;
+            activity?.AddTag(ActivityKeys.AuthType, authTypeValue.ToString());
             return request;
         }
 
