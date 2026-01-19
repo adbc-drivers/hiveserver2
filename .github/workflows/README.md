@@ -22,7 +22,7 @@ This directory contains GitHub Actions workflows for automated testing and valid
 
 ### C# Build and Test (`csharp.yml`)
 
-**Purpose**: Builds and tests the C# Databricks ADBC driver across multiple platforms.
+**Purpose**: Builds and tests the C# HiveServer2 ADBC driver across multiple platforms.
 
 **Triggers**:
 - Push to `main` or `maint-*` branches
@@ -44,7 +44,7 @@ This directory contains GitHub Actions workflows for automated testing and valid
 
 **Notes**:
 - Workflow skips if PR title contains "WIP"
-- Tests both the main driver and Databricks-specific unit tests
+- Tests both the main driver and HiveServer2-specific unit tests
 - **Fork PRs**: Automatically runs on fork PRs by using `pull_request_target` with safe checkout
 - **Security**: Checks out the exact commit SHA from the PR to prevent TOCTOU attacks
 
