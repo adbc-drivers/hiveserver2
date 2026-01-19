@@ -32,14 +32,6 @@ repos:
             .*go\.sum
         )$
 
-- repo: https://github.com/golangci/golangci-lint
-  rev: a4b55ebc3471c9fbb763fd56eefede8050f99887  # frozen: v2.7.1
-  hooks:
-  - id: golangci-lint
-    name: lint
-    entry: bash -c 'cd go && golangci-lint run --fix --timeout 5m'
-    types_or: [go, go-mod]
-
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
   hooks:
