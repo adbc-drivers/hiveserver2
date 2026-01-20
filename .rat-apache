@@ -17,6 +17,13 @@
 ci/scripts/csharp_build.sh
 ci/scripts/csharp_test.sh
 
+csharp/.editorconfig
+csharp/.gitignore
+csharp/src/ActivityKeys.cs
+csharp/src/ApacheParameters.cs
+csharp/src/ApacheUtility.cs
+csharp/src/AssemblyInfo.cs
+csharp/src/Attributes.cs
 csharp/src/Hive2/DataTypeConversion.cs
 csharp/src/Hive2/DecimalUtility.cs
 csharp/src/Hive2/HiveServer2AuthType.cs
@@ -36,6 +43,7 @@ csharp/src/Hive2/HiveServer2Statement.cs
 csharp/src/Hive2/HiveServer2TlsImpl.cs
 csharp/src/Hive2/HiveServer2TransportType.cs
 csharp/src/Hive2/IHiveServer2Statement.cs
+csharp/src/Hive2/README.md
 csharp/src/Hive2/SqlTypeNameParser.cs
 csharp/src/Hive2/ThreadSafeClient.cs
 csharp/src/Impala/ImpalaAuthType.cs
@@ -48,7 +56,9 @@ csharp/src/Impala/ImpalaParameters.cs
 csharp/src/Impala/ImpalaServerType.cs
 csharp/src/Impala/ImpalaStandardConnection.cs
 csharp/src/Impala/ImpalaStatement.cs
+csharp/src/Impala/README.md
 csharp/src/Properties/AssemblyInfo.cs
+csharp/src/Spark/README.md
 csharp/src/Spark/SparkAuthType.cs
 csharp/src/Spark/SparkConnection.cs
 csharp/src/Spark/SparkConnectionFactory.cs
@@ -59,10 +69,12 @@ csharp/src/Spark/SparkParameters.cs
 csharp/src/Spark/SparkServerType.cs
 csharp/src/Spark/SparkStandardConnection.cs
 csharp/src/Spark/SparkStatement.cs
+csharp/src/Thrift/BitmapUtilities.cs
 csharp/src/Thrift/Sasl/ISaslMechanism.cs
 csharp/src/Thrift/Sasl/NegotiationStatus.cs
 csharp/src/Thrift/Sasl/PlainSaslMechanism.cs
 csharp/src/Thrift/Sasl/TSaslTransport.cs
+csharp/src/Thrift/SchemaParser.cs
 csharp/src/Thrift/Service/Rpc/Thrift/IRequest.cs
 csharp/src/Thrift/Service/Rpc/Thrift/IResponse.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TArrayTypeEntry.cs
@@ -71,14 +83,14 @@ csharp/src/Thrift/Service/Rpc/Thrift/TBoolColumn.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TBoolValue.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TByteColumn.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TByteValue.cs
+csharp/src/Thrift/Service/Rpc/Thrift/TCLIService.Constants.cs
+csharp/src/Thrift/Service/Rpc/Thrift/TCLIService.Extensions.cs
+csharp/src/Thrift/Service/Rpc/Thrift/TCLIService.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TCacheLookupResult.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TCancelDelegationTokenReq.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TCancelDelegationTokenResp.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TCancelOperationReq.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TCancelOperationResp.cs
-csharp/src/Thrift/Service/Rpc/Thrift/TCLIService.Constants.cs
-csharp/src/Thrift/Service/Rpc/Thrift/TCLIService.cs
-csharp/src/Thrift/Service/Rpc/Thrift/TCLIService.Extensions.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TCloseOperationReq.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TCloseOperationResp.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TCloseSessionReq.cs
@@ -136,10 +148,10 @@ csharp/src/Thrift/Service/Rpc/Thrift/TGetResultSetMetadataReq.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TGetResultSetMetadataResp.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TGetSchemasReq.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TGetSchemasResp.cs
-csharp/src/Thrift/Service/Rpc/Thrift/TGetTablesReq.cs
-csharp/src/Thrift/Service/Rpc/Thrift/TGetTablesResp.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TGetTableTypesReq.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TGetTableTypesResp.cs
+csharp/src/Thrift/Service/Rpc/Thrift/TGetTablesReq.cs
+csharp/src/Thrift/Service/Rpc/Thrift/TGetTablesResp.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TGetTypeInfoReq.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TGetTypeInfoResp.cs
 csharp/src/Thrift/Service/Rpc/Thrift/THandleIdentifier.cs
@@ -167,6 +179,7 @@ csharp/src/Thrift/Service/Rpc/Thrift/TRenewDelegationTokenResp.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TResultPersistenceMode.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TRow.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TRowSet.cs
+csharp/src/Thrift/Service/Rpc/Thrift/TSQLVariable.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TSessionHandle.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TSetClientInfoReq.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TSetClientInfoResp.cs
@@ -179,7 +192,6 @@ csharp/src/Thrift/Service/Rpc/Thrift/TSparkParameter.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TSparkParameterValue.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TSparkParameterValueArg.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TSparkRowSetType.cs
-csharp/src/Thrift/Service/Rpc/Thrift/TSQLVariable.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TStatementConf.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TStatus.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TStatusCode.cs
@@ -190,20 +202,17 @@ csharp/src/Thrift/Service/Rpc/Thrift/TTableSchema.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TTypeDesc.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TTypeEntry.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TTypeId.cs
-csharp/src/Thrift/Service/Rpc/Thrift/TTypeQualifiers.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TTypeQualifierValue.cs
+csharp/src/Thrift/Service/Rpc/Thrift/TTypeQualifiers.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TUnionTypeEntry.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TUploadDataReq.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TUploadDataResp.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TUserDefinedTypeEntry.cs
-csharp/src/Thrift/BitmapUtilities.cs
-csharp/src/Thrift/SchemaParser.cs
 csharp/src/Thrift/StreamExtensions.cs
-csharp/src/ApacheParameters.cs
-csharp/src/ApacheUtility.cs
-csharp/src/AssemblyInfo.cs
-csharp/src/Attributes.cs
+csharp/src/readme.md
 
+csharp/test/ApacheTestConfiguration.cs
+csharp/test/AssemblyInfo.cs
 csharp/test/Common/ApacheUtilsTests.cs
 csharp/test/Common/BinaryBooleanValueTests.cs
 csharp/test/Common/ClientTests.cs
@@ -226,6 +235,7 @@ csharp/test/Hive2/HiveServer2ReaderTest.cs
 csharp/test/Hive2/HiveServer2TestEnvironment.cs
 csharp/test/Hive2/HiveServer2TlsImplTest.cs
 csharp/test/Hive2/NumericValueTests.cs
+csharp/test/Hive2/Resources/HiveData.sql
 csharp/test/Hive2/SqlTypeNameParserTests.cs
 csharp/test/Hive2/StatementTests.cs
 csharp/test/Hive2/StringValueTests.cs
@@ -236,6 +246,7 @@ csharp/test/Impala/DateTimeValueTests.cs
 csharp/test/Impala/DriverTests.cs
 csharp/test/Impala/ImpalaTestEnvironment.cs
 csharp/test/Impala/NumericValueTests.cs
+csharp/test/Impala/Resources/ImpalaData.sql
 csharp/test/Impala/StatementTests.cs
 csharp/test/Impala/StringValueTests.cs
 csharp/test/Impala/TelemetryTests.cs
@@ -245,6 +256,7 @@ csharp/test/Spark/ComplexTypesValueTests.cs
 csharp/test/Spark/DateTimeValueTests.cs
 csharp/test/Spark/DriverTests.cs
 csharp/test/Spark/NumericValueTests.cs
+csharp/test/Spark/Resources/SparkData.sql
 csharp/test/Spark/SparkConnectionTest.cs
 csharp/test/Spark/SparkHttpConnectionUserAgentTest.cs
 csharp/test/Spark/SparkTestConfiguration.cs
@@ -252,5 +264,3 @@ csharp/test/Spark/SparkTestEnvironment.cs
 csharp/test/Spark/StatementTests.cs
 csharp/test/Spark/StringValueTests.cs
 csharp/test/Spark/TelemetryTests.cs
-csharp/test/ApacheTestConfiguration.cs
-csharp/test/AssemblyInfo.cs
