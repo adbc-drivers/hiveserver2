@@ -52,7 +52,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2
             // Arrange
             var properties = new Dictionary<string, string>
             {
-                { HttpProxyOptions.UseProxy, "1" },
+                { HttpProxyOptions.UseProxy, "true" },
                 { HttpProxyOptions.ProxyHost, "proxy.example.com" },
                 { HttpProxyOptions.ProxyPort, "99999" } // Invalid port
             };
@@ -68,7 +68,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2
             // Arrange
             var properties = new Dictionary<string, string>
             {
-                { HttpProxyOptions.UseProxy, "1" },
+                { HttpProxyOptions.UseProxy, "true" },
                 { HttpProxyOptions.ProxyHost, "proxy.example.com" },
                 { HttpProxyOptions.ProxyPort, "8080" }
             };
@@ -124,7 +124,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2
             // Arrange
             var properties = new Dictionary<string, string>
             {
-                { HttpProxyOptions.UseProxy, "1" },
+                { HttpProxyOptions.UseProxy, "true" },
                 { HttpProxyOptions.ProxyHost, "proxy.example.com" },
                 { HttpProxyOptions.ProxyPort, "8080" },
                 { HttpProxyOptions.ProxyIgnoreList, "localhost,127.0.0.1,*.internal.domain.com" }
