@@ -36,7 +36,7 @@ namespace AdbcDrivers.HiveServer2.Spark
     internal abstract class SparkConnection : HiveServer2Connection
     {
         protected const string ProductVersionDefault = "1.0.0";
-        protected const string DriverName = "ADBC Spark Driver";
+        protected virtual string DriverName => "ADBC Spark Driver";
         private const string ArrowVersion = "1.0.0";
         private readonly Lazy<string> _productVersion;
 
