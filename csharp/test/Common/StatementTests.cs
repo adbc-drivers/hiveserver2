@@ -28,6 +28,7 @@ using Apache.Arrow;
 using Apache.Arrow.Adbc;
 using Apache.Arrow.Adbc.Tests;
 using Apache.Arrow.Adbc.Tests.Xunit;
+using Apache.Arrow.Adbc.Tracing;
 using Apache.Arrow.Types;
 using Xunit;
 using Xunit.Abstractions;
@@ -338,6 +339,48 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
                 actualBatchLength += batch.Length;
             }
             Assert.Equal(TestConfiguration.Metadata.ExpectedColumnCount, actualBatchLength);
+        }
+
+        [SkippableFact]
+        public void CanSetOptionTraceParent()
+        {
+            const string traceId0 = "11111111111111111111111111111111";
+            const string spanId0 = "2222222222222222";
+            const string statementTraceParent = $"00-{traceId0}-{spanId0}-01";
+            const string traceId1 = "33333333333333333333333333333333";
+            const string spanId1 = "4444444444444444";
+            const string connectionTraceParent = $"00-{traceId1}-{spanId1}-01";
+
+            var testConfiguration = TestConfiguration.Clone() as TConfig;
+            using AdbcConnection connection = NewConnection(testConfiguration);
+            using var statement = connection.CreateStatement();
+
+            IActivityTracer tracingConnection = (IActivityTracer)connection;
+            IActivityTracer tracingStatement = (IActivityTracer)statement;
+
+            // Initial state with TraceParent not set
+            Assert.Null(tracingConnection.TraceParent);
+            Assert.Null(tracingStatement.TraceParent);
+
+            // Set TraceParent on the statement only
+            statement.SetOption(AdbcOptions.Telemetry.TraceParent, statementTraceParent);
+            Assert.Equal(statementTraceParent, tracingStatement.TraceParent);
+            Assert.Null(tracingConnection.TraceParent);
+
+            // Set TraceParent on the connection, in addition to the statement
+            connection.SetOption(AdbcOptions.Telemetry.TraceParent, connectionTraceParent);
+            Assert.Equal(statementTraceParent, tracingStatement.TraceParent);
+            Assert.Equal(connectionTraceParent, tracingConnection.TraceParent);
+
+            // Clear TraceParent on the statement, connection value should remain
+            statement.SetOption(AdbcOptions.Telemetry.TraceParent, string.Empty);
+            Assert.Equal(connectionTraceParent, tracingStatement.TraceParent);
+            Assert.Equal(connectionTraceParent, tracingConnection.TraceParent);
+
+            // Clear TraceParent on the connection, statement value should remain cleared
+            connection.SetOption(AdbcOptions.Telemetry.TraceParent, string.Empty);
+            Assert.Null(tracingConnection.TraceParent);
+            Assert.Null(tracingStatement.TraceParent);
         }
 
         /// <summary>
