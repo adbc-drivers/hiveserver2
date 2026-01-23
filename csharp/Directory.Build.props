@@ -52,4 +52,25 @@ limitations under the License.
     </PackageReference>
   </ItemGroup>
 
+  <!-- NuGet properties -->
+  <PropertyGroup>
+    <Authors>ADBC Drivers Contributors</Authors>
+    <PackageIcon>adbc-drivers.png</PackageIcon>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://adbc-drivers.org/</PackageProjectUrl>
+    <PackageTags>apache arrow adbc</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>apache arrow adbc hiveserver2 hive impala spark</PackageTags>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/adbc-drivers/hiveserver2</RepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsPackable)' == 'true'">
+    <Content Include="$(RepoRoot)/LICENSE.txt" Pack="true" PackagePath="" />
+    <Content Include="$(RepoRoot)/README.md" Pack="true" PackagePath="" />
+    <Content Include="$(CSharpDir)/adbc-drivers.png" Pack="true" PackagePath="" />
+  </ItemGroup>
+
 </Project>
