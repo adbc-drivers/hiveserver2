@@ -18,6 +18,7 @@
 */*.sln
 */*.json
 csharp/AdbcDrivers.snk
+csharp/adbc-drivers.png
 
 csharp/src/Thrift/Service/Rpc/Thrift/TArrayTypeEntry.cs
 csharp/src/Thrift/Service/Rpc/Thrift/TBinaryColumn.cs
