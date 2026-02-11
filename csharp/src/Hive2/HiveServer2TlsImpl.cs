@@ -56,7 +56,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 return X509RevocationMode.Online;
             }
 
-            return value.Trim().ToLowerInvariant() switch
+            return value!.Trim().ToLowerInvariant() switch
             {
                 "online" => X509RevocationMode.Online,
                 "offline" => X509RevocationMode.Offline,
