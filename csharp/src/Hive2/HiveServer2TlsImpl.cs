@@ -22,6 +22,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -47,7 +48,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
         /// <summary>
         /// Parses a revocation mode string into the corresponding X509RevocationMode enum value.
         /// </summary>
-        /// <param name="value">The revocation mode string (case-insensitive): "online", "offline", or "nocheck"</param>
+        /// <param name="value">The revocation mode string: "0" (NoCheck), "1" (Online), or "2" (Offline)</param>
         /// <returns>The parsed X509RevocationMode, or X509RevocationMode.Online if the value is invalid</returns>
         private static X509RevocationMode ParseRevocationMode(string? value)
         {
@@ -56,13 +57,14 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 return X509RevocationMode.Online;
             }
 
-            return value!.Trim().ToLowerInvariant() switch
+            var trimmedValue = value!.Trim();
+            if (int.TryParse(trimmedValue, out int intValue) && Enum.IsDefined(typeof(X509RevocationMode), intValue))
             {
-                "online" => X509RevocationMode.Online,
-                "offline" => X509RevocationMode.Offline,
-                "nocheck" => X509RevocationMode.NoCheck,
-                _ => X509RevocationMode.Online
-            };
+                return (X509RevocationMode)intValue;
+            }
+
+            Debug.WriteLine($"Warning: Invalid revocation mode '{value}'. Valid values are {RevocationModeConstants.NoCheck} (NoCheck), {RevocationModeConstants.Online} (Online), or {RevocationModeConstants.Offline} (Offline). Defaulting to {RevocationModeConstants.Online} (Online).");
+            return X509RevocationMode.Online;
         }
 
         static internal TlsProperties GetHttpTlsOptions(IReadOnlyDictionary<string, string> properties)
@@ -191,86 +193,104 @@ namespace AdbcDrivers.HiveServer2.Hive2
         {
             foreach (var status in chain.ChainStatus)
             {
-                switch (status.Status)
+                // Check for specific flags (Status is a flags enum, multiple flags can be set)
+                if (status.Status.HasFlag(X509ChainStatusFlags.UntrustedRoot))
                 {
-                    case X509ChainStatusFlags.UntrustedRoot:
-                        throw new System.Security.Authentication.AuthenticationException(
-                            "Certificate validation failed: The root certificate is not trusted. " +
-                            "This occurs when the Certificate Authority (CA) that signed the server certificate is not in your system's trusted root store. " +
-                            "To resolve this: (1) Install the CA certificate in your system's trusted root store, or " +
-                            "(2) Specify the trusted certificate using 'adbc.http_options.tls.trusted_certificate_path', or " +
-                            "(3) For testing only, set 'adbc.http_options.tls.disable_server_certificate_validation=true' (NOT recommended for production).");
+                    throw new AuthenticationException(
+                        $"Certificate validation failed: The root certificate is not trusted. " +
+                        "This occurs when the Certificate Authority (CA) that signed the server certificate is not in your system's trusted root store. " +
+                        $"To resolve this: (1) Install the CA certificate in your system's trusted root store, or " +
+                        $"(2) Specify the trusted certificate using '{HttpTlsOptions.TrustedCertificatePath}', or " +
+                        $"(3) For testing only, set '{HttpTlsOptions.DisableServerCertificateValidation}=true' (NOT recommended for production).");
+                }
 
-                    case X509ChainStatusFlags.PartialChain:
-                        throw new System.Security.Authentication.AuthenticationException(
-                            "Certificate validation failed: The certificate chain is incomplete. " +
-                            "This occurs when one or more intermediate certificates are missing from the chain. " +
-                            "The server should send all intermediate certificates, but some servers are misconfigured. " +
-                            "To resolve this: (1) Contact the server administrator to fix the certificate chain configuration, or " +
-                            "(2) Install the missing intermediate certificates in your system's certificate store, or " +
-                            "(3) Specify the complete certificate chain using 'adbc.http_options.tls.trusted_certificate_path'.");
+                if (status.Status.HasFlag(X509ChainStatusFlags.PartialChain))
+                {
+                    throw new AuthenticationException(
+                        "Certificate validation failed: The certificate chain is incomplete. " +
+                        "This occurs when one or more intermediate certificates are missing from the chain. " +
+                        "The server should send all intermediate certificates, but some servers are misconfigured. " +
+                        "To resolve this: (1) Contact the server administrator to fix the certificate chain configuration, or " +
+                        "(2) Install the missing intermediate certificates in your system's certificate store, or " +
+                        $"(3) Specify the complete certificate chain using '{HttpTlsOptions.TrustedCertificatePath}'.");
+                }
 
-                    case X509ChainStatusFlags.RevocationStatusUnknown:
-                        throw new System.Security.Authentication.AuthenticationException(
-                            "Certificate validation failed: Unable to determine the revocation status of the certificate. " +
-                            "This typically occurs when the Certificate Revocation List (CRL) or Online Certificate Status Protocol (OCSP) servers are unreachable. " +
-                            "Common causes: AWS PrivateLink, corporate firewalls blocking port 80, or network restrictions. " +
-                            $"Current revocation mode: {tlsProperties.RevocationMode}. " +
-                            "To resolve this: Set 'adbc.http_options.tls.revocation_mode=nocheck' to skip revocation checking (safe in isolated networks), " +
-                            "or set 'revocation_mode=offline' to use only cached CRL data.");
+                if (status.Status.HasFlag(X509ChainStatusFlags.RevocationStatusUnknown))
+                {
+                    throw new AuthenticationException(
+                        "Certificate validation failed: Unable to determine the revocation status of the certificate. " +
+                        "This typically occurs when the Certificate Revocation List (CRL) or Online Certificate Status Protocol (OCSP) servers are unreachable. " +
+                        "Common causes: AWS PrivateLink, corporate firewalls blocking port 80, or network restrictions. " +
+                        $"Current revocation mode: {tlsProperties.RevocationMode}. " +
+                        $"To resolve this: Set '{HttpTlsOptions.RevocationMode}={RevocationModeConstants.NoCheck}' to skip revocation checking (safe in isolated networks), " +
+                        $"or set '{HttpTlsOptions.RevocationMode}={RevocationModeConstants.Offline}' to use only cached CRL data.");
+                }
 
-                    case X509ChainStatusFlags.OfflineRevocation:
-                        throw new System.Security.Authentication.AuthenticationException(
-                            "Certificate validation failed: The revocation server is offline or unreachable. " +
-                            "The certificate contains revocation URLs (CRL/OCSP) that require outbound HTTP (port 80) access, but the connection failed. " +
-                            "This is common in AWS PrivateLink environments or networks with restrictive egress rules. " +
-                            "To resolve this: Set 'adbc.http_options.tls.revocation_mode=nocheck' to disable revocation checking, " +
-                            "or set 'revocation_mode=offline' to use only locally cached revocation data.");
+                if (status.Status.HasFlag(X509ChainStatusFlags.OfflineRevocation))
+                {
+                    throw new AuthenticationException(
+                        "Certificate validation failed: The revocation server is offline or unreachable. " +
+                        "The certificate contains revocation URLs (CRL/OCSP) that require outbound HTTP (port 80) access, but the connection failed. " +
+                        "This is common in AWS PrivateLink environments or networks with restrictive egress rules. " +
+                        $"To resolve this: Set '{HttpTlsOptions.RevocationMode}={RevocationModeConstants.NoCheck}' to disable revocation checking, " +
+                        $"or set '{HttpTlsOptions.RevocationMode}={RevocationModeConstants.Offline}' to use only locally cached revocation data.");
+                }
 
-                    case X509ChainStatusFlags.Revoked:
-                        throw new System.Security.Authentication.AuthenticationException(
-                            "Certificate validation failed: The certificate has been revoked by the Certificate Authority. " +
-                            "This is a critical security issue - the certificate is no longer valid and should not be trusted. " +
-                            "To resolve this: Contact the server administrator to install a new, valid certificate. " +
-                            "Do NOT disable certificate validation to work around this error.");
+                if (status.Status.HasFlag(X509ChainStatusFlags.Revoked))
+                {
+                    throw new AuthenticationException(
+                        "Certificate validation failed: The certificate has been revoked by the Certificate Authority. " +
+                        "This is a critical security issue - the certificate is no longer valid and should not be trusted. " +
+                        "To resolve this: Contact the server administrator to install a new, valid certificate. " +
+                        "Do NOT disable certificate validation to work around this error.");
+                }
 
-                    case X509ChainStatusFlags.NotTimeValid:
-                        throw new System.Security.Authentication.AuthenticationException(
-                            "Certificate validation failed: The certificate is not valid for the current date/time. " +
-                            "The certificate may be expired or not yet valid. " +
-                            $"Certificate details: {status.StatusInformation}. " +
-                            "To resolve this: (1) Verify your system clock is correct, or " +
-                            "(2) Contact the server administrator to renew the expired certificate.");
+                if (status.Status.HasFlag(X509ChainStatusFlags.NotTimeValid))
+                {
+                    throw new AuthenticationException(
+                        "Certificate validation failed: The certificate is not valid for the current date/time. " +
+                        "The certificate may be expired or not yet valid. " +
+                        $"Certificate details: {status.StatusInformation}. " +
+                        "To resolve this: (1) Verify your system clock is correct, or " +
+                        "(2) Contact the server administrator to renew the expired certificate.");
+                }
 
-                    case X509ChainStatusFlags.NotSignatureValid:
-                        throw new System.Security.Authentication.AuthenticationException(
-                            "Certificate validation failed: The certificate signature is invalid. " +
-                            "This indicates the certificate may be corrupted, tampered with, or improperly signed. " +
-                            "This is a critical security issue. " +
-                            "To resolve this: Contact the server administrator - the certificate needs to be replaced.");
+                if (status.Status.HasFlag(X509ChainStatusFlags.NotSignatureValid))
+                {
+                    throw new AuthenticationException(
+                        "Certificate validation failed: The certificate signature is invalid. " +
+                        "This indicates the certificate may be corrupted, tampered with, or improperly signed. " +
+                        "This is a critical security issue. " +
+                        "To resolve this: Contact the server administrator - the certificate needs to be replaced.");
+                }
 
-                    case X509ChainStatusFlags.InvalidNameConstraints:
-                    case X509ChainStatusFlags.HasNotPermittedNameConstraint:
-                    case X509ChainStatusFlags.HasExcludedNameConstraint:
-                        throw new System.Security.Authentication.AuthenticationException(
-                            "Certificate validation failed: Certificate name constraints violation. " +
-                            "The certificate is not permitted to be used for this hostname or domain. " +
-                            $"Details: {status.StatusInformation}. " +
-                            "To resolve this: Verify you are connecting to the correct hostname, or contact the server administrator.");
+                if (status.Status.HasFlag(X509ChainStatusFlags.InvalidNameConstraints) ||
+                    status.Status.HasFlag(X509ChainStatusFlags.HasNotPermittedNameConstraint) ||
+                    status.Status.HasFlag(X509ChainStatusFlags.HasExcludedNameConstraint))
+                {
+                    throw new AuthenticationException(
+                        "Certificate validation failed: Certificate name constraints violation. " +
+                        "The certificate is not permitted to be used for this hostname or domain. " +
+                        $"Details: {status.StatusInformation}. " +
+                        "To resolve this: Verify you are connecting to the correct hostname, or contact the server administrator.");
+                }
 
-                    case X509ChainStatusFlags.InvalidBasicConstraints:
-                        throw new System.Security.Authentication.AuthenticationException(
-                            "Certificate validation failed: Invalid basic constraints. " +
-                            "The certificate chain violates basic constraints (e.g., a non-CA certificate is being used as a CA). " +
-                            "This indicates a misconfigured certificate hierarchy. " +
-                            "To resolve this: Contact the server administrator to fix the certificate chain.");
+                if (status.Status.HasFlag(X509ChainStatusFlags.InvalidBasicConstraints))
+                {
+                    throw new AuthenticationException(
+                        "Certificate validation failed: Invalid basic constraints. " +
+                        "The certificate chain violates basic constraints (e.g., a non-CA certificate is being used as a CA). " +
+                        "This indicates a misconfigured certificate hierarchy. " +
+                        "To resolve this: Contact the server administrator to fix the certificate chain.");
+                }
 
-                    default:
-                        // For any other error, include the raw status information
-                        throw new System.Security.Authentication.AuthenticationException(
-                            $"Certificate validation failed: {status.Status}. " +
-                            $"Details: {status.StatusInformation}. " +
-                            "This may indicate a certificate configuration issue. Please contact your system administrator.");
+                // For any other error flags not explicitly handled above
+                if (status.Status != X509ChainStatusFlags.NoError)
+                {
+                    throw new AuthenticationException(
+                        $"Certificate validation failed: {status.Status}. " +
+                        $"Details: {status.StatusInformation}. " +
+                        "This may indicate a certificate configuration issue. Please contact your system administrator.");
                 }
             }
         }

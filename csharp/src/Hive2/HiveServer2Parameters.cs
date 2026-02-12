@@ -52,6 +52,13 @@ namespace AdbcDrivers.HiveServer2.Hive2
         public const string Scalar = "scalar";
     }
 
+    public static class RevocationModeConstants
+    {
+        public const string NoCheck = "0";
+        public const string Online = "1";
+        public const string Offline = "2";
+    }
+
     public static class HttpTlsOptions
     {
         public const string IsTlsEnabled = "adbc.http_options.tls.enabled";
