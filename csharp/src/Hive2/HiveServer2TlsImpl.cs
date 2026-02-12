@@ -22,7 +22,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -49,7 +48,8 @@ namespace AdbcDrivers.HiveServer2.Hive2
         /// Parses a revocation mode string into the corresponding X509RevocationMode enum value.
         /// </summary>
         /// <param name="value">The revocation mode string: "0" (NoCheck), "1" (Online), or "2" (Offline)</param>
-        /// <returns>The parsed X509RevocationMode, or X509RevocationMode.Online if the value is invalid</returns>
+        /// <returns>The parsed X509RevocationMode</returns>
+        /// <exception cref="ArgumentException">Thrown when the value is not a valid revocation mode</exception>
         private static X509RevocationMode ParseRevocationMode(string? value)
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -63,8 +63,9 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 return (X509RevocationMode)intValue;
             }
 
-            Debug.WriteLine($"Warning: Invalid revocation mode '{value}'. Valid values are {RevocationModeConstants.NoCheck} (NoCheck), {RevocationModeConstants.Online} (Online), or {RevocationModeConstants.Offline} (Offline). Defaulting to {RevocationModeConstants.Online} (Online).");
-            return X509RevocationMode.Online;
+            throw new ArgumentException(
+                $"Invalid revocation mode: '{value}'. Valid values are {RevocationModeConstants.NoCheck} (NoCheck), {RevocationModeConstants.Online} (Online), or {RevocationModeConstants.Offline} (Offline).",
+                nameof(value));
         }
 
         static internal TlsProperties GetHttpTlsOptions(IReadOnlyDictionary<string, string> properties)
