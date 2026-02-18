@@ -25,6 +25,57 @@ namespace AdbcDrivers.HiveServer2.Hive2
 {
     internal static class GetObjectsResultBuilder
     {
+        internal static HiveInfoArrowStream BuildFromProvider(
+            IGetObjectsDataProvider provider,
+            GetObjectsDepth depth,
+            string? catalogPattern,
+            string? schemaPattern,
+            string? tableNamePattern,
+            IReadOnlyList<string>? tableTypes,
+            string? columnNamePattern)
+        {
+            var catalogMap = new Dictionary<string, Dictionary<string, Dictionary<string, TableInfo>>>();
+
+            if (depth == GetObjectsDepth.All || depth >= GetObjectsDepth.Catalogs)
+            {
+                foreach (string catalog in provider.GetCatalogs(catalogPattern))
+                {
+                    catalogMap[catalog] = new Dictionary<string, Dictionary<string, TableInfo>>();
+                }
+            }
+
+            if (depth == GetObjectsDepth.All || depth >= GetObjectsDepth.DbSchemas)
+            {
+                foreach (var (catalog, schema) in provider.GetSchemas(catalogPattern, schemaPattern))
+                {
+                    if (catalogMap.TryGetValue(catalog, out var schemaMap) && !schemaMap.ContainsKey(schema))
+                    {
+                        schemaMap.Add(schema, new Dictionary<string, TableInfo>());
+                    }
+                }
+            }
+
+            if (depth == GetObjectsDepth.All || depth >= GetObjectsDepth.Tables)
+            {
+                foreach (var (catalog, schema, table, tableType) in provider.GetTables(catalogPattern, schemaPattern, tableNamePattern, tableTypes))
+                {
+                    if (catalogMap.TryGetValue(catalog, out var schemaMap)
+                        && schemaMap.TryGetValue(schema, out var tableMap)
+                        && !tableMap.ContainsKey(table))
+                    {
+                        tableMap.Add(table, new TableInfo(tableType));
+                    }
+                }
+            }
+
+            if (depth == GetObjectsDepth.All)
+            {
+                provider.PopulateColumnInfo(catalogPattern, schemaPattern, tableNamePattern, columnNamePattern, catalogMap);
+            }
+
+            return BuildResult(depth, catalogMap);
+        }
+
         internal static HiveInfoArrowStream BuildResult(
             GetObjectsDepth depth,
             Dictionary<string, Dictionary<string, Dictionary<string, TableInfo>>> catalogMap)
