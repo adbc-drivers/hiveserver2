@@ -54,11 +54,10 @@ namespace AdbcDrivers.HiveServer2.Hive2
             GetCrossReferenceCommandName + "," +
             GetColumnsExtendedCommandName;
 
-        // Add constants for PK and FK field names and prefixes
-        protected static readonly string[] PrimaryKeyFields = new[] { "COLUMN_NAME" };
-        protected static readonly string[] ForeignKeyFields = new[] { "PKCOLUMN_NAME", "PKTABLE_CAT", "PKTABLE_SCHEM", "PKTABLE_NAME", "FKCOLUMN_NAME", "FK_NAME", "KEQ_SEQ" };
-        protected const string PrimaryKeyPrefix = "PK_";
-        protected const string ForeignKeyPrefix = "FK_";
+        protected static readonly string[] PrimaryKeyFields = MetadataColumnNames.PrimaryKeyFields;
+        protected static readonly string[] ForeignKeyFields = MetadataColumnNames.ForeignKeyFields;
+        protected const string PrimaryKeyPrefix = MetadataColumnNames.PrimaryKeyPrefix;
+        protected const string ForeignKeyPrefix = MetadataColumnNames.ForeignKeyPrefix;
         private const string ClassName = nameof(HiveServer2Statement);
 
         // Lock to ensure consistent access to TokenSource
@@ -626,7 +625,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 int decimalDigits = originalDecimalDigits.GetValue(i).GetValueOrDefault();
 
                 // Create a TableInfo for this row
-                var tableInfo = new HiveServer2Connection.TableInfo(string.Empty);
+                var tableInfo = new TableInfo(string.Empty);
 
                 // Process all types through SetPrecisionScaleAndTypeName
                 Connection.SetPrecisionScaleAndTypeName(colType, typeName ?? string.Empty, tableInfo, columnSize, decimalDigits);
@@ -677,7 +676,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
             enhancedData[decimalDigitsIndex] = decimalDigitsArray;
             enhancedData.Add(baseTypeNameArray);
 
-            return new QueryResult(rowCount, new HiveServer2Connection.HiveInfoArrowStream(enhancedSchema, enhancedData));
+            return new QueryResult(rowCount, new HiveInfoArrowStream(enhancedSchema, enhancedData));
         }
 
         // Helper method to read all batches from a stream
@@ -797,7 +796,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
             // 6. Return the combined result
             var combinedSchema = new Schema(allFields, columnsSchema.Metadata);
 
-            return new QueryResult(totalRows, new HiveServer2Connection.HiveInfoArrowStream(combinedSchema, combinedData));
+            return new QueryResult(totalRows, new HiveInfoArrowStream(combinedSchema, combinedData));
         }
 
         // Helper method to create an empty result with the complete extended columns schema
@@ -867,7 +866,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 }
             }
 
-            return new QueryResult(0, new HiveServer2Connection.HiveInfoArrowStream(combinedSchema, combinedData));
+            return new QueryResult(0, new HiveInfoArrowStream(combinedSchema, combinedData));
         }
 
         /**
