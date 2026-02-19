@@ -23,6 +23,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using static AdbcDrivers.HiveServer2.Hive2.MetadataColumnNames;
 using System.Threading;
 using System.Threading.Tasks;
 using AdbcDrivers.HiveServer2.Hive2;
@@ -82,17 +83,16 @@ namespace AdbcDrivers.HiveServer2.Spark
             int columnSize,
             int decimalDigits)
         {
-            // Keep the original type name
             tableInfo?.TypeName.Add(typeName);
+            tableInfo?.BaseTypeName.Add(ColumnMetadataHelper.GetBaseTypeName(typeName));
             switch (colType)
             {
                 case (short)ColumnTypeId.DECIMAL:
                 case (short)ColumnTypeId.NUMERIC:
                     {
-                        SqlDecimalParserResult result = SqlTypeNameParser<SqlDecimalParserResult>.Parse(typeName, colType);
-                        tableInfo?.Precision.Add(result.Precision);
-                        tableInfo?.Scale.Add((short)result.Scale);
-                        tableInfo?.BaseTypeName.Add(result.BaseTypeName);
+                        tableInfo?.Precision.Add(ColumnMetadataHelper.GetColumnSizeDefault(typeName));
+                        int? scale = ColumnMetadataHelper.GetDecimalDigitsDefault(typeName);
+                        tableInfo?.Scale.Add(scale.HasValue ? (short)scale.Value : null);
                         break;
                     }
 
@@ -103,19 +103,15 @@ namespace AdbcDrivers.HiveServer2.Spark
                 case (short)ColumnTypeId.LONGNVARCHAR:
                 case (short)ColumnTypeId.NVARCHAR:
                     {
-                        SqlCharVarcharParserResult result = SqlTypeNameParser<SqlCharVarcharParserResult>.Parse(typeName, colType);
-                        tableInfo?.Precision.Add(result.ColumnSize);
+                        tableInfo?.Precision.Add(ColumnMetadataHelper.GetColumnSizeDefault(typeName));
                         tableInfo?.Scale.Add(null);
-                        tableInfo?.BaseTypeName.Add(result.BaseTypeName);
                         break;
                     }
 
                 default:
                     {
-                        SqlTypeNameParserResult result = SqlTypeNameParser<SqlTypeNameParserResult>.Parse(typeName, colType);
                         tableInfo?.Precision.Add(null);
                         tableInfo?.Scale.Add(null);
-                        tableInfo?.BaseTypeName.Add(result.BaseTypeName);
                         break;
                     }
             }
@@ -189,7 +185,7 @@ namespace AdbcDrivers.HiveServer2.Spark
                 ColumnName = ColumnName,
                 DataType = DataType,
                 TypeName = TypeName,
-                Nullable = Nullable,
+                Nullable = NullableColumn,
                 ColumnDef = ColumnDef,
                 OrdinalPosition = OrdinalPosition,
                 IsNullable = IsNullable,
