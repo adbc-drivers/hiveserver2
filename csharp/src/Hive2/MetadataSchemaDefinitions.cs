@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+using Apache.Arrow;
+using Apache.Arrow.Adbc;
+using Apache.Arrow.Types;
+
 namespace AdbcDrivers.HiveServer2.Hive2
 {
     internal static class MetadataColumnNames
@@ -42,5 +46,80 @@ namespace AdbcDrivers.HiveServer2.Hive2
 
         internal static readonly string[] PrimaryKeyFields = new[] { "COLUMN_NAME" };
         internal static readonly string[] ForeignKeyFields = new[] { "PKCOLUMN_NAME", "PKTABLE_CAT", "PKTABLE_SCHEM", "PKTABLE_NAME", "FKCOLUMN_NAME", "FK_NAME", "KEQ_SEQ" };
+    }
+
+    internal static class MetadataSchemaFactory
+    {
+        internal static Schema CreatePrimaryKeysSchema()
+        {
+            return new Schema(new[]
+            {
+                new Field("TABLE_CAT", StringType.Default, true),
+                new Field("TABLE_SCHEM", StringType.Default, true),
+                new Field("TABLE_NAME", StringType.Default, true),
+                new Field("COLUMN_NAME", StringType.Default, true),
+                new Field("KEQ_SEQ", Int32Type.Default, true),
+                new Field("PK_NAME", StringType.Default, true)
+            }, null);
+        }
+
+        internal static Schema CreateCrossReferenceSchema()
+        {
+            return new Schema(new[]
+            {
+                new Field("PKTABLE_CAT", StringType.Default, true),
+                new Field("PKTABLE_SCHEM", StringType.Default, true),
+                new Field("PKTABLE_NAME", StringType.Default, true),
+                new Field("PKCOLUMN_NAME", StringType.Default, true),
+                new Field("FKTABLE_CAT", StringType.Default, true),
+                new Field("FKTABLE_SCHEM", StringType.Default, true),
+                new Field("FKTABLE_NAME", StringType.Default, true),
+                new Field("FKCOLUMN_NAME", StringType.Default, true),
+                new Field("KEQ_SEQ", Int32Type.Default, true),
+                new Field("UPDATE_RULE", Int32Type.Default, true),
+                new Field("DELETE_RULE", Int32Type.Default, true),
+                new Field("FK_NAME", StringType.Default, true),
+                new Field("PK_NAME", StringType.Default, true),
+                new Field("DEFERRABILITY", Int32Type.Default, true)
+            }, null);
+        }
+
+        internal static QueryResult CreateEmptyPrimaryKeysResult()
+        {
+            var schema = CreatePrimaryKeysSchema();
+            var arrays = new IArrowArray[]
+            {
+                new StringArray.Builder().Build(),
+                new StringArray.Builder().Build(),
+                new StringArray.Builder().Build(),
+                new StringArray.Builder().Build(),
+                new Int32Array.Builder().Build(),
+                new StringArray.Builder().Build()
+            };
+            return new QueryResult(0, new HiveInfoArrowStream(schema, arrays));
+        }
+
+        internal static QueryResult CreateEmptyCrossReferenceResult()
+        {
+            var schema = CreateCrossReferenceSchema();
+            var arrays = new IArrowArray[]
+            {
+                new StringArray.Builder().Build(),
+                new StringArray.Builder().Build(),
+                new StringArray.Builder().Build(),
+                new StringArray.Builder().Build(),
+                new StringArray.Builder().Build(),
+                new StringArray.Builder().Build(),
+                new StringArray.Builder().Build(),
+                new StringArray.Builder().Build(),
+                new Int32Array.Builder().Build(),
+                new Int32Array.Builder().Build(),
+                new Int32Array.Builder().Build(),
+                new StringArray.Builder().Build(),
+                new StringArray.Builder().Build(),
+                new Int32Array.Builder().Build()
+            };
+            return new QueryResult(0, new HiveInfoArrowStream(schema, arrays));
+        }
     }
 }
