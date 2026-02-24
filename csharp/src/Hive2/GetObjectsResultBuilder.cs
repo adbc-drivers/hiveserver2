@@ -232,12 +232,15 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 xdbcDataTypeBuilder.Append(tableInfo.ColType[i]);
                 // Just the base type name without precision or scale clause
                 xdbcTypeNameBuilder.Append(tableInfo.BaseTypeName[i]);
-                xdbcNumPrecRadixBuilder.AppendNull();
+                short? numPrecRadix = ColumnMetadataHelper.GetNumPrecRadix(tableInfo.TypeName[i]);
+                if (numPrecRadix.HasValue) xdbcNumPrecRadixBuilder.Append(numPrecRadix.Value); else xdbcNumPrecRadixBuilder.AppendNull();
                 xdbcNullableBuilder.Append(tableInfo.Nullable[i]);
                 xdbcColumnDefBuilder.Append(tableInfo.ColumnDefault[i]);
                 xdbcSqlDataTypeBuilder.Append(tableInfo.ColType[i]);
-                xdbcDatetimeSubBuilder.AppendNull();
-                xdbcCharOctetLengthBuilder.AppendNull();
+                short? datetimeSub = ColumnMetadataHelper.GetSqlDatetimeSub(tableInfo.TypeName[i]);
+                if (datetimeSub.HasValue) xdbcDatetimeSubBuilder.Append(datetimeSub.Value); else xdbcDatetimeSubBuilder.AppendNull();
+                int? charOctetLength = ColumnMetadataHelper.GetCharOctetLength(tableInfo.TypeName[i]);
+                if (charOctetLength.HasValue) xdbcCharOctetLengthBuilder.Append(charOctetLength.Value); else xdbcCharOctetLengthBuilder.AppendNull();
                 xdbcIsNullableBuilder.Append(tableInfo.IsNullable[i]);
                 xdbcScopeCatalogBuilder.AppendNull();
                 xdbcScopeSchemaBuilder.AppendNull();

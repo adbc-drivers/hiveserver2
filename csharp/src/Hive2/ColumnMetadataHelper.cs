@@ -230,6 +230,40 @@ namespace AdbcDrivers.HiveServer2.Hive2
             return s_charTypes.Contains(normalized) ? GetColumnSizeDefault(typeName) : null;
         }
 
+        internal static short? GetSqlDatetimeSub(string typeName)
+        {
+            string baseName = GetBaseTypeName(typeName);
+            return baseName switch
+            {
+                "DATE" => 1,
+                "TIMESTAMP" => 3,
+                _ => null
+            };
+        }
+
+        internal static void PopulateTableInfoFromTypeName(
+            TableInfo tableInfo,
+            string columnName,
+            string typeName,
+            int ordinalPosition,
+            bool isNullable = true,
+            string? comment = null,
+            string? columnDefault = null)
+        {
+            tableInfo.ColumnName.Add(columnName);
+            tableInfo.TypeName.Add(typeName);
+            tableInfo.ColType.Add(GetDataTypeCode(typeName));
+            tableInfo.BaseTypeName.Add(GetBaseTypeName(typeName));
+            tableInfo.Precision.Add(GetColumnSizeDefault(typeName));
+            int? scale = GetDecimalDigitsDefault(typeName);
+            tableInfo.Scale.Add(scale.HasValue ? (short)scale.Value : null);
+            tableInfo.OrdinalPosition.Add(ordinalPosition);
+            tableInfo.Nullable.Add(isNullable ? (short)1 : (short)0);
+            tableInfo.IsNullable.Add(isNullable ? "YES" : "NO");
+            tableInfo.IsAutoIncrement.Add(false);
+            tableInfo.ColumnDefault.Add(columnDefault ?? "");
+        }
+
         private static string NormalizeTypeName(string typeName)
         {
             string trimmed = typeName.Trim();
