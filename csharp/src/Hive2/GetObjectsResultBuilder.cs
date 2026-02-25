@@ -197,6 +197,139 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 nullBitmapBuffer.Build());
         }
 
+        internal static QueryResult BuildFlatColumnsResult(
+            IEnumerable<(string catalog, string schema, string table, TableInfo info)> tables)
+        {
+            var tableCatBuilder = new StringArray.Builder();
+            var tableSchemaBuilder = new StringArray.Builder();
+            var tableNameBuilder = new StringArray.Builder();
+            var columnNameBuilder = new StringArray.Builder();
+            var dataTypeBuilder = new Int32Array.Builder();
+            var typeNameBuilder = new StringArray.Builder();
+            var columnSizeBuilder = new Int32Array.Builder();
+            var bufferLengthBuilder = new Int32Array.Builder();
+            var decimalDigitsBuilder = new Int32Array.Builder();
+            var numPrecRadixBuilder = new Int32Array.Builder();
+            var nullableBuilder = new Int32Array.Builder();
+            var remarksBuilder = new StringArray.Builder();
+            var columnDefBuilder = new StringArray.Builder();
+            var sqlDataTypeBuilder = new Int32Array.Builder();
+            var sqlDatetimeSubBuilder = new Int32Array.Builder();
+            var charOctetLengthBuilder = new Int32Array.Builder();
+            var ordinalPositionBuilder = new Int32Array.Builder();
+            var isNullableBuilder = new StringArray.Builder();
+            var scopeCatalogBuilder = new StringArray.Builder();
+            var scopeSchemaBuilder = new StringArray.Builder();
+            var scopeTableBuilder = new StringArray.Builder();
+            var sourceDataTypeBuilder = new Int16Array.Builder();
+            var isAutoIncrementBuilder = new StringArray.Builder();
+            var baseTypeNameBuilder = new StringArray.Builder();
+            int totalRows = 0;
+
+            foreach (var (catalog, schema, table, info) in tables)
+            {
+                for (int i = 0; i < info.ColumnName.Count; i++)
+                {
+                    tableCatBuilder.Append(catalog);
+                    tableSchemaBuilder.Append(schema);
+                    tableNameBuilder.Append(table);
+                    columnNameBuilder.Append(info.ColumnName[i]);
+                    dataTypeBuilder.Append(info.ColType[i]);
+                    typeNameBuilder.Append(info.TypeName[i]);
+
+                    if (info.Precision[i].HasValue) columnSizeBuilder.Append(info.Precision[i]!.Value); else columnSizeBuilder.AppendNull();
+
+                    int? bufLen = ColumnMetadataHelper.GetBufferLength(info.TypeName[i]);
+                    if (bufLen.HasValue) bufferLengthBuilder.Append(bufLen.Value); else bufferLengthBuilder.AppendNull();
+
+                    if (info.Scale[i].HasValue) decimalDigitsBuilder.Append(info.Scale[i]!.Value); else decimalDigitsBuilder.AppendNull();
+
+                    short? radix = ColumnMetadataHelper.GetNumPrecRadix(info.TypeName[i]);
+                    if (radix.HasValue) numPrecRadixBuilder.Append(radix.Value); else numPrecRadixBuilder.AppendNull();
+
+                    nullableBuilder.Append(info.Nullable[i]);
+                    remarksBuilder.Append(info.TypeName[i]);
+                    columnDefBuilder.Append(info.ColumnDefault[i]);
+
+                    sqlDataTypeBuilder.Append(info.ColType[i]);
+
+                    short? dtSub = ColumnMetadataHelper.GetSqlDatetimeSub(info.TypeName[i]);
+                    if (dtSub.HasValue) sqlDatetimeSubBuilder.Append(dtSub.Value); else sqlDatetimeSubBuilder.AppendNull();
+
+                    int? charOctet = ColumnMetadataHelper.GetCharOctetLength(info.TypeName[i]);
+                    if (charOctet.HasValue) charOctetLengthBuilder.Append(charOctet.Value); else charOctetLengthBuilder.AppendNull();
+
+                    ordinalPositionBuilder.Append(info.OrdinalPosition[i]);
+                    isNullableBuilder.Append(info.IsNullable[i]);
+                    scopeCatalogBuilder.AppendNull();
+                    scopeSchemaBuilder.AppendNull();
+                    scopeTableBuilder.AppendNull();
+                    sourceDataTypeBuilder.AppendNull();
+                    isAutoIncrementBuilder.Append(info.IsAutoIncrement[i] ? "YES" : "NO");
+                    baseTypeNameBuilder.Append(info.BaseTypeName[i]);
+                    totalRows++;
+                }
+            }
+
+            var resultSchema = new Schema(new[]
+            {
+                new Field("TABLE_CAT", StringType.Default, true),
+                new Field("TABLE_SCHEM", StringType.Default, true),
+                new Field("TABLE_NAME", StringType.Default, true),
+                new Field("COLUMN_NAME", StringType.Default, true),
+                new Field("DATA_TYPE", Int32Type.Default, true),
+                new Field("TYPE_NAME", StringType.Default, true),
+                new Field("COLUMN_SIZE", Int32Type.Default, true),
+                new Field("BUFFER_LENGTH", Int32Type.Default, true),
+                new Field("DECIMAL_DIGITS", Int32Type.Default, true),
+                new Field("NUM_PREC_RADIX", Int32Type.Default, true),
+                new Field("NULLABLE", Int32Type.Default, true),
+                new Field("REMARKS", StringType.Default, true),
+                new Field("COLUMN_DEF", StringType.Default, true),
+                new Field("SQL_DATA_TYPE", Int32Type.Default, true),
+                new Field("SQL_DATETIME_SUB", Int32Type.Default, true),
+                new Field("CHAR_OCTET_LENGTH", Int32Type.Default, true),
+                new Field("ORDINAL_POSITION", Int32Type.Default, true),
+                new Field("IS_NULLABLE", StringType.Default, true),
+                new Field("SCOPE_CATALOG", StringType.Default, true),
+                new Field("SCOPE_SCHEMA", StringType.Default, true),
+                new Field("SCOPE_TABLE", StringType.Default, true),
+                new Field("SOURCE_DATA_TYPE", Int16Type.Default, true),
+                new Field("IS_AUTO_INCREMENT", StringType.Default, true),
+                new Field("BASE_TYPE_NAME", StringType.Default, true)
+            }, null);
+
+            var dataArrays = new IArrowArray[]
+            {
+                tableCatBuilder.Build(),
+                tableSchemaBuilder.Build(),
+                tableNameBuilder.Build(),
+                columnNameBuilder.Build(),
+                dataTypeBuilder.Build(),
+                typeNameBuilder.Build(),
+                columnSizeBuilder.Build(),
+                bufferLengthBuilder.Build(),
+                decimalDigitsBuilder.Build(),
+                numPrecRadixBuilder.Build(),
+                nullableBuilder.Build(),
+                remarksBuilder.Build(),
+                columnDefBuilder.Build(),
+                sqlDataTypeBuilder.Build(),
+                sqlDatetimeSubBuilder.Build(),
+                charOctetLengthBuilder.Build(),
+                ordinalPositionBuilder.Build(),
+                isNullableBuilder.Build(),
+                scopeCatalogBuilder.Build(),
+                scopeSchemaBuilder.Build(),
+                scopeTableBuilder.Build(),
+                sourceDataTypeBuilder.Build(),
+                isAutoIncrementBuilder.Build(),
+                baseTypeNameBuilder.Build()
+            };
+
+            return new QueryResult(totalRows, new HiveInfoArrowStream(resultSchema, dataArrays));
+        }
+
         internal static StructArray BuildColumns(TableInfo tableInfo)
         {
             StringArray.Builder columnNameBuilder = new StringArray.Builder();
