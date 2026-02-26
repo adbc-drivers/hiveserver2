@@ -16,6 +16,8 @@
 
 using System;
 using System.Collections.Generic;
+using Apache.Arrow;
+using Apache.Arrow.Types;
 using static AdbcDrivers.HiveServer2.Hive2.HiveServer2Connection;
 
 namespace AdbcDrivers.HiveServer2.Hive2
@@ -200,6 +202,45 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 "TIMESTAMP" => 3,
                 _ => null
             };
+        }
+
+        internal static IArrowType GetArrowType(string typeName)
+        {
+            short typeCode = GetDataTypeCode(typeName);
+            switch (typeCode)
+            {
+                case (short)ColumnTypeId.BOOLEAN:
+                    return BooleanType.Default;
+                case (short)ColumnTypeId.TINYINT:
+                    return Int8Type.Default;
+                case (short)ColumnTypeId.SMALLINT:
+                    return Int16Type.Default;
+                case (short)ColumnTypeId.INTEGER:
+                    return Int32Type.Default;
+                case (short)ColumnTypeId.BIGINT:
+                    return Int64Type.Default;
+                case (short)ColumnTypeId.FLOAT:
+                case (short)ColumnTypeId.REAL:
+                    return FloatType.Default;
+                case (short)ColumnTypeId.DOUBLE:
+                    return DoubleType.Default;
+                case (short)ColumnTypeId.DECIMAL:
+                case (short)ColumnTypeId.NUMERIC:
+                    int precision = GetParsedPrecision(typeName) ?? SqlDecimalTypeParser.DecimalPrecisionDefault;
+                    int scale = GetParsedScale(typeName) ?? SqlDecimalTypeParser.DecimalScaleDefault;
+                    return new Decimal128Type(precision, scale);
+                case (short)ColumnTypeId.DATE:
+                    return Date32Type.Default;
+                case (short)ColumnTypeId.TIMESTAMP:
+                    return new TimestampType(TimeUnit.Microsecond, timezone: (string?)null);
+                case (short)ColumnTypeId.BINARY:
+                case (short)ColumnTypeId.VARBINARY:
+                    return BinaryType.Default;
+                case (short)ColumnTypeId.NULL:
+                    return NullType.Default;
+                default:
+                    return StringType.Default;
+            }
         }
 
         internal static void PopulateTableInfoFromTypeName(
