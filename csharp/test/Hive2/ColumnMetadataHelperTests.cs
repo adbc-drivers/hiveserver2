@@ -37,7 +37,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2
         [InlineData("DECIMAL", (short)ColumnTypeId.DECIMAL)]
         [InlineData("DECIMAL(10,2)", (short)ColumnTypeId.DECIMAL)]
         [InlineData("DEC", (short)ColumnTypeId.DECIMAL)]
-        [InlineData("NUMERIC", (short)ColumnTypeId.NUMERIC)]
+        [InlineData("NUMERIC", (short)ColumnTypeId.DECIMAL)]
         [InlineData("STRING", (short)ColumnTypeId.VARCHAR)]
         [InlineData("VARCHAR", (short)ColumnTypeId.VARCHAR)]
         [InlineData("VARCHAR(255)", (short)ColumnTypeId.VARCHAR)]

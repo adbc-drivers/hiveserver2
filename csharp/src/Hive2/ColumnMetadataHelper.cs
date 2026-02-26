@@ -16,33 +16,23 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using static AdbcDrivers.HiveServer2.Hive2.HiveServer2Connection;
 
 namespace AdbcDrivers.HiveServer2.Hive2
 {
     internal static class ColumnMetadataHelper
     {
-        private static readonly Regex s_parameterSuffix = new(
-            @"\s*[\(<].*$",
-            RegexOptions.Compiled | RegexOptions.CultureInvariant);
-
-        private static readonly Dictionary<string, short> s_dataTypeCodeMap = new(StringComparer.OrdinalIgnoreCase)
+        private static readonly Dictionary<string, short> s_baseTypeToCodeMap = new(StringComparer.OrdinalIgnoreCase)
         {
             { "BOOLEAN", (short)ColumnTypeId.BOOLEAN },
             { "TINYINT", (short)ColumnTypeId.TINYINT },
-            { "BYTE", (short)ColumnTypeId.TINYINT },
             { "SMALLINT", (short)ColumnTypeId.SMALLINT },
-            { "SHORT", (short)ColumnTypeId.SMALLINT },
-            { "INT", (short)ColumnTypeId.INTEGER },
             { "INTEGER", (short)ColumnTypeId.INTEGER },
             { "BIGINT", (short)ColumnTypeId.BIGINT },
-            { "LONG", (short)ColumnTypeId.BIGINT },
             { "FLOAT", (short)ColumnTypeId.FLOAT },
             { "REAL", (short)ColumnTypeId.REAL },
             { "DOUBLE", (short)ColumnTypeId.DOUBLE },
             { "DECIMAL", (short)ColumnTypeId.DECIMAL },
-            { "DEC", (short)ColumnTypeId.DECIMAL },
             { "NUMERIC", (short)ColumnTypeId.NUMERIC },
             { "CHAR", (short)ColumnTypeId.CHAR },
             { "NCHAR", (short)ColumnTypeId.NCHAR },
@@ -55,72 +45,61 @@ namespace AdbcDrivers.HiveServer2.Hive2
             { "VARBINARY", (short)ColumnTypeId.VARBINARY },
             { "DATE", (short)ColumnTypeId.DATE },
             { "TIMESTAMP", (short)ColumnTypeId.TIMESTAMP },
-            { "TIMESTAMP_LTZ", (short)ColumnTypeId.TIMESTAMP },
-            { "TIMESTAMP_NTZ", (short)ColumnTypeId.TIMESTAMP },
             { "ARRAY", (short)ColumnTypeId.ARRAY },
             { "MAP", (short)ColumnTypeId.JAVA_OBJECT },
             { "STRUCT", (short)ColumnTypeId.STRUCT },
-            { "VOID", (short)ColumnTypeId.NULL },
             { "NULL", (short)ColumnTypeId.NULL },
+            { "VOID", (short)ColumnTypeId.NULL },
+            { "INTERVAL", (short)ColumnTypeId.OTHER },
+            { "VARIANT", (short)ColumnTypeId.OTHER },
+            { "OTHER", (short)ColumnTypeId.OTHER },
         };
 
-        private static readonly HashSet<string> s_numericTypes = new(StringComparer.OrdinalIgnoreCase)
+        // Databricks-specific aliases not handled by SqlTypeNameParser.
+        // SqlTypeNameParser already handles: INT→INTEGER, DEC→DECIMAL, TIMESTAMP_NTZ/LTZ→TIMESTAMP.
+        // These three are only returned by DESC TABLE EXTENDED and SHOW COLUMNS.
+        private static readonly Dictionary<string, string> s_aliasToBaseType = new(StringComparer.OrdinalIgnoreCase)
         {
-            "TINYINT", "BYTE", "SMALLINT", "SHORT", "INT", "INTEGER",
-            "BIGINT", "LONG", "FLOAT", "REAL", "DOUBLE",
-            "DECIMAL", "DEC", "NUMERIC"
+            { "BYTE", "TINYINT" },
+            { "SHORT", "SMALLINT" },
+            { "LONG", "BIGINT" },
         };
 
-        private static readonly HashSet<string> s_charTypes = new(StringComparer.OrdinalIgnoreCase)
+        private static readonly HashSet<string> s_numericBaseTypes = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "TINYINT", "SMALLINT", "INTEGER", "BIGINT",
+            "FLOAT", "REAL", "DOUBLE", "DECIMAL", "NUMERIC"
+        };
+
+        private static readonly HashSet<string> s_charBaseTypes = new(StringComparer.OrdinalIgnoreCase)
         {
             "STRING", "VARCHAR", "CHAR", "NCHAR", "NVARCHAR",
             "LONGVARCHAR", "LONGNVARCHAR"
         };
 
-        /// <summary>
-        /// Maps a type name to its XDBC data type code.
-        /// </summary>
         internal static short GetDataTypeCode(string typeName)
         {
-            string normalized = NormalizeTypeName(typeName);
-
-            if (s_dataTypeCodeMap.TryGetValue(normalized, out short code))
+            string baseName = GetBaseTypeName(typeName);
+            if (s_baseTypeToCodeMap.TryGetValue(baseName, out short code))
                 return code;
-
-            // INTERVAL types have qualifiers (e.g., "INTERVAL YEAR TO MONTH")
-            if (normalized.StartsWith("INTERVAL", StringComparison.OrdinalIgnoreCase))
-                return (short)ColumnTypeId.OTHER;
-
             return (short)ColumnTypeId.OTHER;
         }
 
-        /// <summary>
-        /// Strips parameter clauses and normalizes type name aliases.
-        /// </summary>
         internal static string GetBaseTypeName(string typeName)
         {
-            string normalized = NormalizeTypeName(typeName);
-
-            return normalized.ToUpperInvariant() switch
+            if (SqlTypeNameParser<SqlTypeNameParserResult>.TryParse(typeName, out SqlTypeNameParserResult? result))
             {
-                "INT" => "INTEGER",
-                "DEC" => "DECIMAL",
-                "TIMESTAMP_NTZ" or "TIMESTAMP_LTZ" => "TIMESTAMP",
-                "BYTE" => "TINYINT",
-                "SHORT" => "SMALLINT",
-                "LONG" => "BIGINT",
-                _ => normalized.ToUpperInvariant()
-            };
+                return result!.BaseTypeName;
+            }
+            string upper = typeName.Trim().ToUpperInvariant();
+            if (s_aliasToBaseType.TryGetValue(upper, out string? canonical))
+                return canonical;
+            return upper;
         }
 
-        /// <summary>
-        /// Returns the default column size for the given type.
-        /// For DECIMAL, returns the parsed precision. For VARCHAR/CHAR, returns the parsed length.
-        /// </summary>
         internal static int? GetColumnSizeDefault(string typeName)
         {
             string baseName = GetBaseTypeName(typeName);
-
             switch (baseName)
             {
                 case "BOOLEAN":
@@ -130,6 +109,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                     return 2;
                 case "INTEGER":
                 case "FLOAT":
+                case "REAL":
                 case "DATE":
                     return 4;
                 case "BIGINT":
@@ -138,41 +118,35 @@ namespace AdbcDrivers.HiveServer2.Hive2
                     return 8;
                 case "DECIMAL":
                 case "NUMERIC":
-                    return TryParseDecimalPrecision(typeName) ?? SqlDecimalTypeParser.DecimalPrecisionDefault;
+                    return GetParsedPrecision(typeName) ?? SqlDecimalTypeParser.DecimalPrecisionDefault;
                 case "VARCHAR":
                 case "LONGVARCHAR":
                 case "LONGNVARCHAR":
                 case "NVARCHAR":
-                    return TryParseCharLength(typeName) ?? SqlVarcharTypeParser.VarcharColumnSizeDefault;
+                    return GetParsedColumnSize(typeName) ?? SqlVarcharTypeParser.VarcharColumnSizeDefault;
                 case "STRING":
                     return int.MaxValue;
                 case "CHAR":
                 case "NCHAR":
-                    return TryParseCharLength(typeName) ?? 255;
+                    return GetParsedColumnSize(typeName) ?? 255;
                 case "BINARY":
                 case "VARBINARY":
                     return int.MaxValue;
                 case "NULL":
                     return 1;
-                case "REAL":
-                    return 4;
+                case "INTERVAL":
+                    return GetIntervalSize(typeName);
                 default:
-                    if (baseName.StartsWith("INTERVAL", StringComparison.OrdinalIgnoreCase))
-                        return GetIntervalSize(typeName);
                     return 0;
             }
         }
 
-        /// <summary>
-        /// Returns the default decimal digits (scale) for the given type.
-        /// </summary>
         internal static int? GetDecimalDigitsDefault(string typeName)
         {
             string baseName = GetBaseTypeName(typeName);
-
             return baseName switch
             {
-                "DECIMAL" or "NUMERIC" => TryParseDecimalScale(typeName) ?? SqlDecimalTypeParser.DecimalScaleDefault,
+                "DECIMAL" or "NUMERIC" => GetParsedScale(typeName) ?? SqlDecimalTypeParser.DecimalScaleDefault,
                 "FLOAT" or "REAL" => 7,
                 "DOUBLE" => 15,
                 "TIMESTAMP" => 6,
@@ -180,13 +154,9 @@ namespace AdbcDrivers.HiveServer2.Hive2
             };
         }
 
-        /// <summary>
-        /// Returns the buffer length for binary representation of the given type.
-        /// </summary>
         internal static int? GetBufferLength(string typeName)
         {
             string baseName = GetBaseTypeName(typeName);
-
             switch (baseName)
             {
                 case "BOOLEAN":
@@ -205,29 +175,23 @@ namespace AdbcDrivers.HiveServer2.Hive2
                     return 8;
                 case "DECIMAL":
                 case "NUMERIC":
-                    int precision = TryParseDecimalPrecision(typeName) ?? SqlDecimalTypeParser.DecimalPrecisionDefault;
+                    int precision = GetParsedPrecision(typeName) ?? SqlDecimalTypeParser.DecimalPrecisionDefault;
                     return ((precision + 8) / 9) * 5 + 1;
                 default:
                     return null;
             }
         }
 
-        /// <summary>
-        /// Returns 10 for numeric types, null otherwise.
-        /// </summary>
         internal static short? GetNumPrecRadix(string typeName)
         {
-            string normalized = NormalizeTypeName(typeName);
-            return s_numericTypes.Contains(normalized) ? (short)10 : null;
+            string baseName = GetBaseTypeName(typeName);
+            return s_numericBaseTypes.Contains(baseName) ? (short)10 : null;
         }
 
-        /// <summary>
-        /// Returns the character octet length for character types, null otherwise.
-        /// </summary>
         internal static int? GetCharOctetLength(string typeName)
         {
-            string normalized = NormalizeTypeName(typeName);
-            return s_charTypes.Contains(normalized) ? GetColumnSizeDefault(typeName) : null;
+            string baseName = GetBaseTypeName(typeName);
+            return s_charBaseTypes.Contains(baseName) ? GetColumnSizeDefault(typeName) : null;
         }
 
         internal static short? GetSqlDatetimeSub(string typeName)
@@ -264,39 +228,27 @@ namespace AdbcDrivers.HiveServer2.Hive2
             tableInfo.ColumnDefault.Add(columnDefault ?? "");
         }
 
-        private static string NormalizeTypeName(string typeName)
+        private static int? GetParsedPrecision(string typeName)
         {
-            string trimmed = typeName.Trim();
-            return s_parameterSuffix.Replace(trimmed, "").Trim();
-        }
-
-        private static int? TryParseDecimalPrecision(string typeName)
-        {
-            if (SqlTypeNameParser<SqlDecimalParserResult>.TryParse(typeName, out SqlTypeNameParserResult? result, (int)ColumnTypeId.DECIMAL)
+            if (SqlTypeNameParser<SqlDecimalParserResult>.TryParse(typeName, out SqlTypeNameParserResult? result)
                 && result is SqlDecimalParserResult decimalResult)
-            {
                 return decimalResult.Precision;
-            }
             return null;
         }
 
-        private static int? TryParseDecimalScale(string typeName)
+        private static int? GetParsedScale(string typeName)
         {
-            if (SqlTypeNameParser<SqlDecimalParserResult>.TryParse(typeName, out SqlTypeNameParserResult? result, (int)ColumnTypeId.DECIMAL)
+            if (SqlTypeNameParser<SqlDecimalParserResult>.TryParse(typeName, out SqlTypeNameParserResult? result)
                 && result is SqlDecimalParserResult decimalResult)
-            {
                 return decimalResult.Scale;
-            }
             return null;
         }
 
-        private static int? TryParseCharLength(string typeName)
+        private static int? GetParsedColumnSize(string typeName)
         {
-            if (SqlTypeNameParser<SqlCharVarcharParserResult>.TryParse(typeName, out SqlTypeNameParserResult? result, (int)ColumnTypeId.VARCHAR)
+            if (SqlTypeNameParser<SqlCharVarcharParserResult>.TryParse(typeName, out SqlTypeNameParserResult? result)
                 && result is SqlCharVarcharParserResult charResult)
-            {
                 return charResult.ColumnSize;
-            }
             return null;
         }
 
