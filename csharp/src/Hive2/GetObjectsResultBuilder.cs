@@ -25,7 +25,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
 {
     internal static class GetObjectsResultBuilder
     {
-        internal static HiveInfoArrowStream BuildFromProvider(
+        internal static HiveInfoArrowStream BuildGetObjectsResult(
             IGetObjectsDataProvider provider,
             GetObjectsDepth depth,
             string? catalogPattern,

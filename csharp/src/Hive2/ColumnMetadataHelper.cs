@@ -55,9 +55,6 @@ namespace AdbcDrivers.HiveServer2.Hive2
             { "OTHER", (short)ColumnTypeId.OTHER },
         };
 
-        // Databricks-specific aliases not handled by SqlTypeNameParser.
-        // SqlTypeNameParser already handles: INT→INTEGER, DEC→DECIMAL, TIMESTAMP_NTZ/LTZ→TIMESTAMP.
-        // These three are only returned by DESC TABLE EXTENDED and SHOW COLUMNS.
         private static readonly Dictionary<string, string> s_aliasToBaseType = new(StringComparer.OrdinalIgnoreCase)
         {
             { "BYTE", "TINYINT" },

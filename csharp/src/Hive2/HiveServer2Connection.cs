@@ -508,7 +508,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                         columnNamePattern = columnNamePattern?.ToLower();
                     }
 
-                    return GetObjectsResultBuilder.BuildFromProvider(
+                    return GetObjectsResultBuilder.BuildGetObjectsResult(
                         this, depth, catalogPattern, dbSchemaPattern,
                         tableNamePattern, tableTypes, columnNamePattern);
                 }
