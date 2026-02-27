@@ -1220,6 +1220,12 @@ namespace AdbcDrivers.HiveServer2.Hive2
             }, ClassName + "." + nameof(GetTableSchema));
         }
 
+        /// <summary>
+        /// Converts a column type ID to an Apache Arrow type.
+        /// For DECIMAL types, uses server-provided precision/scale when available,
+        /// otherwise parses from the type name string.
+        /// </summary>
+        /// <exception cref="NotImplementedException">Thrown for unsupported column type IDs.</exception>
         internal static IArrowType GetArrowType(int columnTypeId, string typeName, bool isColumnSizeValid, int? columnSize, int? decimalDigits)
         {
             switch (columnTypeId)
@@ -1312,21 +1318,23 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 if (codes.Count == 0)
                     codes = infoSupportedCodes;
 
-                var values = new Dictionary<AdbcInfoCode, object>
-                {
-                    { AdbcInfoCode.DriverName, InfoDriverName },
-                    { AdbcInfoCode.DriverVersion, ProductVersion },
-                    { AdbcInfoCode.DriverArrowVersion, InfoDriverArrowVersion },
-                    { AdbcInfoCode.VendorName, VendorName },
-                    { AdbcInfoCode.VendorVersion, VendorVersion ?? "" },
-                    { AdbcInfoCode.VendorSql, InfoVendorSql },
-                };
-
+                var values = new Dictionary<AdbcInfoCode, object>();
                 foreach (var code in codes)
                 {
+                    object? val = code switch
+                    {
+                        AdbcInfoCode.DriverName => InfoDriverName,
+                        AdbcInfoCode.DriverVersion => ProductVersion,
+                        AdbcInfoCode.DriverArrowVersion => InfoDriverArrowVersion,
+                        AdbcInfoCode.VendorName => VendorName,
+                        AdbcInfoCode.VendorVersion => VendorVersion ?? "",
+                        AdbcInfoCode.VendorSql => InfoVendorSql,
+                        _ => null
+                    };
+                    if (val != null) values[code] = val;
+
                     string tagKey = SemanticConventions.Db.Operation.Parameter(code.ToString().ToLowerInvariant());
-                    values.TryGetValue(code, out object? tagVal);
-                    ActivityExtensions.AddTag(activity, tagKey, () => tagVal);
+                    ActivityExtensions.AddTag(activity, tagKey, () => val);
                 }
 
                 return MetadataSchemaFactory.BuildGetInfoResult(codes, values);

@@ -397,6 +397,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 typeBuilder.Build(), offsetBuilder.Build(), nullCount);
 
             var dataArrays = new IArrowArray[] { infoNameBuilder.Build(), infoValue };
+            StandardSchemas.GetInfoSchema.Validate(dataArrays);
 
             return new HiveInfoArrowStream(StandardSchemas.GetInfoSchema, dataArrays);
         }

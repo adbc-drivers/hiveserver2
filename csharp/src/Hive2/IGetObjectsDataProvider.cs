@@ -27,6 +27,13 @@ namespace AdbcDrivers.HiveServer2.Hive2
         IReadOnlyList<(string catalog, string schema, string table, string tableType)> GetTables(
             string? catalogPattern, string? schemaPattern, string? tableNamePattern, IReadOnlyList<string>? tableTypes);
 
+        /// <summary>
+        /// Populates column metadata into existing TableInfo entries in the catalog map.
+        /// Implementers should look up matching entries by catalog, schema, and table name,
+        /// then add column information (name, type, nullability, etc.) to the TableInfo lists.
+        /// </summary>
+        /// <param name="catalogMap">Pre-populated map of catalog -> schema -> table -> TableInfo.
+        /// Entries are created by prior GetCatalogs/GetSchemas/GetTables calls.</param>
         void PopulateColumnInfo(string? catalogPattern, string? schemaPattern,
             string? tablePattern, string? columnPattern,
             Dictionary<string, Dictionary<string, Dictionary<string, TableInfo>>> catalogMap);
