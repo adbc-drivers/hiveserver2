@@ -271,33 +271,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 }
             }
 
-            var resultSchema = new Schema(new[]
-            {
-                new Field("TABLE_CAT", StringType.Default, true),
-                new Field("TABLE_SCHEM", StringType.Default, true),
-                new Field("TABLE_NAME", StringType.Default, true),
-                new Field("COLUMN_NAME", StringType.Default, true),
-                new Field("DATA_TYPE", Int32Type.Default, true),
-                new Field("TYPE_NAME", StringType.Default, true),
-                new Field("COLUMN_SIZE", Int32Type.Default, true),
-                new Field("BUFFER_LENGTH", Int32Type.Default, true),
-                new Field("DECIMAL_DIGITS", Int32Type.Default, true),
-                new Field("NUM_PREC_RADIX", Int32Type.Default, true),
-                new Field("NULLABLE", Int32Type.Default, true),
-                new Field("REMARKS", StringType.Default, true),
-                new Field("COLUMN_DEF", StringType.Default, true),
-                new Field("SQL_DATA_TYPE", Int32Type.Default, true),
-                new Field("SQL_DATETIME_SUB", Int32Type.Default, true),
-                new Field("CHAR_OCTET_LENGTH", Int32Type.Default, true),
-                new Field("ORDINAL_POSITION", Int32Type.Default, true),
-                new Field("IS_NULLABLE", StringType.Default, true),
-                new Field("SCOPE_CATALOG", StringType.Default, true),
-                new Field("SCOPE_SCHEMA", StringType.Default, true),
-                new Field("SCOPE_TABLE", StringType.Default, true),
-                new Field("SOURCE_DATA_TYPE", Int16Type.Default, true),
-                new Field("IS_AUTO_INCREMENT", StringType.Default, true),
-                new Field("BASE_TYPE_NAME", StringType.Default, true)
-            }, null);
+            var resultSchema = MetadataSchemaFactory.CreateColumnMetadataSchema();
 
             var dataArrays = new IArrowArray[]
             {

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Collections.Generic;
 using Apache.Arrow;
 using Apache.Arrow.Adbc;
 using Apache.Arrow.Types;
@@ -50,6 +51,37 @@ namespace AdbcDrivers.HiveServer2.Hive2
 
     internal static class MetadataSchemaFactory
     {
+        internal static Schema CreateColumnMetadataSchema()
+        {
+            return new Schema(new[]
+            {
+                new Field("TABLE_CAT", StringType.Default, true),
+                new Field("TABLE_SCHEM", StringType.Default, true),
+                new Field("TABLE_NAME", StringType.Default, true),
+                new Field("COLUMN_NAME", StringType.Default, true),
+                new Field("DATA_TYPE", Int32Type.Default, true),
+                new Field("TYPE_NAME", StringType.Default, true),
+                new Field("COLUMN_SIZE", Int32Type.Default, true),
+                new Field("BUFFER_LENGTH", Int32Type.Default, true),
+                new Field("DECIMAL_DIGITS", Int32Type.Default, true),
+                new Field("NUM_PREC_RADIX", Int32Type.Default, true),
+                new Field("NULLABLE", Int32Type.Default, true),
+                new Field("REMARKS", StringType.Default, true),
+                new Field("COLUMN_DEF", StringType.Default, true),
+                new Field("SQL_DATA_TYPE", Int32Type.Default, true),
+                new Field("SQL_DATETIME_SUB", Int32Type.Default, true),
+                new Field("CHAR_OCTET_LENGTH", Int32Type.Default, true),
+                new Field("ORDINAL_POSITION", Int32Type.Default, true),
+                new Field("IS_NULLABLE", StringType.Default, true),
+                new Field("SCOPE_CATALOG", StringType.Default, true),
+                new Field("SCOPE_SCHEMA", StringType.Default, true),
+                new Field("SCOPE_TABLE", StringType.Default, true),
+                new Field("SOURCE_DATA_TYPE", Int16Type.Default, true),
+                new Field("IS_AUTO_INCREMENT", StringType.Default, true),
+                new Field("BASE_TYPE_NAME", StringType.Default, true)
+            }, null);
+        }
+
         internal static Schema CreatePrimaryKeysSchema()
         {
             return new Schema(new[]
@@ -120,6 +152,87 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 new Int32Array.Builder().Build()
             };
             return new QueryResult(0, new HiveInfoArrowStream(schema, arrays));
+        }
+
+        internal static QueryResult BuildPrimaryKeysResult(
+            IEnumerable<(string catalog, string schema, string table, string column, int keySeq, string pkName)> keys)
+        {
+            var tableCatBuilder = new StringArray.Builder();
+            var tableSchemaBuilder = new StringArray.Builder();
+            var tableNameBuilder = new StringArray.Builder();
+            var columnNameBuilder = new StringArray.Builder();
+            var keySeqBuilder = new Int32Array.Builder();
+            var pkNameBuilder = new StringArray.Builder();
+            int count = 0;
+
+            foreach (var (catalog, schema, table, column, keySeq, pkName) in keys)
+            {
+                tableCatBuilder.Append(catalog);
+                tableSchemaBuilder.Append(schema);
+                tableNameBuilder.Append(table);
+                columnNameBuilder.Append(column);
+                keySeqBuilder.Append(keySeq);
+                pkNameBuilder.Append(pkName);
+                count++;
+            }
+
+            var resultSchema = CreatePrimaryKeysSchema();
+            return new QueryResult(count, new HiveInfoArrowStream(resultSchema, new IArrowArray[]
+            {
+                tableCatBuilder.Build(), tableSchemaBuilder.Build(), tableNameBuilder.Build(),
+                columnNameBuilder.Build(), keySeqBuilder.Build(), pkNameBuilder.Build()
+            }));
+        }
+
+        internal static QueryResult BuildCrossReferenceResult(
+            IEnumerable<(string pkCatalog, string pkSchema, string pkTable, string pkColumn,
+                string fkCatalog, string fkSchema, string fkTable, string fkColumn,
+                int keySeq, int updateRule, int deleteRule, string fkName, string? pkName, int deferrability)> refs)
+        {
+            var pkTableCatBuilder = new StringArray.Builder();
+            var pkTableSchemaBuilder = new StringArray.Builder();
+            var pkTableNameBuilder = new StringArray.Builder();
+            var pkColumnNameBuilder = new StringArray.Builder();
+            var fkTableCatBuilder = new StringArray.Builder();
+            var fkTableSchemaBuilder = new StringArray.Builder();
+            var fkTableNameBuilder = new StringArray.Builder();
+            var fkColumnNameBuilder = new StringArray.Builder();
+            var keySeqBuilder = new Int32Array.Builder();
+            var updateRuleBuilder = new Int32Array.Builder();
+            var deleteRuleBuilder = new Int32Array.Builder();
+            var fkNameBuilder = new StringArray.Builder();
+            var pkNameBuilder = new StringArray.Builder();
+            var deferrabilityBuilder = new Int32Array.Builder();
+            int count = 0;
+
+            foreach (var r in refs)
+            {
+                pkTableCatBuilder.Append(r.pkCatalog);
+                pkTableSchemaBuilder.Append(r.pkSchema);
+                pkTableNameBuilder.Append(r.pkTable);
+                pkColumnNameBuilder.Append(r.pkColumn);
+                fkTableCatBuilder.Append(r.fkCatalog);
+                fkTableSchemaBuilder.Append(r.fkSchema);
+                fkTableNameBuilder.Append(r.fkTable);
+                fkColumnNameBuilder.Append(r.fkColumn);
+                keySeqBuilder.Append(r.keySeq);
+                updateRuleBuilder.Append(r.updateRule);
+                deleteRuleBuilder.Append(r.deleteRule);
+                fkNameBuilder.Append(r.fkName);
+                if (r.pkName != null) pkNameBuilder.Append(r.pkName); else pkNameBuilder.AppendNull();
+                deferrabilityBuilder.Append(r.deferrability);
+                count++;
+            }
+
+            var resultSchema = CreateCrossReferenceSchema();
+            return new QueryResult(count, new HiveInfoArrowStream(resultSchema, new IArrowArray[]
+            {
+                pkTableCatBuilder.Build(), pkTableSchemaBuilder.Build(), pkTableNameBuilder.Build(),
+                pkColumnNameBuilder.Build(), fkTableCatBuilder.Build(), fkTableSchemaBuilder.Build(),
+                fkTableNameBuilder.Build(), fkColumnNameBuilder.Build(), keySeqBuilder.Build(),
+                updateRuleBuilder.Build(), deleteRuleBuilder.Build(), fkNameBuilder.Build(),
+                pkNameBuilder.Build(), deferrabilityBuilder.Build()
+            }));
         }
     }
 }
