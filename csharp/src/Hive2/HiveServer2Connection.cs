@@ -67,6 +67,27 @@ namespace AdbcDrivers.HiveServer2.Hive2
         private readonly string _traceInstanceId = Guid.NewGuid().ToString("N");
         private readonly FileActivityListener? _fileActivityListener;
 
+        // Backward-compatible aliases for constants moved to MetadataColumnNames.
+        // These allow subclasses (SparkConnection, ImpalaConnection, etc.) to
+        // reference these constants without additional using directives.
+        internal const string ColumnDef = MetadataColumnNames.ColumnDef;
+        internal const string ColumnName = MetadataColumnNames.ColumnName;
+        internal const string DataType = MetadataColumnNames.DataType;
+        internal const string IsAutoIncrement = MetadataColumnNames.IsAutoIncrement;
+        internal const string IsNullable = MetadataColumnNames.IsNullable;
+        internal const string OrdinalPosition = MetadataColumnNames.OrdinalPosition;
+        internal const string TableCat = MetadataColumnNames.TableCat;
+        internal const string TableCatalog = MetadataColumnNames.TableCatalog;
+        internal const string TableName = MetadataColumnNames.TableName;
+        internal const string TableSchem = MetadataColumnNames.TableSchem;
+        internal const string TableMd = MetadataColumnNames.TableMd;
+        internal const string TableType = MetadataColumnNames.TableType;
+        internal const string TypeName = MetadataColumnNames.TypeName;
+        internal const string Nullable = MetadataColumnNames.Nullable;
+        internal const string ColumnSize = MetadataColumnNames.ColumnSize;
+        internal const string DecimalDigits = MetadataColumnNames.DecimalDigits;
+        internal const string BufferLength = MetadataColumnNames.BufferLength;
+
         readonly AdbcInfoCode[] infoSupportedCodes = [
             AdbcInfoCode.DriverName,
             AdbcInfoCode.DriverVersion,
@@ -1200,7 +1221,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
             }, ClassName + "." + nameof(GetTableSchema));
         }
 
-        private static IArrowType GetArrowType(int columnTypeId, string typeName, bool isColumnSizeValid, int? columnSize, int? decimalDigits)
+        internal static IArrowType GetArrowType(int columnTypeId, string typeName, bool isColumnSizeValid, int? columnSize, int? decimalDigits)
         {
             switch (columnTypeId)
             {

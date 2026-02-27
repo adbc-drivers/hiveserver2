@@ -36,7 +36,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
         internal const string TableMd = "TABLE_MD";
         internal const string TableType = "TABLE_TYPE";
         internal const string TypeName = "TYPE_NAME";
-        internal const string NullableColumn = "NULLABLE";
+        internal const string Nullable = "NULLABLE";
         internal const string ColumnSize = "COLUMN_SIZE";
         internal const string DecimalDigits = "DECIMAL_DIGITS";
         internal const string BufferLength = "BUFFER_LENGTH";

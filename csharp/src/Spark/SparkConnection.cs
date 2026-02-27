@@ -23,7 +23,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using static AdbcDrivers.HiveServer2.Hive2.MetadataColumnNames;
 using System.Threading;
 using System.Threading.Tasks;
 using AdbcDrivers.HiveServer2.Hive2;
@@ -189,7 +188,7 @@ namespace AdbcDrivers.HiveServer2.Spark
                 ColumnName = ColumnName,
                 DataType = DataType,
                 TypeName = TypeName,
-                Nullable = NullableColumn,
+                Nullable = Nullable,
                 ColumnDef = ColumnDef,
                 OrdinalPosition = OrdinalPosition,
                 IsNullable = IsNullable,
