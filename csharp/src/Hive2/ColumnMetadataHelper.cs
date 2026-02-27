@@ -132,6 +132,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 case "VARBINARY":
                     return int.MaxValue;
                 case "NULL":
+                case "VOID":
                     return 1;
                 case "INTERVAL":
                     return GetIntervalSize(typeName);

@@ -84,15 +84,15 @@ namespace AdbcDrivers.HiveServer2.Spark
             int decimalDigits)
         {
             tableInfo?.TypeName.Add(typeName);
-            tableInfo?.BaseTypeName.Add(ColumnMetadataHelper.GetBaseTypeName(typeName));
             switch (colType)
             {
                 case (short)ColumnTypeId.DECIMAL:
                 case (short)ColumnTypeId.NUMERIC:
                     {
-                        tableInfo?.Precision.Add(ColumnMetadataHelper.GetColumnSizeDefault(typeName));
-                        int? scale = ColumnMetadataHelper.GetDecimalDigitsDefault(typeName);
-                        tableInfo?.Scale.Add(scale.HasValue ? (short)scale.Value : null);
+                        SqlDecimalParserResult result = SqlTypeNameParser<SqlDecimalParserResult>.Parse(typeName, colType);
+                        tableInfo?.Precision.Add(result.Precision);
+                        tableInfo?.Scale.Add((short)result.Scale);
+                        tableInfo?.BaseTypeName.Add(result.BaseTypeName);
                         break;
                     }
 
@@ -103,15 +103,19 @@ namespace AdbcDrivers.HiveServer2.Spark
                 case (short)ColumnTypeId.LONGNVARCHAR:
                 case (short)ColumnTypeId.NVARCHAR:
                     {
-                        tableInfo?.Precision.Add(ColumnMetadataHelper.GetColumnSizeDefault(typeName));
+                        SqlCharVarcharParserResult result = SqlTypeNameParser<SqlCharVarcharParserResult>.Parse(typeName, colType);
+                        tableInfo?.Precision.Add(result.ColumnSize);
                         tableInfo?.Scale.Add(null);
+                        tableInfo?.BaseTypeName.Add(result.BaseTypeName);
                         break;
                     }
 
                 default:
                     {
+                        SqlTypeNameParserResult result = SqlTypeNameParser<SqlTypeNameParserResult>.Parse(typeName, colType);
                         tableInfo?.Precision.Add(null);
                         tableInfo?.Scale.Add(null);
+                        tableInfo?.BaseTypeName.Add(result.BaseTypeName);
                         break;
                     }
             }

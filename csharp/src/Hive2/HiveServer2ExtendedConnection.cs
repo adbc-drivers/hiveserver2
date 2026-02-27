@@ -85,14 +85,15 @@ namespace AdbcDrivers.HiveServer2.Hive2
             int decimalDigits)
         {
             tableInfo?.TypeName.Add(typeName);
-            tableInfo?.BaseTypeName.Add(ColumnMetadataHelper.GetBaseTypeName(typeName));
             switch (colType)
             {
                 case (short)ColumnTypeId.DECIMAL:
                 case (short)ColumnTypeId.NUMERIC:
                     {
+                        SqlDecimalParserResult result = SqlTypeNameParser<SqlDecimalParserResult>.Parse(typeName, colType);
                         tableInfo?.Precision.Add(columnSize);
                         tableInfo?.Scale.Add((short)decimalDigits);
+                        tableInfo?.BaseTypeName.Add(result.BaseTypeName);
                         break;
                     }
 
@@ -103,15 +104,19 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 case (short)ColumnTypeId.LONGNVARCHAR:
                 case (short)ColumnTypeId.NVARCHAR:
                     {
+                        SqlCharVarcharParserResult result = SqlTypeNameParser<SqlCharVarcharParserResult>.Parse(typeName, colType);
                         tableInfo?.Precision.Add(columnSize);
                         tableInfo?.Scale.Add(null);
+                        tableInfo?.BaseTypeName.Add(result.BaseTypeName);
                         break;
                     }
 
                 default:
                     {
+                        SqlTypeNameParserResult result = SqlTypeNameParser<SqlTypeNameParserResult>.Parse(typeName, colType);
                         tableInfo?.Precision.Add(null);
                         tableInfo?.Scale.Add(null);
+                        tableInfo?.BaseTypeName.Add(result.BaseTypeName);
                         break;
                     }
             }
