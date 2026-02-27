@@ -62,14 +62,6 @@ namespace AdbcDrivers.HiveServer2.Hive2
             }, null);
         }
 
-        internal static QueryResult CreateEmptyCatalogsResult()
-        {
-            return new QueryResult(0, new HiveInfoArrowStream(CreateCatalogsSchema(), new IArrowArray[]
-            {
-                new StringArray.Builder().Build()
-            }));
-        }
-
         internal static Schema CreateSchemasSchema()
         {
             return new Schema(new[]
