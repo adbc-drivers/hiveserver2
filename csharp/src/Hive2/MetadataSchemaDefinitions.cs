@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
+using System;
 using System.Collections.Generic;
 using Apache.Arrow;
 using Apache.Arrow.Adbc;
+using Apache.Arrow.Adbc.Extensions;
+using Apache.Arrow.Ipc;
 using Apache.Arrow.Types;
 
 namespace AdbcDrivers.HiveServer2.Hive2
@@ -51,6 +54,76 @@ namespace AdbcDrivers.HiveServer2.Hive2
 
     internal static class MetadataSchemaFactory
     {
+        internal static Schema CreateCatalogsSchema()
+        {
+            return new Schema(new[]
+            {
+                new Field("TABLE_CAT", StringType.Default, true),
+            }, null);
+        }
+
+        internal static QueryResult CreateEmptyCatalogsResult()
+        {
+            return new QueryResult(0, new HiveInfoArrowStream(CreateCatalogsSchema(), new IArrowArray[]
+            {
+                new StringArray.Builder().Build()
+            }));
+        }
+
+        internal static Schema CreateSchemasSchema()
+        {
+            return new Schema(new[]
+            {
+                new Field("TABLE_SCHEM", StringType.Default, true),
+                new Field("TABLE_CATALOG", StringType.Default, true),
+            }, null);
+        }
+
+        internal static QueryResult CreateEmptySchemasResult()
+        {
+            return new QueryResult(0, new HiveInfoArrowStream(CreateSchemasSchema(), new IArrowArray[]
+            {
+                new StringArray.Builder().Build(),
+                new StringArray.Builder().Build()
+            }));
+        }
+
+        internal static Schema CreateTablesSchema()
+        {
+            return new Schema(new[]
+            {
+                new Field("TABLE_CAT", StringType.Default, true),
+                new Field("TABLE_SCHEM", StringType.Default, true),
+                new Field("TABLE_NAME", StringType.Default, true),
+                new Field("TABLE_TYPE", StringType.Default, true),
+                new Field("REMARKS", StringType.Default, true),
+                new Field("TYPE_CAT", StringType.Default, true),
+                new Field("TYPE_SCHEM", StringType.Default, true),
+                new Field("TYPE_NAME", StringType.Default, true),
+                new Field("SELF_REFERENCING_COL_NAME", StringType.Default, true),
+                new Field("REF_GENERATION", StringType.Default, true),
+            }, null);
+        }
+
+        internal static QueryResult CreateEmptyTablesResult()
+        {
+            var schema = CreateTablesSchema();
+            var arrays = new IArrowArray[]
+            {
+                new StringArray.Builder().Build(),
+                new StringArray.Builder().Build(),
+                new StringArray.Builder().Build(),
+                new StringArray.Builder().Build(),
+                new StringArray.Builder().Build(),
+                new StringArray.Builder().Build(),
+                new StringArray.Builder().Build(),
+                new StringArray.Builder().Build(),
+                new StringArray.Builder().Build(),
+                new StringArray.Builder().Build()
+            };
+            return new QueryResult(0, new HiveInfoArrowStream(schema, arrays));
+        }
+
         internal static Schema CreateColumnMetadataSchema()
         {
             return new Schema(new[]
@@ -233,6 +306,99 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 updateRuleBuilder.Build(), deleteRuleBuilder.Build(), fkNameBuilder.Build(),
                 pkNameBuilder.Build(), deferrabilityBuilder.Build()
             }));
+        }
+
+        /// <summary>
+        /// Builds a GetInfo result from a dictionary of info code to value mappings.
+        /// Values can be string or bool. Unsupported codes are returned as null.
+        /// </summary>
+        internal static IArrowArrayStream BuildGetInfoResult(
+            IReadOnlyList<AdbcInfoCode> codes,
+            IReadOnlyDictionary<AdbcInfoCode, object> values)
+        {
+            const int strValTypeId = 0;
+            const int boolValTypeId = 1;
+
+            var infoNameBuilder = new UInt32Array.Builder();
+            var typeBuilder = new ArrowBuffer.Builder<byte>();
+            var offsetBuilder = new ArrowBuffer.Builder<int>();
+            var stringInfoBuilder = new StringArray.Builder();
+            var booleanInfoBuilder = new BooleanArray.Builder();
+
+            int nullCount = 0;
+            int offset = 0;
+
+            foreach (var code in codes)
+            {
+                infoNameBuilder.Append((uint)code);
+
+                if (values.TryGetValue(code, out object? val) && val != null)
+                {
+                    if (val is bool boolVal)
+                    {
+                        typeBuilder.Append(boolValTypeId);
+                        offsetBuilder.Append(offset++);
+                        stringInfoBuilder.AppendNull();
+                        booleanInfoBuilder.Append(boolVal);
+                    }
+                    else
+                    {
+                        typeBuilder.Append(strValTypeId);
+                        offsetBuilder.Append(offset++);
+                        stringInfoBuilder.Append(val.ToString());
+                        booleanInfoBuilder.AppendNull();
+                    }
+                }
+                else
+                {
+                    typeBuilder.Append(strValTypeId);
+                    offsetBuilder.Append(offset++);
+                    stringInfoBuilder.AppendNull();
+                    booleanInfoBuilder.AppendNull();
+                    nullCount++;
+                }
+            }
+
+            var entryType = new StructType(new[]
+            {
+                new Field("key", Int32Type.Default, false),
+                new Field("value", Int32Type.Default, true)
+            });
+
+            var entriesDataArray = new StructArray(entryType, 0,
+                new IArrowArray[] { new Int32Array.Builder().Build(), new Int32Array.Builder().Build() },
+                new ArrowBuffer.BitmapBuilder().Build());
+
+            var infoUnionType = new UnionType(
+                new[]
+                {
+                    new Field("string_value", StringType.Default, true),
+                    new Field("bool_value", BooleanType.Default, true),
+                    new Field("int64_value", Int64Type.Default, true),
+                    new Field("int32_bitmask", Int32Type.Default, true),
+                    new Field("string_list", new ListType(new Field("item", StringType.Default, true)), false),
+                    new Field("int32_to_int32_list_map", new ListType(new Field("entries", entryType, false)), true)
+                },
+                new[] { 0, 1, 2, 3, 4, 5 },
+                UnionMode.Dense);
+
+            var childrenArrays = new IArrowArray[]
+            {
+                stringInfoBuilder.Build(),
+                booleanInfoBuilder.Build(),
+                new Int64Array.Builder().Build(),
+                new Int32Array.Builder().Build(),
+                new ListArray.Builder(StringType.Default).Build(),
+                new List<IArrowArray?>() { entriesDataArray }.BuildListArrayForType(entryType)
+            };
+
+            var infoValue = new DenseUnionArray(
+                infoUnionType, codes.Count, childrenArrays,
+                typeBuilder.Build(), offsetBuilder.Build(), nullCount);
+
+            var dataArrays = new IArrowArray[] { infoNameBuilder.Build(), infoValue };
+
+            return new HiveInfoArrowStream(StandardSchemas.GetInfoSchema, dataArrays);
         }
     }
 }
