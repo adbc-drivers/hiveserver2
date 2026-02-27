@@ -83,6 +83,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
             int columnSize,
             int decimalDigits)
         {
+            // Keep the original type name
             tableInfo?.TypeName.Add(typeName);
             switch (colType)
             {
