@@ -597,12 +597,56 @@ namespace AdbcDrivers.HiveServer2.Hive2
             int columnSizeIndex = columnMap["COLUMN_SIZE"];
             int decimalDigitsIndex = columnMap["DECIMAL_DIGITS"];
 
+            StringArray typeNames = (StringArray)originalData[typeNameIndex];
+            Int32Array originalColumnSizes = (Int32Array)originalData[columnSizeIndex];
+            Int32Array originalDecimalDigits = (Int32Array)originalData[decimalDigitsIndex];
             ReadOnlySpan<int> rawDataTypes = rowSet.Columns[dataTypeIndex].I32Val.Values.Values;
 
-            return ColumnsResultEnhancer.Enhance(
-                originalSchema, originalData, rowCount,
-                typeNameIndex, columnSizeIndex, decimalDigitsIndex,
-                rawDataTypes, Connection.SetPrecisionScaleAndTypeName);
+            var enhancedFields = originalSchema.FieldsList.ToList();
+            enhancedFields.Add(new Field(MetadataColumnNames.BaseTypeName, StringType.Default, true));
+            Schema enhancedSchema = new Schema(enhancedFields, originalSchema.Metadata);
+
+            int length = typeNames.Length;
+            var baseTypeNames = new List<string>(length);
+            var columnSizeValues = new List<int>(length);
+            var decimalDigitsValues = new List<int>(length);
+
+            for (int i = 0; i < length; i++)
+            {
+                string typeName = typeNames.GetString(i) ?? string.Empty;
+                short colType = (short)rawDataTypes[i];
+                int columnSize = originalColumnSizes.GetValue(i).GetValueOrDefault();
+                int decimalDigits = originalDecimalDigits.GetValue(i).GetValueOrDefault();
+
+                var tableInfo = new TableInfo(string.Empty);
+                Connection.SetPrecisionScaleAndTypeName(colType, typeName, tableInfo, columnSize, decimalDigits);
+
+                baseTypeNames.Add(
+                    tableInfo.BaseTypeName.Count > 0
+                        ? tableInfo.BaseTypeName[0] ?? typeName
+                        : typeName);
+
+                columnSizeValues.Add(
+                    tableInfo.Precision.Count > 0
+                        ? tableInfo.Precision[0].GetValueOrDefault(columnSize)
+                        : columnSize);
+
+                decimalDigitsValues.Add(
+                    tableInfo.Scale.Count > 0
+                        ? tableInfo.Scale[0].GetValueOrDefault((short)decimalDigits)
+                        : decimalDigits);
+            }
+
+            StringArray baseTypeNameArray = new StringArray.Builder().AppendRange(baseTypeNames).Build();
+            Int32Array columnSizeArray = new Int32Array.Builder().AppendRange(columnSizeValues).Build();
+            Int32Array decimalDigitsArray = new Int32Array.Builder().AppendRange(decimalDigitsValues).Build();
+
+            var enhancedData = new List<IArrowArray>(originalData);
+            enhancedData[columnSizeIndex] = columnSizeArray;
+            enhancedData[decimalDigitsIndex] = decimalDigitsArray;
+            enhancedData.Add(baseTypeNameArray);
+
+            return new QueryResult(rowCount, new HiveInfoArrowStream(enhancedSchema, enhancedData));
         }
 
         // Helper method to read all batches from a stream
