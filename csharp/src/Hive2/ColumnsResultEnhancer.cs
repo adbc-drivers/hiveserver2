@@ -23,10 +23,19 @@ using Apache.Arrow.Types;
 
 namespace AdbcDrivers.HiveServer2.Hive2
 {
+    /// <summary>
+    /// Enhances Thrift GetColumns results with computed metadata fields.
+    /// Adds BaseTypeName by parsing the type name, and optionally overrides
+    /// precision and scale via the connection-specific delegate.
+    /// </summary>
     internal static class ColumnsResultEnhancer
     {
         internal delegate void SetPrecisionScaleDelegate(short colType, string typeName, TableInfo? tableInfo, int columnSize, int decimalDigits);
 
+        /// <summary>
+        /// Enhances a Thrift GetColumns result by adding a BaseTypeName column and
+        /// optionally recalculating precision/scale via the delegate.
+        /// </summary>
         internal static QueryResult Enhance(
             Schema originalSchema,
             IReadOnlyList<IArrowArray> originalData,

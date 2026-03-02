@@ -15,26 +15,45 @@
  */
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace AdbcDrivers.HiveServer2.Hive2
 {
+    /// <summary>
+    /// Provides metadata retrieval for building GetObjects results.
+    /// Abstracts the data-fetching protocol (Thrift or REST) from the
+    /// Arrow result structure construction in <see cref="GetObjectsResultBuilder"/>.
+    /// Each protocol implements this interface to supply catalog, schema,
+    /// table, and column metadata from its respective backend.
+    /// </summary>
     internal interface IGetObjectsDataProvider
     {
-        IReadOnlyList<string> GetCatalogs(string? catalogPattern);
+        /// <summary>
+        /// Returns the list of catalog names matching the pattern.
+        /// </summary>
+        Task<IReadOnlyList<string>> GetCatalogsAsync(string? catalogPattern);
 
-        IReadOnlyList<(string catalog, string schema)> GetSchemas(string? catalogPattern, string? schemaPattern);
+        /// <summary>
+        /// Returns (catalog, schema) pairs matching the patterns.
+        /// </summary>
+        Task<IReadOnlyList<(string catalog, string schema)>> GetSchemasAsync(string? catalogPattern, string? schemaPattern);
 
-        IReadOnlyList<(string catalog, string schema, string table, string tableType)> GetTables(
+        /// <summary>
+        /// Returns (catalog, schema, table, tableType) tuples matching the patterns.
+        /// </summary>
+        Task<IReadOnlyList<(string catalog, string schema, string table, string tableType)>> GetTablesAsync(
             string? catalogPattern, string? schemaPattern, string? tableNamePattern, IReadOnlyList<string>? tableTypes);
 
         /// <summary>
         /// Populates column metadata into existing TableInfo entries in the catalog map.
         /// Implementers should look up matching entries by catalog, schema, and table name,
         /// then add column information (name, type, nullability, etc.) to the TableInfo lists.
+        /// For Thrift, column metadata comes from server-provided values.
+        /// For SEA, column metadata is computed from type name strings.
         /// </summary>
         /// <param name="catalogMap">Pre-populated map of catalog -> schema -> table -> TableInfo.
-        /// Entries are created by prior GetCatalogs/GetSchemas/GetTables calls.</param>
-        void PopulateColumnInfo(string? catalogPattern, string? schemaPattern,
+        /// Entries are created by prior GetCatalogsAsync/GetSchemasAsync/GetTablesAsync calls.</param>
+        Task PopulateColumnInfoAsync(string? catalogPattern, string? schemaPattern,
             string? tablePattern, string? columnPattern,
             Dictionary<string, Dictionary<string, Dictionary<string, TableInfo>>> catalogMap);
     }

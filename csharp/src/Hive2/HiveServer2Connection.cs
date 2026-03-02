@@ -528,9 +528,9 @@ namespace AdbcDrivers.HiveServer2.Hive2
                         columnNamePattern = columnNamePattern?.ToLower();
                     }
 
-                    return GetObjectsResultBuilder.BuildGetObjectsResult(
+                    return GetObjectsResultBuilder.BuildGetObjectsResultAsync(
                         this, depth, catalogPattern, dbSchemaPattern,
-                        tableNamePattern, tableTypes, columnNamePattern);
+                        tableNamePattern, tableTypes, columnNamePattern).GetAwaiter().GetResult();
                 }
                 catch (Exception ex) when (ExceptionHelper.IsOperationCanceledOrCancellationRequested(ex, cancellationToken))
                 {
@@ -545,16 +545,16 @@ namespace AdbcDrivers.HiveServer2.Hive2
 
         // IGetObjectsDataProvider implementation
 
-        IReadOnlyList<string> IGetObjectsDataProvider.GetCatalogs(string? catalogPattern)
+        async Task<IReadOnlyList<string>> IGetObjectsDataProvider.GetCatalogsAsync(string? catalogPattern)
         {
             CancellationToken cancellationToken = ApacheUtility.GetCancellationToken(QueryTimeoutSeconds, ApacheUtility.TimeUnit.Seconds);
-            TGetCatalogsResp getCatalogsResp = GetCatalogsAsync(cancellationToken).Result;
+            TGetCatalogsResp getCatalogsResp = await GetCatalogsAsync(cancellationToken).ConfigureAwait(false);
 
-            var catalogsMetadata = GetResultSetMetadataAsync(getCatalogsResp, cancellationToken).Result;
+            var catalogsMetadata = await GetResultSetMetadataAsync(getCatalogsResp, cancellationToken).ConfigureAwait(false);
             IReadOnlyDictionary<string, int> columnMap = GetColumnIndexMap(catalogsMetadata.Schema.Columns);
 
             string catalogRegexp = PatternToRegEx(catalogPattern);
-            TRowSet rowSet = GetRowSetAsync(getCatalogsResp, cancellationToken).Result;
+            TRowSet rowSet = await GetRowSetAsync(getCatalogsResp, cancellationToken).ConfigureAwait(false);
             IReadOnlyList<string> list = rowSet.Columns[columnMap[MetadataColumnNames.TableCat]].StringVal.Values;
 
             var result = new List<string>();
@@ -573,14 +573,14 @@ namespace AdbcDrivers.HiveServer2.Hive2
             return result;
         }
 
-        IReadOnlyList<(string catalog, string schema)> IGetObjectsDataProvider.GetSchemas(string? catalogPattern, string? schemaPattern)
+        async Task<IReadOnlyList<(string catalog, string schema)>> IGetObjectsDataProvider.GetSchemasAsync(string? catalogPattern, string? schemaPattern)
         {
             CancellationToken cancellationToken = ApacheUtility.GetCancellationToken(QueryTimeoutSeconds, ApacheUtility.TimeUnit.Seconds);
-            TGetSchemasResp getSchemasResp = GetSchemasAsync(catalogPattern, schemaPattern, cancellationToken).Result;
+            TGetSchemasResp getSchemasResp = await GetSchemasAsync(catalogPattern, schemaPattern, cancellationToken).ConfigureAwait(false);
 
-            TGetResultSetMetadataResp schemaMetadata = GetResultSetMetadataAsync(getSchemasResp, cancellationToken).Result;
+            TGetResultSetMetadataResp schemaMetadata = await GetResultSetMetadataAsync(getSchemasResp, cancellationToken).ConfigureAwait(false);
             IReadOnlyDictionary<string, int> columnMap = GetColumnIndexMap(schemaMetadata.Schema.Columns);
-            TRowSet rowSet = GetRowSetAsync(getSchemasResp, cancellationToken).Result;
+            TRowSet rowSet = await GetRowSetAsync(getSchemasResp, cancellationToken).ConfigureAwait(false);
 
             IReadOnlyList<string> catalogList = rowSet.Columns[columnMap[MetadataColumnNames.TableCatalog]].StringVal.Values;
             IReadOnlyList<string> schemaList = rowSet.Columns[columnMap[MetadataColumnNames.TableSchem]].StringVal.Values;
@@ -593,17 +593,17 @@ namespace AdbcDrivers.HiveServer2.Hive2
             return result;
         }
 
-        IReadOnlyList<(string catalog, string schema, string table, string tableType)> IGetObjectsDataProvider.GetTables(
+        async Task<IReadOnlyList<(string catalog, string schema, string table, string tableType)>> IGetObjectsDataProvider.GetTablesAsync(
             string? catalogPattern, string? schemaPattern, string? tableNamePattern, IReadOnlyList<string>? tableTypes)
         {
             CancellationToken cancellationToken = ApacheUtility.GetCancellationToken(QueryTimeoutSeconds, ApacheUtility.TimeUnit.Seconds);
-            TGetTablesResp getTablesResp = GetTablesAsync(
+            TGetTablesResp getTablesResp = await GetTablesAsync(
                 catalogPattern, schemaPattern, tableNamePattern,
-                tableTypes?.ToList(), cancellationToken).Result;
+                tableTypes?.ToList(), cancellationToken).ConfigureAwait(false);
 
-            TGetResultSetMetadataResp tableMetadata = GetResultSetMetadataAsync(getTablesResp, cancellationToken).Result;
+            TGetResultSetMetadataResp tableMetadata = await GetResultSetMetadataAsync(getTablesResp, cancellationToken).ConfigureAwait(false);
             IReadOnlyDictionary<string, int> columnMap = GetColumnIndexMap(tableMetadata.Schema.Columns);
-            TRowSet rowSet = GetRowSetAsync(getTablesResp, cancellationToken).Result;
+            TRowSet rowSet = await GetRowSetAsync(getTablesResp, cancellationToken).ConfigureAwait(false);
 
             IReadOnlyList<string> catalogList = rowSet.Columns[columnMap[MetadataColumnNames.TableCat]].StringVal.Values;
             IReadOnlyList<string> schemaList = rowSet.Columns[columnMap[MetadataColumnNames.TableSchem]].StringVal.Values;
@@ -618,17 +618,17 @@ namespace AdbcDrivers.HiveServer2.Hive2
             return result;
         }
 
-        void IGetObjectsDataProvider.PopulateColumnInfo(string? catalogPattern, string? schemaPattern,
+        async Task IGetObjectsDataProvider.PopulateColumnInfoAsync(string? catalogPattern, string? schemaPattern,
             string? tablePattern, string? columnPattern,
             Dictionary<string, Dictionary<string, Dictionary<string, TableInfo>>> catalogMap)
         {
             CancellationToken cancellationToken = ApacheUtility.GetCancellationToken(QueryTimeoutSeconds, ApacheUtility.TimeUnit.Seconds);
-            TGetColumnsResp columnsResponse = GetColumnsAsync(
-                catalogPattern, schemaPattern, tablePattern, columnPattern, cancellationToken).Result;
+            TGetColumnsResp columnsResponse = await GetColumnsAsync(
+                catalogPattern, schemaPattern, tablePattern, columnPattern, cancellationToken).ConfigureAwait(false);
 
-            TGetResultSetMetadataResp columnsMetadata = GetResultSetMetadataAsync(columnsResponse, cancellationToken).Result;
+            TGetResultSetMetadataResp columnsMetadata = await GetResultSetMetadataAsync(columnsResponse, cancellationToken).ConfigureAwait(false);
             IReadOnlyDictionary<string, int> columnMap = GetColumnIndexMap(columnsMetadata.Schema.Columns);
-            TRowSet rowSet = GetRowSetAsync(columnsResponse, cancellationToken).Result;
+            TRowSet rowSet = await GetRowSetAsync(columnsResponse, cancellationToken).ConfigureAwait(false);
 
             ColumnsMetadataColumnNames columnNames = GetColumnsMetadataColumnNames();
             IReadOnlyList<string> catalogList = rowSet.Columns[columnMap[columnNames.TableCatalog]].StringVal.Values;
