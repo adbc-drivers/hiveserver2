@@ -530,7 +530,8 @@ namespace AdbcDrivers.HiveServer2.Hive2
 
                     return GetObjectsResultBuilder.BuildGetObjectsResultAsync(
                         this, depth, catalogPattern, dbSchemaPattern,
-                        tableNamePattern, tableTypes, columnNamePattern).GetAwaiter().GetResult();
+                        tableNamePattern, tableTypes, columnNamePattern,
+                        cancellationToken).GetAwaiter().GetResult();
                 }
                 catch (Exception ex) when (ExceptionHelper.IsOperationCanceledOrCancellationRequested(ex, cancellationToken))
                 {
@@ -545,9 +546,8 @@ namespace AdbcDrivers.HiveServer2.Hive2
 
         // IGetObjectsDataProvider implementation
 
-        async Task<IReadOnlyList<string>> IGetObjectsDataProvider.GetCatalogsAsync(string? catalogPattern)
+        async Task<IReadOnlyList<string>> IGetObjectsDataProvider.GetCatalogsAsync(string? catalogPattern, CancellationToken cancellationToken)
         {
-            CancellationToken cancellationToken = ApacheUtility.GetCancellationToken(QueryTimeoutSeconds, ApacheUtility.TimeUnit.Seconds);
             TGetCatalogsResp getCatalogsResp = await GetCatalogsAsync(cancellationToken).ConfigureAwait(false);
 
             var catalogsMetadata = await GetResultSetMetadataAsync(getCatalogsResp, cancellationToken).ConfigureAwait(false);
@@ -573,9 +573,8 @@ namespace AdbcDrivers.HiveServer2.Hive2
             return result;
         }
 
-        async Task<IReadOnlyList<(string catalog, string schema)>> IGetObjectsDataProvider.GetSchemasAsync(string? catalogPattern, string? schemaPattern)
+        async Task<IReadOnlyList<(string catalog, string schema)>> IGetObjectsDataProvider.GetSchemasAsync(string? catalogPattern, string? schemaPattern, CancellationToken cancellationToken)
         {
-            CancellationToken cancellationToken = ApacheUtility.GetCancellationToken(QueryTimeoutSeconds, ApacheUtility.TimeUnit.Seconds);
             TGetSchemasResp getSchemasResp = await GetSchemasAsync(catalogPattern, schemaPattern, cancellationToken).ConfigureAwait(false);
 
             TGetResultSetMetadataResp schemaMetadata = await GetResultSetMetadataAsync(getSchemasResp, cancellationToken).ConfigureAwait(false);
@@ -594,9 +593,8 @@ namespace AdbcDrivers.HiveServer2.Hive2
         }
 
         async Task<IReadOnlyList<(string catalog, string schema, string table, string tableType)>> IGetObjectsDataProvider.GetTablesAsync(
-            string? catalogPattern, string? schemaPattern, string? tableNamePattern, IReadOnlyList<string>? tableTypes)
+            string? catalogPattern, string? schemaPattern, string? tableNamePattern, IReadOnlyList<string>? tableTypes, CancellationToken cancellationToken)
         {
-            CancellationToken cancellationToken = ApacheUtility.GetCancellationToken(QueryTimeoutSeconds, ApacheUtility.TimeUnit.Seconds);
             TGetTablesResp getTablesResp = await GetTablesAsync(
                 catalogPattern, schemaPattern, tableNamePattern,
                 tableTypes?.ToList(), cancellationToken).ConfigureAwait(false);
@@ -618,11 +616,15 @@ namespace AdbcDrivers.HiveServer2.Hive2
             return result;
         }
 
+        /// <remarks>
+        /// Thrift: column metadata (precision, scale, type name) comes from the server via
+        /// SetPrecisionScaleAndTypeName. SEA: computed from type name strings via ColumnMetadataHelper.
+        /// </remarks>
         async Task IGetObjectsDataProvider.PopulateColumnInfoAsync(string? catalogPattern, string? schemaPattern,
             string? tablePattern, string? columnPattern,
-            Dictionary<string, Dictionary<string, Dictionary<string, TableInfo>>> catalogMap)
+            Dictionary<string, Dictionary<string, Dictionary<string, TableInfo>>> catalogMap,
+            CancellationToken cancellationToken)
         {
-            CancellationToken cancellationToken = ApacheUtility.GetCancellationToken(QueryTimeoutSeconds, ApacheUtility.TimeUnit.Seconds);
             TGetColumnsResp columnsResponse = await GetColumnsAsync(
                 catalogPattern, schemaPattern, tablePattern, columnPattern, cancellationToken).ConfigureAwait(false);
 

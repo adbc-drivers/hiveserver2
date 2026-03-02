@@ -15,6 +15,7 @@
  */
 
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AdbcDrivers.HiveServer2.Hive2
@@ -28,21 +29,12 @@ namespace AdbcDrivers.HiveServer2.Hive2
     /// </summary>
     internal interface IGetObjectsDataProvider
     {
-        /// <summary>
-        /// Returns the list of catalog names matching the pattern.
-        /// </summary>
-        Task<IReadOnlyList<string>> GetCatalogsAsync(string? catalogPattern);
+        Task<IReadOnlyList<string>> GetCatalogsAsync(string? catalogPattern, CancellationToken cancellationToken);
 
-        /// <summary>
-        /// Returns (catalog, schema) pairs matching the patterns.
-        /// </summary>
-        Task<IReadOnlyList<(string catalog, string schema)>> GetSchemasAsync(string? catalogPattern, string? schemaPattern);
+        Task<IReadOnlyList<(string catalog, string schema)>> GetSchemasAsync(string? catalogPattern, string? schemaPattern, CancellationToken cancellationToken);
 
-        /// <summary>
-        /// Returns (catalog, schema, table, tableType) tuples matching the patterns.
-        /// </summary>
         Task<IReadOnlyList<(string catalog, string schema, string table, string tableType)>> GetTablesAsync(
-            string? catalogPattern, string? schemaPattern, string? tableNamePattern, IReadOnlyList<string>? tableTypes);
+            string? catalogPattern, string? schemaPattern, string? tableNamePattern, IReadOnlyList<string>? tableTypes, CancellationToken cancellationToken);
 
         /// <summary>
         /// Populates column metadata into existing TableInfo entries in the catalog map.
@@ -55,6 +47,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
         /// Entries are created by prior GetCatalogsAsync/GetSchemasAsync/GetTablesAsync calls.</param>
         Task PopulateColumnInfoAsync(string? catalogPattern, string? schemaPattern,
             string? tablePattern, string? columnPattern,
-            Dictionary<string, Dictionary<string, Dictionary<string, TableInfo>>> catalogMap);
+            Dictionary<string, Dictionary<string, Dictionary<string, TableInfo>>> catalogMap,
+            CancellationToken cancellationToken);
     }
 }

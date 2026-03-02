@@ -15,6 +15,7 @@
  */
 
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Apache.Arrow;
 using Apache.Arrow.Adbc;
@@ -33,13 +34,14 @@ namespace AdbcDrivers.HiveServer2.Hive2
             string? schemaPattern,
             string? tableNamePattern,
             IReadOnlyList<string>? tableTypes,
-            string? columnNamePattern)
+            string? columnNamePattern,
+            CancellationToken cancellationToken)
         {
             var catalogMap = new Dictionary<string, Dictionary<string, Dictionary<string, TableInfo>>>();
 
             if (depth == GetObjectsDepth.All || depth >= GetObjectsDepth.Catalogs)
             {
-                foreach (string catalog in await provider.GetCatalogsAsync(catalogPattern).ConfigureAwait(false))
+                foreach (string catalog in await provider.GetCatalogsAsync(catalogPattern, cancellationToken).ConfigureAwait(false))
                 {
                     catalogMap[catalog] = new Dictionary<string, Dictionary<string, TableInfo>>();
                 }
@@ -47,7 +49,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
 
             if (depth == GetObjectsDepth.All || depth >= GetObjectsDepth.DbSchemas)
             {
-                foreach (var (catalog, schema) in await provider.GetSchemasAsync(catalogPattern, schemaPattern).ConfigureAwait(false))
+                foreach (var (catalog, schema) in await provider.GetSchemasAsync(catalogPattern, schemaPattern, cancellationToken).ConfigureAwait(false))
                 {
                     if (catalogMap.TryGetValue(catalog, out var schemaMap) && !schemaMap.ContainsKey(schema))
                     {
@@ -58,7 +60,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
 
             if (depth == GetObjectsDepth.All || depth >= GetObjectsDepth.Tables)
             {
-                foreach (var (catalog, schema, table, tableType) in await provider.GetTablesAsync(catalogPattern, schemaPattern, tableNamePattern, tableTypes).ConfigureAwait(false))
+                foreach (var (catalog, schema, table, tableType) in await provider.GetTablesAsync(catalogPattern, schemaPattern, tableNamePattern, tableTypes, cancellationToken).ConfigureAwait(false))
                 {
                     if (catalogMap.TryGetValue(catalog, out var schemaMap)
                         && schemaMap.TryGetValue(schema, out var tableMap)
@@ -71,7 +73,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
 
             if (depth == GetObjectsDepth.All)
             {
-                await provider.PopulateColumnInfoAsync(catalogPattern, schemaPattern, tableNamePattern, columnNamePattern, catalogMap).ConfigureAwait(false);
+                await provider.PopulateColumnInfoAsync(catalogPattern, schemaPattern, tableNamePattern, columnNamePattern, catalogMap, cancellationToken).ConfigureAwait(false);
             }
 
             return BuildResult(depth, catalogMap);
