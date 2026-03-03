@@ -96,6 +96,32 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2
         }
 
         [Theory()]
+        [InlineData("STRING COLLATE UNICODE_CI_AI", "STRING", int.MaxValue)]
+        [InlineData("STRING COLLATE UTF8_BINARY", "STRING", int.MaxValue)]
+        [InlineData("VARCHAR(255) COLLATE UNICODE_CI_AI", "VARCHAR", 255)]
+        [InlineData("string collate unicode_ci_ai", "STRING", int.MaxValue)]
+        internal void CanParseVarcharWithCollation(string testTypeName, string expectedBaseTypeName, int expectedColumnSize)
+        {
+            _outputHelper.WriteLine(testTypeName);
+            Assert.True(SqlVarcharTypeParser.Default.TryParse(testTypeName, out SqlCharVarcharParserResult? result));
+            Assert.NotNull(result);
+            Assert.Equal(expectedBaseTypeName, result.BaseTypeName);
+            Assert.Equal(expectedColumnSize, result.ColumnSize);
+        }
+
+        [Theory()]
+        [InlineData("CHAR(10) COLLATE UNICODE_CI_AI", "CHAR", 10)]
+        [InlineData("NCHAR(5) COLLATE UTF8_BINARY", "CHAR", 5)]
+        internal void CanParseCharWithCollation(string testTypeName, string expectedBaseTypeName, int expectedColumnSize)
+        {
+            _outputHelper.WriteLine(testTypeName);
+            Assert.True(SqlCharTypeParser.Default.TryParse(testTypeName, out SqlCharVarcharParserResult? result));
+            Assert.NotNull(result);
+            Assert.Equal(expectedBaseTypeName, result.BaseTypeName);
+            Assert.Equal(expectedColumnSize, result.ColumnSize);
+        }
+
+        [Theory()]
         [MemberData(nameof(GenerateCharTestData), "CHAR")]
         [MemberData(nameof(GenerateCharTestData), "NCHAR")]
         [MemberData(nameof(GenerateCharTestData), "CHaR")]
