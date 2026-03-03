@@ -332,14 +332,18 @@ namespace AdbcDrivers.HiveServer2.Hive2
             {
                 infoNameBuilder.Append((uint)code);
 
+                // Union type is predetermined per info code:
+                // VendorSql → bool, all others → string
+                bool isBoolCode = code == AdbcInfoCode.VendorSql;
+
                 if (values.TryGetValue(code, out object? val) && val != null)
                 {
-                    if (val is bool boolVal)
+                    if (isBoolCode)
                     {
                         typeBuilder.Append(boolValTypeId);
                         offsetBuilder.Append(offset++);
                         stringInfoBuilder.AppendNull();
-                        booleanInfoBuilder.Append(boolVal);
+                        booleanInfoBuilder.Append(val is bool b && b);
                     }
                     else
                     {
