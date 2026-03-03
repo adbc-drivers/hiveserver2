@@ -52,9 +52,17 @@ namespace AdbcDrivers.HiveServer2.Hive2
         public const string Scalar = "scalar";
     }
 
+    public static class RevocationModeConstants
+    {
+        public const string NoCheck = "0";
+        public const string Online = "1";
+        public const string Offline = "2";
+    }
+
     public static class HttpTlsOptions
     {
         public const string IsTlsEnabled = "adbc.http_options.tls.enabled";
+        public const string RevocationMode = "adbc.http_options.tls.revocation_mode";
         public const string AllowSelfSigned = "adbc.http_options.tls.allow_self_signed";
         public const string AllowHostnameMismatch = "adbc.http_options.tls.allow_hostname_mismatch";
         public const string TrustedCertificatePath = "adbc.http_options.tls.trusted_certificate_path";
@@ -64,6 +72,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
     public static class StandardTlsOptions
     {
         public const string IsTlsEnabled = "adbc.standard_options.tls.enabled";
+        public const string RevocationMode = "adbc.standard_options.tls.revocation_mode";
         public const string AllowSelfSigned = "adbc.standard_options.tls.allow_self_signed";
         public const string AllowHostnameMismatch = "adbc.standard_options.tls.allow_hostname_mismatch";
         public const string TrustedCertificatePath = "adbc.standard_options.tls.trusted_certificate_path";

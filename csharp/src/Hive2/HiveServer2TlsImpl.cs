@@ -26,6 +26,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Security;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using Apache.Arrow.Adbc;
 
@@ -34,6 +35,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
     class TlsProperties
     {
         public bool IsTlsEnabled { get; set; } = true;
+        public X509RevocationMode RevocationMode { get; set; } = X509RevocationMode.Online;
         public bool DisableServerCertificateValidation { get; set; }
         public bool AllowHostnameMismatch { get; set; }
         public bool AllowSelfSigned { get; set; }
@@ -42,6 +44,30 @@ namespace AdbcDrivers.HiveServer2.Hive2
 
     static class HiveServer2TlsImpl
     {
+        /// <summary>
+        /// Parses a revocation mode string into the corresponding X509RevocationMode enum value.
+        /// </summary>
+        /// <param name="value">The revocation mode string: "0" (NoCheck), "1" (Online), or "2" (Offline)</param>
+        /// <returns>The parsed X509RevocationMode</returns>
+        /// <exception cref="ArgumentException">Thrown when the value is not a valid revocation mode</exception>
+        private static X509RevocationMode ParseRevocationMode(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return X509RevocationMode.Online;
+            }
+
+            var trimmedValue = value!.Trim();
+            if (int.TryParse(trimmedValue, out int intValue) && Enum.IsDefined(typeof(X509RevocationMode), intValue))
+            {
+                return (X509RevocationMode)intValue;
+            }
+
+            throw new ArgumentException(
+                $"Invalid revocation mode: '{value}'. Valid values are {RevocationModeConstants.NoCheck} (NoCheck), {RevocationModeConstants.Online} (Online), or {RevocationModeConstants.Offline} (Offline).",
+                nameof(value));
+        }
+
         static internal TlsProperties GetHttpTlsOptions(IReadOnlyDictionary<string, string> properties)
         {
             TlsProperties tlsProperties = new();
@@ -71,6 +97,13 @@ namespace AdbcDrivers.HiveServer2.Hive2
             tlsProperties.DisableServerCertificateValidation = false;
             tlsProperties.AllowHostnameMismatch = properties.TryGetValue(HttpTlsOptions.AllowHostnameMismatch, out string? allowHostnameMismatch) && bool.TryParse(allowHostnameMismatch, out bool allowHostnameMismatchBool) && allowHostnameMismatchBool;
             tlsProperties.AllowSelfSigned = properties.TryGetValue(HttpTlsOptions.AllowSelfSigned, out string? allowSelfSigned) && bool.TryParse(allowSelfSigned, out bool allowSelfSignedBool) && allowSelfSignedBool;
+
+            // Parse revocation mode if specified
+            if (properties.TryGetValue(HttpTlsOptions.RevocationMode, out string? revocationMode))
+            {
+                tlsProperties.RevocationMode = ParseRevocationMode(revocationMode);
+            }
+
             if (!properties.TryGetValue(HttpTlsOptions.TrustedCertificatePath, out string? trustedCertificatePath)) return tlsProperties;
             tlsProperties.TrustedCertificatePath = trustedCertificatePath != "" && File.Exists(trustedCertificatePath) ? trustedCertificatePath : throw new FileNotFoundException("Trusted certificate path is invalid or file does not exist.");
             return tlsProperties;
@@ -101,7 +134,10 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 {
                     chain.ChainPolicy.ExtraStore.Add(issuer);
                     chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
-                    chain.ChainPolicy.RevocationMode = X509RevocationMode.Online;
+                    // Note: NoCheck is intentional here - this helper only validates cryptographic signatures,
+                    // not full certificate chain validation. Revocation checking happens in ValidateCertificate()
+                    // which uses the configurable tlsProperties.RevocationMode.
+                    chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
 
                     return chain.Build(cert)
                         && chain.ChainElements.Count == 1
@@ -139,9 +175,125 @@ namespace AdbcDrivers.HiveServer2.Hive2
             tlsProperties.DisableServerCertificateValidation = false;
             tlsProperties.AllowHostnameMismatch = properties.TryGetValue(StandardTlsOptions.AllowHostnameMismatch, out string? allowHostnameMismatch) && bool.TryParse(allowHostnameMismatch, out bool allowHostnameMismatchBool) && allowHostnameMismatchBool;
             tlsProperties.AllowSelfSigned = properties.TryGetValue(StandardTlsOptions.AllowSelfSigned, out string? allowSelfSigned) && bool.TryParse(allowSelfSigned, out bool allowSelfSignedBool) && allowSelfSignedBool;
+
+            // Parse revocation mode if specified
+            if (properties.TryGetValue(StandardTlsOptions.RevocationMode, out string? revocationMode))
+            {
+                tlsProperties.RevocationMode = ParseRevocationMode(revocationMode);
+            }
+
             if (!properties.TryGetValue(StandardTlsOptions.TrustedCertificatePath, out string? trustedCertificatePath)) return tlsProperties;
             tlsProperties.TrustedCertificatePath = trustedCertificatePath != "" && File.Exists(trustedCertificatePath) ? trustedCertificatePath : throw new FileNotFoundException("Trusted certificate path is invalid or file does not exist.");
             return tlsProperties;
+        }
+
+        /// <summary>
+        /// Analyzes certificate chain validation errors and throws descriptive exceptions with actionable guidance.
+        /// </summary>
+        private static void ThrowDetailedCertificateError(X509Chain chain, TlsProperties tlsProperties)
+        {
+            foreach (var status in chain.ChainStatus)
+            {
+                // Check for specific flags (Status is a flags enum, multiple flags can be set)
+                if (status.Status.HasFlag(X509ChainStatusFlags.UntrustedRoot))
+                {
+                    throw new AuthenticationException(
+                        $"Certificate validation failed: The root certificate is not trusted. " +
+                        "This occurs when the Certificate Authority (CA) that signed the server certificate is not in your system's trusted root store. " +
+                        $"To resolve this: (1) Install the CA certificate in your system's trusted root store, or " +
+                        $"(2) Specify the trusted certificate using '{HttpTlsOptions.TrustedCertificatePath}', or " +
+                        $"(3) For testing only, set '{HttpTlsOptions.DisableServerCertificateValidation}=true' (NOT recommended for production).");
+                }
+
+                if (status.Status.HasFlag(X509ChainStatusFlags.PartialChain))
+                {
+                    throw new AuthenticationException(
+                        "Certificate validation failed: The certificate chain is incomplete. " +
+                        "This occurs when one or more intermediate certificates are missing from the chain. " +
+                        "The server should send all intermediate certificates, but some servers are misconfigured. " +
+                        "To resolve this: (1) Contact the server administrator to fix the certificate chain configuration, or " +
+                        "(2) Install the missing intermediate certificates in your system's certificate store, or " +
+                        $"(3) Specify the complete certificate chain using '{HttpTlsOptions.TrustedCertificatePath}'.");
+                }
+
+                if (status.Status.HasFlag(X509ChainStatusFlags.RevocationStatusUnknown))
+                {
+                    throw new AuthenticationException(
+                        "Certificate validation failed: Unable to determine the revocation status of the certificate. " +
+                        "This typically occurs when the Certificate Revocation List (CRL) or Online Certificate Status Protocol (OCSP) servers are unreachable. " +
+                        "Common causes: AWS PrivateLink, corporate firewalls blocking port 80, or network restrictions. " +
+                        $"Current revocation mode: {tlsProperties.RevocationMode}. " +
+                        $"To resolve this: Set '{HttpTlsOptions.RevocationMode}={RevocationModeConstants.NoCheck}' to skip revocation checking (safe in isolated networks), " +
+                        $"or set '{HttpTlsOptions.RevocationMode}={RevocationModeConstants.Offline}' to use only cached CRL data.");
+                }
+
+                if (status.Status.HasFlag(X509ChainStatusFlags.OfflineRevocation))
+                {
+                    throw new AuthenticationException(
+                        "Certificate validation failed: The revocation server is offline or unreachable. " +
+                        "The certificate contains revocation URLs (CRL/OCSP) that require outbound HTTP (port 80) access, but the connection failed. " +
+                        "This is common in AWS PrivateLink environments or networks with restrictive egress rules. " +
+                        $"To resolve this: Set '{HttpTlsOptions.RevocationMode}={RevocationModeConstants.NoCheck}' to disable revocation checking, " +
+                        $"or set '{HttpTlsOptions.RevocationMode}={RevocationModeConstants.Offline}' to use only locally cached revocation data.");
+                }
+
+                if (status.Status.HasFlag(X509ChainStatusFlags.Revoked))
+                {
+                    throw new AuthenticationException(
+                        "Certificate validation failed: The certificate has been revoked by the Certificate Authority. " +
+                        "This is a critical security issue - the certificate is no longer valid and should not be trusted. " +
+                        "To resolve this: Contact the server administrator to install a new, valid certificate. " +
+                        "Do NOT disable certificate validation to work around this error.");
+                }
+
+                if (status.Status.HasFlag(X509ChainStatusFlags.NotTimeValid))
+                {
+                    throw new AuthenticationException(
+                        "Certificate validation failed: The certificate is not valid for the current date/time. " +
+                        "The certificate may be expired or not yet valid. " +
+                        $"Certificate details: {status.StatusInformation}. " +
+                        "To resolve this: (1) Verify your system clock is correct, or " +
+                        "(2) Contact the server administrator to renew the expired certificate.");
+                }
+
+                if (status.Status.HasFlag(X509ChainStatusFlags.NotSignatureValid))
+                {
+                    throw new AuthenticationException(
+                        "Certificate validation failed: The certificate signature is invalid. " +
+                        "This indicates the certificate may be corrupted, tampered with, or improperly signed. " +
+                        "This is a critical security issue. " +
+                        "To resolve this: Contact the server administrator - the certificate needs to be replaced.");
+                }
+
+                if (status.Status.HasFlag(X509ChainStatusFlags.InvalidNameConstraints) ||
+                    status.Status.HasFlag(X509ChainStatusFlags.HasNotPermittedNameConstraint) ||
+                    status.Status.HasFlag(X509ChainStatusFlags.HasExcludedNameConstraint))
+                {
+                    throw new AuthenticationException(
+                        "Certificate validation failed: Certificate name constraints violation. " +
+                        "The certificate is not permitted to be used for this hostname or domain. " +
+                        $"Details: {status.StatusInformation}. " +
+                        "To resolve this: Verify you are connecting to the correct hostname, or contact the server administrator.");
+                }
+
+                if (status.Status.HasFlag(X509ChainStatusFlags.InvalidBasicConstraints))
+                {
+                    throw new AuthenticationException(
+                        "Certificate validation failed: Invalid basic constraints. " +
+                        "The certificate chain violates basic constraints (e.g., a non-CA certificate is being used as a CA). " +
+                        "This indicates a misconfigured certificate hierarchy. " +
+                        "To resolve this: Contact the server administrator to fix the certificate chain.");
+                }
+
+                // For any other error flags not explicitly handled above
+                if (status.Status != X509ChainStatusFlags.NoError)
+                {
+                    throw new AuthenticationException(
+                        $"Certificate validation failed: {status.Status}. " +
+                        $"Details: {status.StatusInformation}. " +
+                        "This may indicate a certificate configuration issue. Please contact your system administrator.");
+                }
+            }
         }
 
         static internal bool ValidateCertificate(X509Certificate? cert, SslPolicyErrors policyErrors, TlsProperties tlsProperties)
@@ -158,7 +310,26 @@ namespace AdbcDrivers.HiveServer2.Hive2
 
             if (string.IsNullOrEmpty(tlsProperties.TrustedCertificatePath))
             {
-                return !policyErrors.HasFlag(SslPolicyErrors.RemoteCertificateChainErrors) || tlsProperties.AllowSelfSigned && IsSelfSigned(cert2);
+                // If chain errors exist, provide detailed error information
+                if (policyErrors.HasFlag(SslPolicyErrors.RemoteCertificateChainErrors))
+                {
+                    if (tlsProperties.AllowSelfSigned && IsSelfSigned(cert2))
+                        return true;
+
+                    // Build a chain to get detailed error information
+                    using (X509Chain defaultChain = new X509Chain())
+                    {
+                        defaultChain.ChainPolicy.RevocationMode = tlsProperties.RevocationMode;
+                        defaultChain.Build(cert2);
+
+                        // Throw detailed error with actionable guidance (never returns)
+                        ThrowDetailedCertificateError(defaultChain, tlsProperties);
+                    }
+
+                    // Unreachable - ThrowDetailedCertificateError always throws
+                    throw new InvalidOperationException("ThrowDetailedCertificateError should have thrown an exception");
+                }
+                return true;
             }
 
             X509Certificate2 trustedRoot = new X509Certificate2(tlsProperties.TrustedCertificatePath);
@@ -166,10 +337,19 @@ namespace AdbcDrivers.HiveServer2.Hive2
             customChain.ChainPolicy.ExtraStore.Add(trustedRoot);
             // "tell the X509Chain class that I do trust this root certs and it should check just the certs in the chain and nothing else"
             customChain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
-            customChain.ChainPolicy.RevocationMode = X509RevocationMode.Online;
+            customChain.ChainPolicy.RevocationMode = tlsProperties.RevocationMode;
 
             bool chainValid = customChain.Build(cert2);
-            return chainValid || tlsProperties.AllowSelfSigned && IsSelfSigned(cert2);
+
+            // If self-signed is allowed and this is self-signed, accept it
+            if (tlsProperties.AllowSelfSigned && IsSelfSigned(cert2))
+                return true;
+
+            // If validation failed, throw detailed error (never returns)
+            if (!chainValid)
+                ThrowDetailedCertificateError(customChain, tlsProperties);
+
+            return true;
         }
     }
 }

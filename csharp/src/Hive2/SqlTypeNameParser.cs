@@ -348,7 +348,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
 
         // Allow precision definition to be optional
         private static readonly Regex s_expression = new(
-            @"^\s*(?<typeName>((CHAR)|(NCHAR)))(\s*\(\s*(?<precision>\d{1,10})\s*\))?\s*$",
+            @"^\s*(?<typeName>((CHAR)|(NCHAR)))(\s*\(\s*(?<precision>\d{1,10})\s*\))?(\s+COLLATE\s+(?<collation>[A-Za-z0-9_]+))?\s*$",
             RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         protected override Regex Expression => s_expression;
@@ -378,7 +378,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
         public override string BaseTypeName => "VARCHAR";
 
         private static readonly Regex s_expression = new(
-            @"^\s*(?<typeName>((STRING)|(VARCHAR)|(LONGVARCHAR)|(LONGNVARCHAR)|(NVARCHAR)))(\s*\(\s*(?<precision>\d{1,10})\s*\))?\s*$",
+            @"^\s*(?<typeName>((STRING)|(VARCHAR)|(LONGVARCHAR)|(LONGNVARCHAR)|(NVARCHAR)))(\s*\(\s*(?<precision>\d{1,10})\s*\))?(\s+COLLATE\s+(?<collation>[A-Za-z0-9_]+))?\s*$",
             RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         protected override Regex Expression => s_expression;

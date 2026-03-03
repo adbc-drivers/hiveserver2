@@ -62,6 +62,7 @@ but can also be passed in the call to `AdbcDatabase.Connect`.
 | `adbc.http_options.tls.allow_self_signed` | If self signed tls/ssl certificate needs to be allowed or not. One of `True`, `False` | `False` |
 | `adbc.http_options.tls.allow_hostname_mismatch` | If hostname mismatch is allowed for ssl. One of `True`, `False` | `False` |
 | `adbc.http_options.tls.trusted_certificate_path` | The full path of the tls/ssl certificate .pem file containing custom CA certificates for verifying the server when connecting over TLS | `` |
+| `adbc.http_options.tls.revocation_mode` | Certificate revocation checking mode. Valid values: `0` (NoCheck - skip revocation checking), `1` (Online - check using network CRL/OCSP), `2` (Offline - check using cached CRL only). Use `0` in isolated networks or when CRL/OCSP servers are unreachable | `1` |
 | `adbc.proxy_options.use_proxy` | Whether to use a proxy for HTTP connections. Only feature-complete in Spark driver. One of `True`, `False` | `False` |
 | `adbc.proxy_options.proxy_host` | Hostname or IP address of the proxy server. Only feature-complete in Spark driver. Required when use_proxy is True | |
 | `adbc.proxy_options.proxy_port` | Port number of the proxy server. Only feature-complete in Spark driver. Required when use_proxy is True | |
