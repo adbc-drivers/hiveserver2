@@ -555,7 +555,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
 
             string catalogRegexp = PatternToRegEx(catalogPattern);
             TRowSet rowSet = await GetRowSetAsync(getCatalogsResp, cancellationToken).ConfigureAwait(false);
-            IReadOnlyList<string> list = rowSet.Columns[columnMap[MetadataColumnNames.TableCat]].StringVal.Values;
+            IReadOnlyList<string> list = rowSet.Columns[columnMap[TableCat]].StringVal.Values;
 
             var result = new List<string>();
             for (int i = 0; i < list.Count; i++)
@@ -581,8 +581,8 @@ namespace AdbcDrivers.HiveServer2.Hive2
             IReadOnlyDictionary<string, int> columnMap = GetColumnIndexMap(schemaMetadata.Schema.Columns);
             TRowSet rowSet = await GetRowSetAsync(getSchemasResp, cancellationToken).ConfigureAwait(false);
 
-            IReadOnlyList<string> catalogList = rowSet.Columns[columnMap[MetadataColumnNames.TableCatalog]].StringVal.Values;
-            IReadOnlyList<string> schemaList = rowSet.Columns[columnMap[MetadataColumnNames.TableSchem]].StringVal.Values;
+            IReadOnlyList<string> catalogList = rowSet.Columns[columnMap[TableCatalog]].StringVal.Values;
+            IReadOnlyList<string> schemaList = rowSet.Columns[columnMap[TableSchem]].StringVal.Values;
 
             var result = new List<(string, string)>();
             for (int i = 0; i < catalogList.Count; i++)
@@ -603,10 +603,10 @@ namespace AdbcDrivers.HiveServer2.Hive2
             IReadOnlyDictionary<string, int> columnMap = GetColumnIndexMap(tableMetadata.Schema.Columns);
             TRowSet rowSet = await GetRowSetAsync(getTablesResp, cancellationToken).ConfigureAwait(false);
 
-            IReadOnlyList<string> catalogList = rowSet.Columns[columnMap[MetadataColumnNames.TableCat]].StringVal.Values;
-            IReadOnlyList<string> schemaList = rowSet.Columns[columnMap[MetadataColumnNames.TableSchem]].StringVal.Values;
-            IReadOnlyList<string> tableList = rowSet.Columns[columnMap[MetadataColumnNames.TableName]].StringVal.Values;
-            IReadOnlyList<string> tableTypeList = rowSet.Columns[columnMap[MetadataColumnNames.TableType]].StringVal.Values;
+            IReadOnlyList<string> catalogList = rowSet.Columns[columnMap[TableCat]].StringVal.Values;
+            IReadOnlyList<string> schemaList = rowSet.Columns[columnMap[TableSchem]].StringVal.Values;
+            IReadOnlyList<string> tableList = rowSet.Columns[columnMap[TableName]].StringVal.Values;
+            IReadOnlyList<string> tableTypeList = rowSet.Columns[columnMap[TableType]].StringVal.Values;
 
             var result = new List<(string, string, string, string)>();
             for (int i = 0; i < catalogList.Count; i++)
