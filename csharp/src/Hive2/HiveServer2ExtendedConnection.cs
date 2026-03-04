@@ -90,7 +90,6 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 case (short)ColumnTypeId.DECIMAL:
                 case (short)ColumnTypeId.NUMERIC:
                     {
-                        // Precision/scale is provide in the API call.
                         SqlDecimalParserResult result = SqlTypeNameParser<SqlDecimalParserResult>.Parse(typeName, colType);
                         tableInfo?.Precision.Add(columnSize);
                         tableInfo?.Scale.Add((short)decimalDigits);
@@ -105,7 +104,6 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 case (short)ColumnTypeId.LONGNVARCHAR:
                 case (short)ColumnTypeId.NVARCHAR:
                     {
-                        // Precision is provide in the API call.
                         SqlCharVarcharParserResult result = SqlTypeNameParser<SqlCharVarcharParserResult>.Parse(typeName, colType);
                         tableInfo?.Precision.Add(columnSize);
                         tableInfo?.Scale.Add(null);
