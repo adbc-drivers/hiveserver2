@@ -135,7 +135,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 new Field("DATA_TYPE", Int32Type.Default, true),
                 new Field("TYPE_NAME", StringType.Default, true),
                 new Field("COLUMN_SIZE", Int32Type.Default, true),
-                new Field("BUFFER_LENGTH", Int32Type.Default, true),
+                new Field("BUFFER_LENGTH", Int8Type.Default, true),
                 new Field("DECIMAL_DIGITS", Int32Type.Default, true),
                 new Field("NUM_PREC_RADIX", Int32Type.Default, true),
                 new Field("NULLABLE", Int32Type.Default, true),
