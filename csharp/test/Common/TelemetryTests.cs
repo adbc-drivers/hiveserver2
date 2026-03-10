@@ -66,7 +66,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
                         using AdbcConnection connection = database.Connect(new Dictionary<string, string>());
                         TracingConnection? tc = connection as TracingConnection;
                         Assert.NotNull(tc);
-                        Assert.True(string.IsNullOrEmpty(tc.ActivitySourceName), "expecting non-empty ActivitySourceName");
+                        Assert.NotNull(tc.ActivitySourceName);
                         activitySourceName = tc.ActivitySourceName;
                     }
                     catch (Exception ex)
@@ -76,6 +76,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
                     }
                 }
 
+                Assert.NotNull(activitySourceName);
                 directoryInfo.Refresh();
                 files = directoryInfo.EnumerateFiles();
                 switch (exporterName)
