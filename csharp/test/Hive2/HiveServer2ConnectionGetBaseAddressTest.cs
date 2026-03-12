@@ -94,9 +94,12 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2
         {
             var connection = new SparkHttpConnection(new Dictionary<string, string>());
 
+            // FlattenHierarchy only exposes protected static members when combined with
+            // BindingFlags.Public, not NonPublic. Use Public | Static | FlattenHierarchy
+            // so that the protected static GetBaseAddress on the base class is found.
             MethodInfo? method = connection.GetType().GetMethod(
                 "GetBaseAddress",
-                BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.FlattenHierarchy,
+                BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy,
                 null,
                 new[] { typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(bool) },
                 null);
