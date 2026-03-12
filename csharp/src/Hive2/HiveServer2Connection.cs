@@ -841,7 +841,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
             return fileVersionInfo.ProductVersion ?? GetProductVersionDefault();
         }
 
-        protected static Uri GetBaseAddress(string? uri, string? hostName, string? path, string? port, string hostOptionName, bool isTlsEnabled)
+        protected internal static Uri GetBaseAddress(string? uri, string? hostName, string? path, string? port, string hostOptionName, bool isTlsEnabled)
         {
             // Uri property takes precedent.
             if (!string.IsNullOrWhiteSpace(uri))
@@ -874,7 +874,16 @@ namespace AdbcDrivers.HiveServer2.Hive2
             else
                 throw new ArgumentOutOfRangeException(nameof(port), portNumber, $"Port number is not in a valid range.");
 
-            Uri baseAddress = new UriBuilder(uriScheme, hostName, uriPort, path).Uri;
+            // UriBuilder percent-encodes '?' as '%3F' when a query string is embedded
+            // in the path argument (e.g. /sql/1.0/warehouses/<id>?o=<orgId>).
+            // Use the overload that takes extraValue so the query is passed correctly.
+            int queryIndex = path?.IndexOf('?') ?? -1;
+            Uri baseAddress = new UriBuilder(
+                uriScheme,
+                hostName,
+                uriPort,
+                queryIndex >= 0 ? path!.Substring(0, queryIndex) : path,
+                queryIndex >= 0 ? path!.Substring(queryIndex) : string.Empty).Uri;
             return baseAddress;
         }
 
