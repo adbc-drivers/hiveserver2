@@ -874,7 +874,10 @@ namespace AdbcDrivers.HiveServer2.Hive2
             else
                 throw new ArgumentOutOfRangeException(nameof(port), portNumber, $"Port number is not in a valid range.");
 
-            Uri baseAddress = new UriBuilder(uriScheme, hostName, uriPort, path).Uri;
+            int queryIndex = path?.IndexOf('?') ?? -1;
+            var uriBuilder = new UriBuilder(uriScheme, hostName, uriPort, queryIndex >= 0 ? path!.Substring(0, queryIndex) : path);
+            if (queryIndex >= 0) uriBuilder.Query = path!.Substring(queryIndex + 1);
+            Uri baseAddress = uriBuilder.Uri;
             return baseAddress;
         }
 
