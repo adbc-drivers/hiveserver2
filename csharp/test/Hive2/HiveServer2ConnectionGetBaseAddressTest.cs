@@ -21,8 +21,8 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Reflection;
+using AdbcDrivers.HiveServer2.Hive2;
 using AdbcDrivers.HiveServer2.Spark;
 using Xunit;
 
@@ -94,14 +94,12 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2
 
         private static Uri InvokeGetBaseAddress(string? uri, string? hostName, string? path, string? port, bool isTlsEnabled)
         {
-            var connection = new SparkHttpConnection(new Dictionary<string, string>());
-
-            // FlattenHierarchy only exposes protected static members when combined with
-            // BindingFlags.Public, not NonPublic. Use Public | Static | FlattenHierarchy
-            // so that the protected static GetBaseAddress on the base class is found.
-            MethodInfo? method = connection.GetType().GetMethod(
+            // Reflect directly on the declaring type to avoid instantiating a connection
+            // (which would trigger auth validation) and to correctly find the protected
+            // static method without needing FlattenHierarchy.
+            MethodInfo? method = typeof(HiveServer2Connection).GetMethod(
                 "GetBaseAddress",
-                BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy,
+                BindingFlags.NonPublic | BindingFlags.Static,
                 null,
                 new[] { typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(bool) },
                 null);
@@ -109,7 +107,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2
             if (method == null)
                 throw new InvalidOperationException("GetBaseAddress method not found");
 
-            return (Uri)method.Invoke(null, new object?[] { uri, hostName, path, port, "HostName", isTlsEnabled })!;
+            return (Uri)method.Invoke(null, new object?[] { uri, hostName, path, port, SparkParameters.HostName, isTlsEnabled })!;
         }
     }
 }
