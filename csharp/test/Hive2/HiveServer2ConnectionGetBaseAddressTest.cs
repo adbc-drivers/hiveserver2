@@ -21,7 +21,6 @@
  */
 
 using System;
-using System.Reflection;
 using AdbcDrivers.HiveServer2.Hive2;
 using AdbcDrivers.HiveServer2.Spark;
 using Xunit;
@@ -94,20 +93,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2
 
         private static Uri InvokeGetBaseAddress(string? uri, string? hostName, string? path, string? port, bool isTlsEnabled)
         {
-            // Reflect directly on the declaring type to avoid instantiating a connection
-            // (which would trigger auth validation) and to correctly find the protected
-            // static method without needing FlattenHierarchy.
-            MethodInfo? method = typeof(HiveServer2Connection).GetMethod(
-                "GetBaseAddress",
-                BindingFlags.NonPublic | BindingFlags.Static,
-                null,
-                new[] { typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(bool) },
-                null);
-
-            if (method == null)
-                throw new InvalidOperationException("GetBaseAddress method not found");
-
-            return (Uri)method.Invoke(null, new object?[] { uri, hostName, path, port, SparkParameters.HostName, isTlsEnabled })!;
+            return HiveServer2Connection.GetBaseAddress(uri, hostName, path, port, SparkParameters.HostName, isTlsEnabled);
         }
     }
 }

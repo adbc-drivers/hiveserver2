@@ -841,7 +841,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
             return fileVersionInfo.ProductVersion ?? GetProductVersionDefault();
         }
 
-        protected static Uri GetBaseAddress(string? uri, string? hostName, string? path, string? port, string hostOptionName, bool isTlsEnabled)
+        protected internal static Uri GetBaseAddress(string? uri, string? hostName, string? path, string? port, string hostOptionName, bool isTlsEnabled)
         {
             // Uri property takes precedent.
             if (!string.IsNullOrWhiteSpace(uri))
