@@ -61,18 +61,12 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
                 Dictionary<string, string> parameters = GetDriverParameters(TestConfiguration);
                 using (AdbcDatabase database = NewDriver.Open(parameters))
                 {
-                    try
+                    using (AdbcConnection connection = database.Connect(new Dictionary<string, string>()))
                     {
-                        using AdbcConnection connection = database.Connect(new Dictionary<string, string>());
                         TracingConnection? tc = connection as TracingConnection;
                         Assert.NotNull(tc);
-                        Assert.True(string.IsNullOrEmpty(tc.ActivitySourceName), "expecting non-empty ActivitySourceName");
+                        Assert.False(string.IsNullOrEmpty(tc.ActivitySourceName), "expecting non-empty ActivitySourceName");
                         activitySourceName = tc.ActivitySourceName;
-                    }
-                    catch (Exception ex)
-                    {
-                        // We don't really need the connection to succeed for this test,
-                        OutputHelper?.WriteLine(ex.Message);
                     }
                 }
 
