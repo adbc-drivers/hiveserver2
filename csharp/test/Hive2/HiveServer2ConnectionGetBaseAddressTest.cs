@@ -52,6 +52,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2
             Assert.DoesNotContain("%3F", result.ToString());
             Assert.Equal("/sql/1.0/warehouses/2f03dd43e35e2aa0", result.AbsolutePath);
             Assert.Equal("o=6436897454825492", result.Query.TrimStart('?'));
+            Assert.Equal("https://adb-6436897454825492.12.azuredatabricks.net/sql/1.0/warehouses/2f03dd43e35e2aa0?o=6436897454825492", result.ToString());
         }
 
         /// <summary>
@@ -69,6 +70,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2
 
             Assert.Equal("/sql/1.0/warehouses/abc123", result.AbsolutePath);
             Assert.Equal(string.Empty, result.Query);
+            Assert.Equal("https://myhost.azuredatabricks.net/sql/1.0/warehouses/abc123", result.ToString());
         }
 
         /// <summary>
