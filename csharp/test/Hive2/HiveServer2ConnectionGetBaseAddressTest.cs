@@ -44,15 +44,15 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2
         {
             Uri result = InvokeGetBaseAddress(
                 uri: null,
-                hostName: "adb-6436897454825492.12.azuredatabricks.net",
-                path: "/sql/1.0/warehouses/2f03dd43e35e2aa0?o=6436897454825492",
+                hostName: "test.server.com",
+                path: "/sql/1.0/warehouses/abc123?o=999888777",
                 port: "443",
                 isTlsEnabled: true);
 
             Assert.DoesNotContain("%3F", result.ToString());
-            Assert.Equal("/sql/1.0/warehouses/2f03dd43e35e2aa0", result.AbsolutePath);
-            Assert.Equal("o=6436897454825492", result.Query.TrimStart('?'));
-            Assert.Equal("https://adb-6436897454825492.12.azuredatabricks.net/sql/1.0/warehouses/2f03dd43e35e2aa0?o=6436897454825492", result.ToString());
+            Assert.Equal("/sql/1.0/warehouses/abc123", result.AbsolutePath);
+            Assert.Equal("o=999888777", result.Query.TrimStart('?'));
+            Assert.Equal("https://test.server.com/sql/1.0/warehouses/abc123?o=999888777", result.ToString());
         }
 
         /// <summary>
@@ -63,14 +63,14 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2
         {
             Uri result = InvokeGetBaseAddress(
                 uri: null,
-                hostName: "myhost.azuredatabricks.net",
+                hostName: "test.server.com",
                 path: "/sql/1.0/warehouses/abc123",
                 port: "443",
                 isTlsEnabled: true);
 
             Assert.Equal("/sql/1.0/warehouses/abc123", result.AbsolutePath);
             Assert.Equal(string.Empty, result.Query);
-            Assert.Equal("https://myhost.azuredatabricks.net/sql/1.0/warehouses/abc123", result.ToString());
+            Assert.Equal("https://test.server.com/sql/1.0/warehouses/abc123", result.ToString());
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2
         [Fact]
         public void GetBaseAddress_FullUri_ReturnsUriDirectly()
         {
-            string fullUri = "https://myhost.azuredatabricks.net/sql/1.0/warehouses/abc123";
+            string fullUri = "https://test.server.com/sql/1.0/warehouses/abc123";
 
             Uri result = InvokeGetBaseAddress(
                 uri: fullUri,
