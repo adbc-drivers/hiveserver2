@@ -874,8 +874,12 @@ namespace AdbcDrivers.HiveServer2.Hive2
             else
                 throw new ArgumentOutOfRangeException(nameof(port), portNumber, $"Port number is not in a valid range.");
 
+            // UriBuilder percent-encodes '?' as '%3F' when a query string is embedded
+            // in the path argument (e.g. /sql/1.0/warehouses/<id>?o=<orgId>).
+            // To avoid this, split the path on '?' and assign the query separately.
             int queryIndex = path?.IndexOf('?') ?? -1;
             var uriBuilder = new UriBuilder(uriScheme, hostName, uriPort, queryIndex >= 0 ? path!.Substring(0, queryIndex) : path);
+            // Skip the '?' itself (queryIndex + 1) since UriBuilder.Query adds its own '?'.
             if (queryIndex >= 0) uriBuilder.Query = path!.Substring(queryIndex + 1);
             Uri baseAddress = uriBuilder.Uri;
             return baseAddress;
