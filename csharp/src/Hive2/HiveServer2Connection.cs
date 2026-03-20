@@ -318,10 +318,24 @@ namespace AdbcDrivers.HiveServer2.Hive2
 
         private bool TryInitTracerProvider(out FileActivityListener? fileActivityListener)
         {
-            Properties.TryGetValue(ListenersOptions.Exporter, out string? exporterOption);
             // This listener will only listen for activity from this specific connection instance.
             bool shouldListenTo(ActivitySource source) => source.Tags?.Any(t => ReferenceEquals(t.Key, _traceInstanceId)) == true;
-            return FileActivityListener.TryActivateFileListener(AssemblyName, exporterOption, out fileActivityListener, shouldListenTo: shouldListenTo);
+
+            Properties.TryGetValue(ListenersOptions.Exporter, out string? exporterOption);
+            Properties.TryGetValue(ListenersOptions.AdbcFile.Location, out string? adbcFileLocation);
+            Properties.TryGetValue(ListenersOptions.AdbcFile.MaxTraceFileSizeKb, out string? maxTraceFileSizeKbOption);
+            Properties.TryGetValue(ListenersOptions.AdbcFile.MaxTraceFiles, out string? maxTraceFilesOption);
+            long maxTraceFileSizeKb = long.TryParse(maxTraceFileSizeKbOption, out long parsedMaxTraceFileSizeKb) ? parsedMaxTraceFileSizeKb : FileActivityListener.MaxFileSizeKbDefault;
+            int maxTraceFiles = int.TryParse(maxTraceFilesOption, out int parsedMaxTraceFiles) ? parsedMaxTraceFiles : FileActivityListener.MaxTraceFilesDefault;
+
+            return FileActivityListener.TryActivateFileListener(
+                AssemblyName,
+                exporterOption,
+                out fileActivityListener,
+                shouldListenTo: shouldListenTo,
+                tracesLocation: adbcFileLocation,
+                maxTraceFileSizeKb: maxTraceFileSizeKb,
+                maxTraceFiles: maxTraceFiles);
         }
 
         public override IEnumerable<KeyValuePair<string, object?>>? GetActivitySourceTags(IReadOnlyDictionary<string, string> properties)
