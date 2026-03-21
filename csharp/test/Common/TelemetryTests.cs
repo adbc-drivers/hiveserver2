@@ -60,7 +60,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
             try
             {
                 Dictionary<string, string> parameters = GetDriverParameters(TestConfiguration);
-                parameters.Add(ListenersOptions.AdbcFile.Location, directoryInfo.FullName);
+                parameters[ListenersOptions.AdbcFile.Location] = directoryInfo.FullName;
                 using (AdbcDatabase database = NewDriver.Open(parameters))
                 {
                     using (AdbcConnection connection = database.Connect(new Dictionary<string, string>()))
