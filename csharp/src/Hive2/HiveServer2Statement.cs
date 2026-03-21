@@ -752,7 +752,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 await Task.WhenAll(columnsTask, pkTask, fkTask).ConfigureAwait(false);
                 activity?.AddEvent("hive2.statement.get_columns_extended.parallel_calls_complete");
 
-                var columnsResult = columnsTask.Result;
+                var columnsResult = await columnsTask;
                 if (columnsResult.Stream == null)
                 {
                     activity?.AddEvent("hive2.statement.get_columns_extended.columns_stream_null");
@@ -761,8 +761,8 @@ namespace AdbcDrivers.HiveServer2.Hive2
                     return columnsResult;
                 }
 
-                var pkResult = pkTask.Result;
-                var fkResult = fkTask.Result;
+                var pkResult = await pkTask;
+                var fkResult = await fkTask;
 
                 // 2. Read all batches into memory
                 List<RecordBatch> columnsBatches;
