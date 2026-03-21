@@ -24,6 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -35,7 +36,6 @@ using System.Threading.Tasks;
 using AdbcDrivers.HiveServer2.Thrift;
 using Apache.Arrow;
 using Apache.Arrow.Adbc;
-using Apache.Arrow.Adbc.Extensions;
 using Apache.Arrow.Adbc.Telemetry.Traces.Listeners;
 using Apache.Arrow.Adbc.Telemetry.Traces.Listeners.FileListener;
 using Apache.Arrow.Adbc.Tracing;
@@ -325,8 +325,12 @@ namespace AdbcDrivers.HiveServer2.Hive2
             Properties.TryGetValue(ListenersOptions.AdbcFile.Location, out string? adbcFileLocation);
             Properties.TryGetValue(ListenersOptions.AdbcFile.MaxTraceFileSizeKb, out string? maxTraceFileSizeKbOption);
             Properties.TryGetValue(ListenersOptions.AdbcFile.MaxTraceFiles, out string? maxTraceFilesOption);
-            long maxTraceFileSizeKb = long.TryParse(maxTraceFileSizeKbOption, out long parsedMaxTraceFileSizeKb) ? parsedMaxTraceFileSizeKb : FileActivityListener.MaxFileSizeKbDefault;
-            int maxTraceFiles = int.TryParse(maxTraceFilesOption, out int parsedMaxTraceFiles) ? parsedMaxTraceFiles : FileActivityListener.MaxTraceFilesDefault;
+            long maxTraceFileSizeKb = long.TryParse(maxTraceFileSizeKbOption, NumberStyles.Integer, CultureInfo.InvariantCulture, out long parsedMaxTraceFileSizeKb) && parsedMaxTraceFileSizeKb > 0
+                ? parsedMaxTraceFileSizeKb
+                : FileActivityListener.MaxFileSizeKbDefault;
+            int maxTraceFiles = int.TryParse(maxTraceFilesOption, NumberStyles.Integer, CultureInfo.InvariantCulture, out int parsedMaxTraceFiles) && parsedMaxTraceFiles > 0
+                ? parsedMaxTraceFiles
+                : FileActivityListener.MaxTraceFilesDefault;
 
             return FileActivityListener.TryActivateFileListener(
                 AssemblyName,

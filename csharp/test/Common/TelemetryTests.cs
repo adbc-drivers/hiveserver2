@@ -104,7 +104,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
             }
         }
 
-        private static DirectoryInfo GetTracesDirectoryInfo(string? tracesLocationFolder = null) =>
+        private static DirectoryInfo GetTracesDirectoryInfo(string tracesLocationFolder) =>
             new DirectoryInfo(Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "Apache.Arrow.Adbc",
