@@ -473,7 +473,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 QueryResult result = await GetQueryResult(response, cancellationToken);
                 activity?.AddEvent("hive2.statement.get_cross_reference_as_foreign_table.complete");
                 return result;
-            }, ClassName + ".GetCrossReferenceAsForeignTable");
+            }, ClassName + nameof(GetCrossReferenceAsForeignTableAsync));
         }
 
         /// <summary>
@@ -503,7 +503,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 QueryResult result = await GetQueryResult(response, cancellationToken);
                 activity?.AddEvent("hive2.statement.get_cross_reference.complete");
                 return result;
-            }, ClassName + ".GetCrossReference");
+            }, ClassName + nameof(GetCrossReferenceAsync));
         }
 
         /// <summary>
@@ -527,7 +527,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 QueryResult result = await GetQueryResult(response, cancellationToken);
                 activity?.AddEvent("hive2.statement.get_primary_keys.complete");
                 return result;
-            }, ClassName + ".GetPrimaryKeys");
+            }, ClassName + nameof(GetPrimaryKeysAsync));
         }
 
         protected virtual async Task<QueryResult> GetCatalogsAsync(CancellationToken cancellationToken = default)
@@ -539,7 +539,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 QueryResult result = await GetQueryResult(response, cancellationToken);
                 activity?.AddEvent("hive2.statement.get_catalogs.complete");
                 return result;
-            }, ClassName + ".GetCatalogs");
+            }, ClassName + nameof(GetCatalogsAsync));
         }
 
         protected virtual async Task<QueryResult> GetSchemasAsync(CancellationToken cancellationToken = default)
@@ -556,7 +556,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 QueryResult result = await GetQueryResult(response, cancellationToken);
                 activity?.AddEvent("hive2.statement.get_schemas.complete");
                 return result;
-            }, ClassName + ".GetSchemas");
+            }, ClassName + nameof(GetSchemasAsync));
         }
 
         protected virtual async Task<QueryResult> GetTablesAsync(CancellationToken cancellationToken = default)
@@ -577,7 +577,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 QueryResult result = await GetQueryResult(response, cancellationToken);
                 activity?.AddEvent("hive2.statement.get_tables.complete");
                 return result;
-            }, ClassName + ".GetTables");
+            }, ClassName + nameof(GetTablesAsync));
         }
 
         protected virtual async Task<QueryResult> GetColumnsAsync(CancellationToken cancellationToken = default)
@@ -619,7 +619,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 var enhancedResult = EnhanceGetColumnsResult(schema, data, rowCount, metadata, rowSet);
                 activity?.AddEvent("hive2.statement.get_columns.complete");
                 return enhancedResult;
-            }, ClassName + ".GetColumns");
+            }, ClassName + nameof(GetColumnsAsync));
         }
 
         private async Task<Schema> GetResultSetSchemaAsync(TOperationHandle operationHandle, TCLIService.IAsync client, CancellationToken cancellationToken = default)
@@ -838,7 +838,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 activity?.SetTag(SemanticConventions.Db.Response.ReturnedRows, totalRows);
                 activity?.AddEvent("hive2.statement.get_columns_extended.complete");
                 return new QueryResult(totalRows, new HiveInfoArrowStream(combinedSchema, combinedData));
-            }, ClassName + ".GetColumnsExtended");
+            }, ClassName + nameof(GetColumnsExtendedAsync));
         }
 
         // Helper method to create an empty result with the complete extended columns schema
