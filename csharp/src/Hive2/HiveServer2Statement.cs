@@ -59,6 +59,10 @@ namespace AdbcDrivers.HiveServer2.Hive2
         protected const string PrimaryKeyPrefix = MetadataColumnNames.PrimaryKeyPrefix;
         protected const string ForeignKeyPrefix = MetadataColumnNames.ForeignKeyPrefix;
         private const string ClassName = nameof(HiveServer2Statement);
+        private const string HiveServer2_Statement_CatalogName = "hive2.statement.catalog_name";
+        private const string HiveServer2_Statement_SchemaName = "hive2.statement.schema_name";
+        private const string HiveServer2_Statement_TableName = "hive2.statement.table_name";
+        private const string HiveServer2_Statement_ColumnName = "hive2.statement.column_name";
 
         // Lock to ensure consistent access to TokenSource
         private readonly object _tokenSourceLock = new();
@@ -459,9 +463,9 @@ namespace AdbcDrivers.HiveServer2.Hive2
             return await this.TraceActivityAsync(async activity =>
             {
                 activity?.AddEvent("hive2.statement.get_cross_reference_as_foreign_table.start");
-                activity?.SetTag("hive2.statement.catalog_name", CatalogName ?? "(none)");
-                activity?.SetTag("hive2.statement.schema_name", SchemaName ?? "(none)");
-                activity?.SetTag("hive2.statement.table_name", TableName ?? "(none)");
+                activity?.AddTag(HiveServer2_Statement_CatalogName, CatalogName ?? "(none)");
+                activity?.AddTag(HiveServer2_Statement_SchemaName, SchemaName ?? "(none)");
+                activity?.AddTag(HiveServer2_Statement_TableName, TableName ?? "(none)");
                 IResponse response = await Connection.GetCrossReferenceAsync(
                     null,
                     null,
@@ -473,7 +477,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 QueryResult result = await GetQueryResult(response, cancellationToken);
                 activity?.AddEvent("hive2.statement.get_cross_reference_as_foreign_table.complete");
                 return result;
-            }, ClassName + nameof(GetCrossReferenceAsForeignTableAsync));
+            }, ClassName + "." + nameof(GetCrossReferenceAsForeignTableAsync));
         }
 
         /// <summary>
@@ -486,12 +490,12 @@ namespace AdbcDrivers.HiveServer2.Hive2
             return await this.TraceActivityAsync(async activity =>
             {
                 activity?.AddEvent("hive2.statement.get_cross_reference.start");
-                activity?.SetTag("hive2.statement.catalog_name", CatalogName ?? "(none)");
-                activity?.SetTag("hive2.statement.schema_name", SchemaName ?? "(none)");
-                activity?.SetTag("hive2.statement.table_name", TableName ?? "(none)");
-                activity?.SetTag("hive2.statement.foreign_catalog_name", ForeignCatalogName ?? "(none)");
-                activity?.SetTag("hive2.statement.foreign_schema_name", ForeignSchemaName ?? "(none)");
-                activity?.SetTag("hive2.statement.foreign_table_name", ForeignTableName ?? "(none)");
+                activity?.AddTag(HiveServer2_Statement_CatalogName, CatalogName ?? "(none)");
+                activity?.AddTag(HiveServer2_Statement_SchemaName, SchemaName ?? "(none)");
+                activity?.AddTag(HiveServer2_Statement_TableName, TableName ?? "(none)");
+                activity?.AddTag("hive2.statement.foreign_catalog_name", ForeignCatalogName ?? "(none)");
+                activity?.AddTag("hive2.statement.foreign_schema_name", ForeignSchemaName ?? "(none)");
+                activity?.AddTag("hive2.statement.foreign_table_name", ForeignTableName ?? "(none)");
                 IResponse response = await Connection.GetCrossReferenceAsync(
                     CatalogName,
                     SchemaName,
@@ -503,7 +507,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 QueryResult result = await GetQueryResult(response, cancellationToken);
                 activity?.AddEvent("hive2.statement.get_cross_reference.complete");
                 return result;
-            }, ClassName + nameof(GetCrossReferenceAsync));
+            }, ClassName + "." + nameof(GetCrossReferenceAsync));
         }
 
         /// <summary>
@@ -516,9 +520,9 @@ namespace AdbcDrivers.HiveServer2.Hive2
             return await this.TraceActivityAsync(async activity =>
             {
                 activity?.AddEvent("hive2.statement.get_primary_keys.start");
-                activity?.SetTag("hive2.statement.catalog_name", CatalogName ?? "(none)");
-                activity?.SetTag("hive2.statement.schema_name", SchemaName ?? "(none)");
-                activity?.SetTag("hive2.statement.table_name", TableName ?? "(none)");
+                activity?.AddTag(HiveServer2_Statement_CatalogName, CatalogName ?? "(none)");
+                activity?.AddTag(HiveServer2_Statement_SchemaName, SchemaName ?? "(none)");
+                activity?.AddTag(HiveServer2_Statement_TableName, TableName ?? "(none)");
                 IResponse response = await Connection.GetPrimaryKeysAsync(
                     CatalogName,
                     SchemaName,
@@ -527,7 +531,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 QueryResult result = await GetQueryResult(response, cancellationToken);
                 activity?.AddEvent("hive2.statement.get_primary_keys.complete");
                 return result;
-            }, ClassName + nameof(GetPrimaryKeysAsync));
+            }, ClassName + "." + nameof(GetPrimaryKeysAsync));
         }
 
         protected virtual async Task<QueryResult> GetCatalogsAsync(CancellationToken cancellationToken = default)
@@ -539,7 +543,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 QueryResult result = await GetQueryResult(response, cancellationToken);
                 activity?.AddEvent("hive2.statement.get_catalogs.complete");
                 return result;
-            }, ClassName + nameof(GetCatalogsAsync));
+            }, ClassName + "." + nameof(GetCatalogsAsync));
         }
 
         protected virtual async Task<QueryResult> GetSchemasAsync(CancellationToken cancellationToken = default)
@@ -547,8 +551,8 @@ namespace AdbcDrivers.HiveServer2.Hive2
             return await this.TraceActivityAsync(async activity =>
             {
                 activity?.AddEvent("hive2.statement.get_schemas.start");
-                activity?.SetTag("hive2.statement.catalog_name", CatalogName ?? "(none)");
-                activity?.SetTag("hive2.statement.schema_name", SchemaName ?? "(none)");
+                activity?.AddTag(HiveServer2_Statement_CatalogName, CatalogName ?? "(none)");
+                activity?.AddTag(HiveServer2_Statement_SchemaName, SchemaName ?? "(none)");
                 IResponse response = await Connection.GetSchemasAsync(
                     EscapePatternWildcardsInName(CatalogName),
                     EscapePatternWildcardsInName(SchemaName),
@@ -556,7 +560,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 QueryResult result = await GetQueryResult(response, cancellationToken);
                 activity?.AddEvent("hive2.statement.get_schemas.complete");
                 return result;
-            }, ClassName + nameof(GetSchemasAsync));
+            }, ClassName + "." + nameof(GetSchemasAsync));
         }
 
         protected virtual async Task<QueryResult> GetTablesAsync(CancellationToken cancellationToken = default)
@@ -564,9 +568,9 @@ namespace AdbcDrivers.HiveServer2.Hive2
             return await this.TraceActivityAsync(async activity =>
             {
                 activity?.AddEvent("hive2.statement.get_tables.start");
-                activity?.SetTag("hive2.statement.catalog_name", CatalogName ?? "(none)");
-                activity?.SetTag("hive2.statement.schema_name", SchemaName ?? "(none)");
-                activity?.SetTag("hive2.statement.table_name", TableName ?? "(none)");
+                activity?.AddTag(HiveServer2_Statement_CatalogName, CatalogName ?? "(none)");
+                activity?.AddTag(HiveServer2_Statement_SchemaName, SchemaName ?? "(none)");
+                activity?.AddTag(HiveServer2_Statement_TableName, TableName ?? "(none)");
                 List<string>? tableTypesList = this.TableTypes?.Split(',').ToList();
                 IResponse response = await Connection.GetTablesAsync(
                     EscapePatternWildcardsInName(CatalogName),
@@ -577,7 +581,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 QueryResult result = await GetQueryResult(response, cancellationToken);
                 activity?.AddEvent("hive2.statement.get_tables.complete");
                 return result;
-            }, ClassName + nameof(GetTablesAsync));
+            }, ClassName + "." + nameof(GetTablesAsync));
         }
 
         protected virtual async Task<QueryResult> GetColumnsAsync(CancellationToken cancellationToken = default)
@@ -585,10 +589,10 @@ namespace AdbcDrivers.HiveServer2.Hive2
             return await this.TraceActivityAsync(async activity =>
             {
                 activity?.AddEvent("hive2.statement.get_columns.start");
-                activity?.SetTag("hive2.statement.catalog_name", CatalogName ?? "(none)");
-                activity?.SetTag("hive2.statement.schema_name", SchemaName ?? "(none)");
-                activity?.SetTag("hive2.statement.table_name", TableName ?? "(none)");
-                activity?.SetTag("hive2.statement.column_name", ColumnName ?? "(none)");
+                activity?.AddTag(HiveServer2_Statement_CatalogName, CatalogName ?? "(none)");
+                activity?.AddTag(HiveServer2_Statement_SchemaName, SchemaName ?? "(none)");
+                activity?.AddTag(HiveServer2_Statement_TableName, TableName ?? "(none)");
+                activity?.AddTag(HiveServer2_Statement_ColumnName, ColumnName ?? "(none)");
                 IResponse response = await Connection.GetColumnsAsync(
                     EscapePatternWildcardsInName(CatalogName),
                     EscapePatternWildcardsInName(SchemaName),
@@ -619,7 +623,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 var enhancedResult = EnhanceGetColumnsResult(schema, data, rowCount, metadata, rowSet);
                 activity?.AddEvent("hive2.statement.get_columns.complete");
                 return enhancedResult;
-            }, ClassName + nameof(GetColumnsAsync));
+            }, ClassName + "." + nameof(GetColumnsAsync));
         }
 
         private async Task<Schema> GetResultSetSchemaAsync(TOperationHandle operationHandle, TCLIService.IAsync client, CancellationToken cancellationToken = default)
@@ -739,9 +743,9 @@ namespace AdbcDrivers.HiveServer2.Hive2
             return await this.TraceActivityAsync(async activity =>
             {
                 activity?.AddEvent("hive2.statement.get_columns_extended.start");
-                activity?.SetTag("hive2.statement.catalog_name", CatalogName ?? "(none)");
-                activity?.SetTag("hive2.statement.schema_name", SchemaName ?? "(none)");
-                activity?.SetTag("hive2.statement.table_name", TableName ?? "(none)");
+                activity?.AddTag(HiveServer2_Statement_CatalogName, CatalogName ?? "(none)");
+                activity?.AddTag(HiveServer2_Statement_SchemaName, SchemaName ?? "(none)");
+                activity?.AddTag(HiveServer2_Statement_TableName, TableName ?? "(none)");
 
                 // 1. Launch all three independent metadata calls in parallel
                 activity?.AddEvent("hive2.statement.get_columns_extended.launching_parallel_calls");
@@ -757,7 +761,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 if (columnsResult.Stream == null)
                 {
                     activity?.AddEvent("hive2.statement.get_columns_extended.columns_stream_null");
-                    activity?.SetTag(SemanticConventions.Db.Response.ReturnedRows, 0);
+                    activity?.AddTag(SemanticConventions.Db.Response.ReturnedRows, 0);
                     activity?.AddEvent("hive2.statement.get_columns_extended.complete");
                     return columnsResult;
                 }
@@ -792,7 +796,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                     if (columnsBatches.Count == 0)
                     {
                         activity?.AddEvent("hive2.statement.get_columns_extended.empty_columns");
-                        activity?.SetTag(SemanticConventions.Db.Response.ReturnedRows, 0);
+                        activity?.AddTag(SemanticConventions.Db.Response.ReturnedRows, 0);
                         activity?.AddEvent("hive2.statement.get_columns_extended.complete");
                         return CreateEmptyExtendedColumnsResult(columnsSchema);
                     }
@@ -804,8 +808,8 @@ namespace AdbcDrivers.HiveServer2.Hive2
                     columnNames = (StringArray)ArrowArrayFactory.BuildArray(concatenatedColumnNames!);
                 }
 
-                activity?.SetTag("hive2.statement.get_columns_extended.batch_count", columnsBatches.Count);
-                activity?.SetTag("hive2.statement.get_columns_extended.total_rows", totalRows);
+                activity?.AddTag("hive2.statement.get_columns_extended.batch_count", columnsBatches.Count);
+                activity?.AddTag("hive2.statement.get_columns_extended.total_rows", totalRows);
 
                 // 3. Create combined schema and prepare data
                 var allFields = new List<Field>(columnsSchema.FieldsList);
@@ -835,10 +839,10 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 // 6. Return the combined result
                 var combinedSchema = new Schema(allFields, columnsSchema.Metadata);
 
-                activity?.SetTag(SemanticConventions.Db.Response.ReturnedRows, totalRows);
+                activity?.AddTag(SemanticConventions.Db.Response.ReturnedRows, totalRows);
                 activity?.AddEvent("hive2.statement.get_columns_extended.complete");
                 return new QueryResult(totalRows, new HiveInfoArrowStream(combinedSchema, combinedData));
-            }, ClassName + nameof(GetColumnsExtendedAsync));
+            }, ClassName + "." + nameof(GetColumnsExtendedAsync));
         }
 
         // Helper method to create an empty result with the complete extended columns schema
