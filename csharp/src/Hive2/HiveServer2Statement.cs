@@ -953,10 +953,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
             // STEP 4: Build Arrow arrays for each relationship field
             foreach (var fieldName in includeFields)
             {
-                if (!relationData.TryGetValue(fieldName, out var fieldData))
-                {
-                    fieldData = null;
-                }
+                relationData.TryGetValue(fieldName, out var fieldData);
                 IArrowType arrowType = StringType.Default;
                 if (result.Stream != null)
                 {
