@@ -22,7 +22,6 @@
 
 using System;
 using System.Collections.Generic;
-using AdbcDrivers.HiveServer2.Hive2;
 using AdbcDrivers.HiveServer2.Spark;
 using Apache.Arrow.Adbc;
 using Apache.Arrow.Adbc.Tests.Metadata;
@@ -81,7 +80,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Spark
             }
 
             AdbcDatabase database = driver.Open(parameters);
-            HiveServer2Exception exception = Assert.ThrowsAny<HiveServer2Exception>(() => database.Connect(parameters));
+            AggregateException exception = Assert.ThrowsAny<AggregateException>(() => database.Connect(parameters));
             OutputHelper?.WriteLine(exception.Message);
         }
 
