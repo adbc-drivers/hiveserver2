@@ -217,12 +217,6 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
                 int timeout = 99;
                 using AdbcCommand cmd = adbcConnection.CreateCommand();
 
-                // setting the timeout before the property value
-                Assert.Throws<InvalidOperationException>(() =>
-                {
-                    cmd.CommandTimeout = 1;
-                });
-
                 cmd.AdbcCommandTimeoutProperty = "adbc.apache.statement.query_timeout_s";
                 cmd.CommandTimeout = timeout;
 

@@ -23,6 +23,7 @@
 using System;
 using System.Collections.Generic;
 using AdbcDrivers.HiveServer2;
+using AdbcDrivers.HiveServer2.Hive2;
 using AdbcDrivers.HiveServer2.Impala;
 using Apache.Arrow.Adbc;
 using Apache.Arrow.Adbc.Tests.Metadata;
@@ -81,7 +82,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Impala
             }
 
             AdbcDatabase database = driver.Open(parameters);
-            AggregateException exception = Assert.ThrowsAny<AggregateException>(() => database.Connect(parameters));
+            HiveServer2Exception exception = Assert.ThrowsAny<HiveServer2Exception>(() => database.Connect(parameters));
             Assert.True(ApacheUtility.ContainsException(exception, out AdbcException? adbcException), $"Expect AdbcException. Actual type: {exception.GetType().Name}");
             Assert.Equal(AdbcStatusCode.UnknownError, adbcException!.Status);
             OutputHelper?.WriteLine(exception.Message);
