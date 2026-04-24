@@ -162,7 +162,7 @@ namespace AdbcDrivers.HiveServer2.Impala
             HttpClient httpClient = new(httpClientHandler);
             httpClient.BaseAddress = baseAddress;
             httpClient.DefaultRequestHeaders.Authorization = authenticationHeaderValue;
-            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(_userAgent.Value);
+            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(s_userAgent);
             httpClient.DefaultRequestHeaders.AcceptEncoding.Clear();
             httpClient.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("identity"));
             httpClient.DefaultRequestHeaders.ExpectContinue = false;
@@ -170,7 +170,7 @@ namespace AdbcDrivers.HiveServer2.Impala
             activity?.AddTag(ActivityKeys.Encrypted, baseAddress.Scheme == Uri.UriSchemeHttps);
             activity?.AddTag(ActivityKeys.TransportType, baseAddress.Scheme);
             activity?.AddTag(ActivityKeys.AuthType, authTypeValue.ToString());
-            activity?.AddTag(ActivityKeys.Http.UserAgent, _userAgent.Value);
+            activity?.AddTag(ActivityKeys.Http.UserAgent, s_userAgent);
             activity?.AddTag(ActivityKeys.Http.Uri, baseAddress);
 
             TConfiguration config = GetTconfiguration();
