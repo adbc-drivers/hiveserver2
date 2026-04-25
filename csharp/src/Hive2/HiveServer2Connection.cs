@@ -858,8 +858,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
         /// <returns></returns>
         protected internal string GetProductVersion()
         {
-            FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
-            return fileVersionInfo.ProductVersion ?? GetProductVersionDefault();
+            return ApacheUtility.GetAssemblyProductVersion(GetType(), GetProductVersionDefault());
         }
 
         protected internal static Uri GetBaseAddress(string? uri, string? hostName, string? path, string? port, string hostOptionName, bool isTlsEnabled)

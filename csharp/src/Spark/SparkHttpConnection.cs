@@ -50,10 +50,12 @@ namespace AdbcDrivers.HiveServer2.Spark
         private const string AnonymousAuthenticationScheme = "Anonymous";
 
         protected readonly HiveServer2ProxyConfigurator _proxyConfigurator;
+        private readonly Lazy<string> _userAgent;
 
         public SparkHttpConnection(IReadOnlyDictionary<string, string> properties) : base(properties)
         {
             _proxyConfigurator = HiveServer2ProxyConfigurator.FromProperties(properties);
+            _userAgent = new Lazy<string>(GetUserAgent, LazyThreadSafetyMode.PublicationOnly);
         }
 
         protected override void ValidateAuthentication()
@@ -189,7 +191,7 @@ namespace AdbcDrivers.HiveServer2.Spark
             HttpClient httpClient = new(CreateHttpHandler());
             httpClient.BaseAddress = baseAddress;
             httpClient.DefaultRequestHeaders.Authorization = authenticationHeaderValue;
-            string userAgent = GetUserAgent();
+            string userAgent = _userAgent.Value;
             httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
             httpClient.DefaultRequestHeaders.AcceptEncoding.Clear();
             httpClient.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("identity"));
@@ -287,7 +289,7 @@ namespace AdbcDrivers.HiveServer2.Spark
             // Build the base user agent string with Thrift version
             string thriftVersion = GetThriftVersion();
             string thriftComponent = string.IsNullOrEmpty(thriftVersion) ? "Thrift" : $"Thrift/{thriftVersion}";
-            string baseUserAgent = $"{DriverName.Replace(" ", "")}/{ProductVersionDefault} {thriftComponent}";
+            string baseUserAgent = $"{DriverName.Replace(" ", "")}/{ApacheUtility.GetAssemblyVersion(GetType())} {thriftComponent}";
 
             // Check if a client has provided a user-agent entry
             if (Properties.TryGetValue(SparkParameters.UserAgentEntry, out string? userAgentEntry) && !string.IsNullOrWhiteSpace(userAgentEntry))

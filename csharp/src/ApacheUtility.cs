@@ -24,6 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 
 namespace AdbcDrivers.HiveServer2
@@ -178,6 +179,10 @@ namespace AdbcDrivers.HiveServer2
 
         internal static string GetAssemblyName(Type type) => type.Assembly.GetName().Name!;
 
-        internal static string GetAssemblyVersion(Type type) => FileVersionInfo.GetVersionInfo(type.Assembly.Location).ProductVersion ?? string.Empty;
+        internal static string GetAssemblyVersion(Type type) => type.Assembly.GetName().Version?.ToString(3) ?? string.Empty;
+
+        internal static string GetAssemblyProductVersion(Type type, string? defaultVersion = default) => type.Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+            ?? defaultVersion
+            ?? string.Empty;
     }
 }

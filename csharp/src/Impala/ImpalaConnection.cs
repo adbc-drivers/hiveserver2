@@ -33,7 +33,7 @@ namespace AdbcDrivers.HiveServer2.Impala
 {
     internal abstract class ImpalaConnection : HiveServer2Connection
     {
-        internal static readonly string s_userAgent = $"{DriverName.Replace(" ", "")}/{ProductVersionDefault}";
+        internal static readonly string s_userAgent = $"{DriverName.Replace(" ", "")}/{ApacheUtility.GetAssemblyVersion(typeof(ImpalaConnection))}";
 
         private const string ProductVersionDefault = "1.0.0";
         private const string DriverName = "ADBC Impala Driver";

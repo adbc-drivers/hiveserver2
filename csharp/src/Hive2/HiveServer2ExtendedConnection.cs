@@ -39,7 +39,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
         private const string ArrowVersion = "1.0.0";
         private const string BasicAuthenticationScheme = "Basic";
         private readonly Lazy<string> _productVersion;
-        internal static readonly string s_userAgent = $"{DriverName.Replace(" ", "")}/{ProductVersionDefault}";
+        internal static readonly string s_userAgent = $"{DriverName.Replace(" ", "")}/{ApacheUtility.GetAssemblyVersion(typeof(HiveServer2Connection))}";
 
         protected override string GetProductVersionDefault() => ProductVersionDefault;
 
