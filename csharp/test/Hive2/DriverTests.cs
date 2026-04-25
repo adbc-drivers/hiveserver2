@@ -81,7 +81,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2
             }
 
             AdbcDatabase database = driver.Open(parameters);
-            AggregateException exception = Assert.ThrowsAny<AggregateException>(() => database.Connect(parameters));
+            HiveServer2Exception exception = Assert.ThrowsAny<HiveServer2Exception>(() => database.Connect(parameters));
             OutputHelper?.WriteLine(exception.Message);
         }
 
