@@ -367,7 +367,6 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
             Assert.True(columns != null, "Columns cannot be null");
             Assert.Equal(TestConfiguration.Metadata.ExpectedColumnCount, columns.Count);
 
-            HiveServer2Connection hiveServer2Connection = (HiveServer2Connection)Connection;
             for (int i = 0; i < columns.Count; i++)
             {
                 // Verify column metadata is returned/consistent.
