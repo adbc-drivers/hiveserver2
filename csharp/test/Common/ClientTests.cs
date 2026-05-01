@@ -56,7 +56,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
         /// Validates if the client execute updates.
         /// </summary>
         [SkippableFact, Order(1)]
-        public void CanClientExecuteUpdate()
+        public virtual void CanClientExecuteUpdate()
         {
             using (AdbcConnection adbcConnection = GetAdbcConnection())
             {
@@ -88,7 +88,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
         /// parse the results.
         /// </summary>
         [SkippableFact, Order(3)]
-        public void CanClientExecuteQuery()
+        public virtual void CanClientExecuteQuery()
         {
             using (AdbcConnection adbcConnection = GetAdbcConnection())
             {
@@ -129,7 +129,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
         }
 
         [SkippableFact]
-        public void VerifySchemaTablesWithNoConstraints()
+        public virtual void VerifySchemaTablesWithNoConstraints()
         {
             using (AdbcConnection adbcConnection = GetAdbcConnection(includeTableConstraints: false))
             {
@@ -144,7 +144,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
         }
 
         [SkippableFact]
-        public void VerifySchemaTables()
+        public virtual void VerifySchemaTables()
         {
             using (AdbcConnection adbcConnection = GetAdbcConnection())
             {

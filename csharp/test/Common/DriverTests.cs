@@ -98,7 +98,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
         /// Validates if the driver can execute update statements.
         /// </summary>
         [SkippableFact, Order(1)]
-        public void CanExecuteUpdate()
+        public virtual void CanExecuteUpdate()
         {
             AdbcConnection adbcConnection = NewConnection();
 
@@ -547,7 +547,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
         /// parse the results using the asynchronous methods.
         /// </summary>
         [SkippableFact, Order(11)]
-        public async Task CanExecuteQueryAsync()
+        public virtual async Task CanExecuteQueryAsync()
         {
             using AdbcConnection adbcConnection = NewConnection();
             using AdbcStatement statement = adbcConnection.CreateStatement();
