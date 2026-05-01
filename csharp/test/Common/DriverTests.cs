@@ -330,7 +330,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
         /// Validates if the driver can call GetObjects for GetObjectsDepth as All.
         /// </summary>
         [SkippableFact, Order(6)]
-        public void CanGetObjectsAll()
+        public virtual void CanGetObjectsAll()
         {
             // need to add the database
             string? databaseName = TestConfiguration.Metadata.Catalog;
