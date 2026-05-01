@@ -98,7 +98,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
         /// Validates if the driver can execute update statements.
         /// </summary>
         [SkippableFact, Order(1)]
-        public void CanExecuteUpdate()
+        public virtual void CanExecuteUpdate()
         {
             AdbcConnection adbcConnection = NewConnection();
 
@@ -522,7 +522,10 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
         [InlineData(1.0)]
         [InlineData(2.0)]
         [InlineData(null)]
-        public void CanExecuteQuery(double? batchSizeFactor)
+        public void CanExecuteQuery(double? batchSizeFactor) =>
+            ValidateCanExecuteQuery(batchSizeFactor);
+
+        protected virtual void ValidateCanExecuteQuery(double? batchSizeFactor)
         {
             // Ensure all records can be retrieved, independent of the batch size.
             TConfig testConfiguration = (TConfig)TestConfiguration.Clone();
@@ -547,7 +550,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
         /// parse the results using the asynchronous methods.
         /// </summary>
         [SkippableFact, Order(11)]
-        public async Task CanExecuteQueryAsync()
+        public virtual async Task CanExecuteQueryAsync()
         {
             using AdbcConnection adbcConnection = NewConnection();
             using AdbcStatement statement = adbcConnection.CreateStatement();

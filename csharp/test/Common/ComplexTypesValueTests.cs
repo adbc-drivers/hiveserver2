@@ -53,7 +53,10 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
         [InlineData("ARRAY(CAST('2024-01-01T00:00:00-07:00' AS TIMESTAMP), CAST('2024-02-02T02:02:02+01:30' AS TIMESTAMP), CAST('2024-03-03T03:03:03Z' AS TIMESTAMP))", """[2024-01-01 07:00:00,2024-02-02 00:32:02,2024-03-03 03:03:03]""")]
         [InlineData("ARRAY(CAST('2024-01-01T00:00:00Z' AS DATE), CAST('2024-02-02T02:02:02Z' AS DATE), CAST('2024-03-03T03:03:03Z' AS DATE))", """[2024-01-01,2024-02-02,2024-03-03]""")]
         [InlineData("ARRAY(INTERVAL 123 YEARS 11 MONTHS, INTERVAL 5 YEARS, INTERVAL 6 MONTHS)", """[123-11,5-0,0-6]""")]
-        public async Task TestArrayData(string projection, string value)
+        public async Task TestArrayData(string projection, string value) =>
+            await ValidateTestArrayData(projection, value);
+
+        protected virtual async Task ValidateTestArrayData(string projection, string value)
         {
             string selectStatement = $"SELECT {projection};";
             await SelectAndValidateValuesAsync(selectStatement, value, 1);
@@ -65,7 +68,10 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
         [SkippableTheory]
         [InlineData("MAP(1, 'John Doe', 2, 'Jane Doe', 3, 'Jack Doe')", """{1:"John Doe",2:"Jane Doe",3:"Jack Doe"}""")]
         [InlineData("MAP('John Doe', 1, 'Jane Doe', 2, 'Jack Doe', 3)", """{"Jack Doe":3,"Jane Doe":2,"John Doe":1}""")]
-        public async Task TestMapData(string projection, string value)
+        public async Task TestMapData(string projection, string value) =>
+            await ValidateTestMapData(projection, value);
+
+        protected virtual async Task ValidateTestMapData(string projection, string value)
         {
             string selectStatement = $"SELECT {projection};";
             await SelectAndValidateValuesAsync(selectStatement, value, 1);
