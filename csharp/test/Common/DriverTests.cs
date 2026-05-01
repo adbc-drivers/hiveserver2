@@ -522,7 +522,10 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
         [InlineData(1.0)]
         [InlineData(2.0)]
         [InlineData(null)]
-        public virtual void CanExecuteQuery(double? batchSizeFactor)
+        public void CanExecuteQuery(double? batchSizeFactor) =>
+            ValidateCanExecuteQuery(batchSizeFactor);
+
+        protected virtual void ValidateCanExecuteQuery(double? batchSizeFactor)
         {
             // Ensure all records can be retrieved, independent of the batch size.
             TConfig testConfiguration = (TConfig)TestConfiguration.Clone();
