@@ -37,10 +37,10 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
 
         internal DataTypeConversion DataTypeConversion => ((HiveServer2Connection)Connection).DataTypeConversion;
 
-        public string? GetValueForProtocolVersion(string? unconvertedValue, string? convertedValue) =>
+        public virtual string? GetValueForProtocolVersion(string? unconvertedValue, string? convertedValue) =>
             ((HiveServer2Connection)Connection).DataTypeConversion.HasFlag(DataTypeConversion.None) ? unconvertedValue : convertedValue;
 
-        public object? GetValueForProtocolVersion(object? unconvertedValue, object? convertedValue) =>
+        public virtual object? GetValueForProtocolVersion(object? unconvertedValue, object? convertedValue) =>
             ((HiveServer2Connection)Connection).DataTypeConversion.HasFlag(DataTypeConversion.None) ? unconvertedValue : convertedValue;
 
     }

@@ -66,7 +66,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
         [InlineData("0")]
         [InlineData("1")]
         [InlineData("2147483647")]
-        public void CanSetOptionPollTime(string value, bool throws = false)
+        public virtual void CanSetOptionPollTime(string value, bool throws = false)
         {
             var testConfiguration = TestConfiguration.Clone() as TConfig;
             testConfiguration!.PollTimeMilliseconds = value;
@@ -99,7 +99,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
         [InlineData("0", true)]
         [InlineData("1")]
         [InlineData("2147483647")]
-        public void CanSetOptionBatchSize(string value, bool throws = false)
+        public virtual void CanSetOptionBatchSize(string value, bool throws = false)
         {
             var testConfiguration = TestConfiguration.Clone() as TConfig;
             testConfiguration!.BatchSize = value;
@@ -130,7 +130,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
         [InlineData("-1", true)]
         [InlineData("1")]
         [InlineData("2147483647")]
-        public void CanSetOptionQueryTimeout(string value, bool throws = false)
+        public virtual void CanSetOptionQueryTimeout(string value, bool throws = false)
         {
             var testConfiguration = TestConfiguration.Clone() as TConfig;
             testConfiguration!.QueryTimeoutSeconds = value;
