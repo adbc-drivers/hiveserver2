@@ -126,7 +126,11 @@ namespace AdbcDrivers.HiveServer2.Hive2
             if (TlsOptions.IsTlsEnabled)
             {
                 X509Certificate2? trustedCert = !string.IsNullOrEmpty(TlsOptions.TrustedCertificatePath)
+#if NET9_0_OR_GREATER
+                    ? X509CertificateLoader.LoadCertificateFromFile(TlsOptions.TrustedCertificatePath!)
+#else
                     ? new X509Certificate2(TlsOptions.TrustedCertificatePath!)
+#endif
                     : null;
 
                 RemoteCertificateValidationCallback certValidator = (sender, cert, chain, errors) => HiveServer2TlsImpl.ValidateCertificate(cert, errors, TlsOptions);
