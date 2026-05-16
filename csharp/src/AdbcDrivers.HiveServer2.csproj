@@ -9,7 +9,6 @@
     <PackageReference Include="ApacheThrift" />
   </ItemGroup>
   <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible($(TargetFramework), 'net6.0'))">
-    <PackageReference Include="System.Net.Http" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
