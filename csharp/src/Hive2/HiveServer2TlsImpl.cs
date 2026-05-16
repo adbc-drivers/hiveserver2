@@ -332,7 +332,11 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 return true;
             }
 
+#if NET9_0_OR_GREATER
+            X509Certificate2 trustedRoot = X509CertificateLoader.LoadCertificateFromFile(tlsProperties.TrustedCertificatePath);
+#else
             X509Certificate2 trustedRoot = new X509Certificate2(tlsProperties.TrustedCertificatePath);
+#endif
             X509Chain customChain = new();
             customChain.ChainPolicy.ExtraStore.Add(trustedRoot);
             // "tell the X509Chain class that I do trust this root certs and it should check just the certs in the chain and nothing else"
