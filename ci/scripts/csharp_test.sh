@@ -27,5 +27,10 @@ set -ex
 source_dir=${1}/csharp/test/AdbcDrivers.Tests.HiveServer2
 
 pushd ${source_dir}
-dotnet test --filter "FullyQualifiedName~AdbcDrivers.Tests.HiveServer2.Common"
+# Run two buckets of tests in CI: the Common helpers (pure-logic), plus any
+# test class tagged [Trait("Category", "FakeServer")] (driven by the
+# in-process fake HiveServer2 in AdbcDrivers.HiveServer2.TestServer). Tests
+# that need a live Hive/Spark/Impala backend are gated behind environment
+# variables and aren't picked up by either filter.
+dotnet test --filter "FullyQualifiedName~AdbcDrivers.Tests.HiveServer2.Common|Category=FakeServer"
 popd
