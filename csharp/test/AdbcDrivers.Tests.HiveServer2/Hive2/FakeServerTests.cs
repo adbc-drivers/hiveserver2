@@ -31,6 +31,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2
     /// <c>AdbcDrivers.HiveServer2.TestServer</c> project. These run with no
     /// live server.
     /// </summary>
+    [Trait("Category", "FakeServer")]
     public class FakeServerTests
     {
         [Fact]
