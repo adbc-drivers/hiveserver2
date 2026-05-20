@@ -23,19 +23,19 @@ using Apache.Arrow.Adbc;
 using Apache.Arrow.Ipc;
 using Xunit;
 
-namespace AdbcDrivers.Tests.HiveServer2.Hive2
+namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
 {
     /// <summary>
     /// End-to-end tests that drive the real <see cref="HiveServer2Driver"/>
-    /// against the in-process fake HiveServer2 in the
+    /// against the in-process mock HiveServer2 in the
     /// <c>AdbcDrivers.HiveServer2.TestServer</c> project. These run with no
     /// live server.
     /// </summary>
-    [Trait("Category", "FakeServer")]
-    public class FakeServerTests
+    [Trait("Category", "MockServer")]
+    public class MockServerTests
     {
         [Fact]
-        public async Task CanExecuteSimpleSelectAgainstFakeServer()
+        public async Task CanExecuteSimpleSelectAgainstMockServer()
         {
             using var server = new HiveServer2TestServer(new HiveServer2StubHandler());
 
