@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks Condition="'$(IsWindows)'=='true'">net8.0;net10.0;net472</TargetFrameworks>
+    <TargetFrameworks Condition="'$(TargetFrameworks)'==''">net8.0;net10.0</TargetFrameworks>
+    <IsPackable>false</IsPackable>
+    <!--
+      The vendored, unmodified Apache Thrift netstd output under
+      TestServer/Thrift/gen/ guards itself with
+      `#if (! NETSTANDARD2_0_OR_GREATER) #error ... #endif`. None of our
+      target frameworks defines that symbol automatically, even though they
+      all implement the netstandard 2.0 surface, so we add it here. The
+      driver project sidesteps the same issue by hand-editing its generated
+      copy; this fixture keeps the generator output pristine instead.
+    -->
+    <DefineConstants>$(DefineConstants);NETSTANDARD2_0_OR_GREATER</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ApacheThrift" />
+  </ItemGroup>
+
+</Project>
