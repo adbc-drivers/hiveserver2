@@ -191,30 +191,28 @@ namespace AdbcDrivers.HiveServer2.Hive2
             }
         }
 
-        // http client bypass list in c# expects regex strings, hence why some handling is done to make hosts in regex format.
-        // I assume we don't want to expect users to pass in regex strings (though we still allow for wildcard pattern here)
+        // WebProxy.BypassList regexes are matched against "scheme://host[:port]" (default ports
+        // are omitted), not the bare host. Generate a pattern that accepts either scheme and an
+        // optional port so wildcard host patterns actually trigger the bypass.
         private static string[] ParseProxyIgnoreList(string? proxyIgnoreList)
         {
             if (string.IsNullOrEmpty(proxyIgnoreList))
                 return [];
 
-            string[] rawHosts = proxyIgnoreList!.Split(',');
-            string[] patterns = new string[rawHosts.Length];
-
-            for (int i = 0; i < rawHosts.Length; i++)
+            var patterns = new List<string>();
+            foreach (string raw in proxyIgnoreList!.Split(','))
             {
-                string host = rawHosts[i].Trim();
+                string host = raw.Trim();
                 if (string.IsNullOrEmpty(host))
                     continue;
 
-                // Convert wildcard pattern to regex pattern
-                string pattern = "^" + Regex.Escape(host)
+                string hostPattern = Regex.Escape(host)
                     .Replace("\\*", ".*")
-                    .Replace("\\?", ".") + "$";
-                patterns[i] = pattern;
+                    .Replace("\\?", ".");
+                patterns.Add($"^https?://{hostPattern}(:\\d+)?$");
             }
 
-            return patterns;
+            return patterns.ToArray();
         }
     }
 }

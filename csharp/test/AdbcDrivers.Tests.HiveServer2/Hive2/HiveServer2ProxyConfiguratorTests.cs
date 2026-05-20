@@ -119,9 +119,8 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2
         }
 
         [Fact]
-        public void ConfigureProxy_ProxyWithBypassList_ConfiguresProxyBypassList()
+        public void ConfigureProxy_ProxyWithBypassList_PopulatesBypassList()
         {
-            // Arrange
             var properties = new Dictionary<string, string>
             {
                 { HttpProxyOptions.UseProxy, "true" },
@@ -132,24 +131,87 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2
             var configurator = HiveServer2ProxyConfigurator.FromProperties(properties);
             var handler = new HttpClientHandler();
 
-            // Act
             configurator.ConfigureProxy(handler);
 
-            // Assert
-            Assert.True(handler.UseProxy);
-            Assert.NotNull(handler.Proxy);
-            Assert.IsType<WebProxy>(handler.Proxy);
+            var proxy = Assert.IsType<WebProxy>(handler.Proxy);
+            Assert.NotNull(proxy.BypassList);
+            Assert.NotEmpty(proxy.BypassList);
+        }
 
-            // We can't directly check the bypass list, but we can use reflection to verify it's set
-            var proxy = (WebProxy)handler.Proxy;
-            var bypassList = proxy.BypassList;
-            Assert.NotNull(bypassList);
-            Assert.NotEmpty(bypassList);
+        [Theory]
+        // Wildcard at start — both schemes and any port should bypass.
+        [InlineData("*.databricks.com", "https://x.cloud.databricks.com/sql", true)]
+        [InlineData("*.databricks.com", "http://x.cloud.databricks.com/sql", true)]
+        [InlineData("*.databricks.com", "https://x.cloud.databricks.com:8443/sql", true)]
+        [InlineData("*.databricks.com", "https://x.example.com", false)]
+        // Wildcard in the middle (literal prefix) — used to fail before the fix.
+        [InlineData("te-*.cloud.databricks.com", "https://te-eda-qa.cloud.databricks.com", true)]
+        [InlineData("te-*.cloud.databricks.com", "https://te-eda-qa.cloud.databricks.com:8443", true)]
+        [InlineData("te-*.cloud.databricks.com", "https://other-eda-qa.cloud.databricks.com", false)]
+        // Bare hostname (no wildcard) — used to fail before the fix.
+        [InlineData("host.example.com", "https://host.example.com", true)]
+        [InlineData("host.example.com", "https://host.example.com:9443", true)]
+        [InlineData("host.example.com", "https://other.example.com", false)]
+        public void ConfigureProxy_BypassList_IsBypassed_MatchesExpected(string pattern, string url, bool expectedBypass)
+        {
+            var properties = new Dictionary<string, string>
+            {
+                { HttpProxyOptions.UseProxy, "true" },
+                { HttpProxyOptions.ProxyHost, "proxy.example.com" },
+                { HttpProxyOptions.ProxyPort, "8080" },
+                { HttpProxyOptions.ProxyIgnoreList, pattern }
+            };
+            var configurator = HiveServer2ProxyConfigurator.FromProperties(properties);
+            var handler = new HttpClientHandler();
 
-            // Check if the bypass list contains the expected patterns
-            Assert.Contains("^localhost$", bypassList);
-            Assert.Contains("^127\\.0\\.0\\.1$", bypassList);
-            Assert.Contains("^.*\\.internal\\.domain\\.com$", bypassList);
+            configurator.ConfigureProxy(handler);
+
+            var proxy = Assert.IsType<WebProxy>(handler.Proxy);
+            Assert.Equal(expectedBypass, proxy.IsBypassed(new Uri(url)));
+        }
+
+        [Fact]
+        public void ConfigureProxy_BypassList_LoopbackStillBypassed()
+        {
+            // localhost / 127.0.0.1 bypass via Uri.IsLoopback regardless of pattern, but the
+            // pattern should not produce a regex that breaks WebProxy when set.
+            var properties = new Dictionary<string, string>
+            {
+                { HttpProxyOptions.UseProxy, "true" },
+                { HttpProxyOptions.ProxyHost, "proxy.example.com" },
+                { HttpProxyOptions.ProxyPort, "8080" },
+                { HttpProxyOptions.ProxyIgnoreList, "localhost,127.0.0.1" }
+            };
+            var configurator = HiveServer2ProxyConfigurator.FromProperties(properties);
+            var handler = new HttpClientHandler();
+
+            configurator.ConfigureProxy(handler);
+
+            var proxy = Assert.IsType<WebProxy>(handler.Proxy);
+            Assert.True(proxy.IsBypassed(new Uri("https://localhost/sql")));
+            Assert.True(proxy.IsBypassed(new Uri("https://127.0.0.1/sql")));
+        }
+
+        [Fact]
+        public void ConfigureProxy_BypassList_TolerantOfEmptyEntries()
+        {
+            // Trailing / repeated commas should not produce malformed bypass entries.
+            var properties = new Dictionary<string, string>
+            {
+                { HttpProxyOptions.UseProxy, "true" },
+                { HttpProxyOptions.ProxyHost, "proxy.example.com" },
+                { HttpProxyOptions.ProxyPort, "8080" },
+                { HttpProxyOptions.ProxyIgnoreList, ",*.databricks.com,, ,host.example.com," }
+            };
+            var configurator = HiveServer2ProxyConfigurator.FromProperties(properties);
+            var handler = new HttpClientHandler();
+
+            configurator.ConfigureProxy(handler);
+
+            var proxy = Assert.IsType<WebProxy>(handler.Proxy);
+            Assert.True(proxy.IsBypassed(new Uri("https://x.databricks.com")));
+            Assert.True(proxy.IsBypassed(new Uri("https://host.example.com:9443")));
+            Assert.False(proxy.IsBypassed(new Uri("https://other.example.com")));
         }
     }
 }
