@@ -51,7 +51,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
     public global::Apache.Hive.Service.Rpc.Thrift.Reference.TOperationHandle OperationHandle { get; set; }
 
     /// <summary>
-    /// 
+    ///
     /// <seealso cref="global::Apache.Hive.Service.Rpc.Thrift.Reference.TFetchOrientation"/>
     /// </summary>
     public global::Apache.Hive.Service.Rpc.Thrift.Reference.TFetchOrientation Orientation { get; set; }
@@ -173,7 +173,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                 await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
               }
               break;
-            default: 
+            default:
               await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
               break;
           }

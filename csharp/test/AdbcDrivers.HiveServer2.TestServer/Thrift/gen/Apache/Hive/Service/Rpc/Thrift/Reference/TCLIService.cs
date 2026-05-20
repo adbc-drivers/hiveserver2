@@ -119,11 +119,11 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
       public async global::System.Threading.Tasks.Task send_OpenSession(global::Apache.Hive.Service.Rpc.Thrift.Reference.TOpenSessionReq @req, CancellationToken cancellationToken = default)
       {
         await OutputProtocol.WriteMessageBeginAsync(new TMessage("OpenSession", TMessageType.Call, SeqId), cancellationToken);
-        
+
         var tmp547 = new InternalStructs.OpenSession_args() {
           Req = @req,
         };
-        
+
         await tmp547.WriteAsync(OutputProtocol, cancellationToken);
         await OutputProtocol.WriteMessageEndAsync(cancellationToken);
         await OutputProtocol.Transport.FlushAsync(cancellationToken);
@@ -131,7 +131,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
 
       public async global::System.Threading.Tasks.Task<global::Apache.Hive.Service.Rpc.Thrift.Reference.TOpenSessionResp> recv_OpenSession(CancellationToken cancellationToken = default)
       {
-        
+
         var tmp548 = await InputProtocol.ReadMessageBeginAsync(cancellationToken);
         if (tmp548.Type == TMessageType.Exception)
         {
@@ -159,11 +159,11 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
       public async global::System.Threading.Tasks.Task send_CloseSession(global::Apache.Hive.Service.Rpc.Thrift.Reference.TCloseSessionReq @req, CancellationToken cancellationToken = default)
       {
         await OutputProtocol.WriteMessageBeginAsync(new TMessage("CloseSession", TMessageType.Call, SeqId), cancellationToken);
-        
+
         var tmp551 = new InternalStructs.CloseSession_args() {
           Req = @req,
         };
-        
+
         await tmp551.WriteAsync(OutputProtocol, cancellationToken);
         await OutputProtocol.WriteMessageEndAsync(cancellationToken);
         await OutputProtocol.Transport.FlushAsync(cancellationToken);
@@ -171,7 +171,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
 
       public async global::System.Threading.Tasks.Task<global::Apache.Hive.Service.Rpc.Thrift.Reference.TCloseSessionResp> recv_CloseSession(CancellationToken cancellationToken = default)
       {
-        
+
         var tmp552 = await InputProtocol.ReadMessageBeginAsync(cancellationToken);
         if (tmp552.Type == TMessageType.Exception)
         {
@@ -199,11 +199,11 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
       public async global::System.Threading.Tasks.Task send_GetInfo(global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetInfoReq @req, CancellationToken cancellationToken = default)
       {
         await OutputProtocol.WriteMessageBeginAsync(new TMessage("GetInfo", TMessageType.Call, SeqId), cancellationToken);
-        
+
         var tmp555 = new InternalStructs.GetInfo_args() {
           Req = @req,
         };
-        
+
         await tmp555.WriteAsync(OutputProtocol, cancellationToken);
         await OutputProtocol.WriteMessageEndAsync(cancellationToken);
         await OutputProtocol.Transport.FlushAsync(cancellationToken);
@@ -211,7 +211,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
 
       public async global::System.Threading.Tasks.Task<global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetInfoResp> recv_GetInfo(CancellationToken cancellationToken = default)
       {
-        
+
         var tmp556 = await InputProtocol.ReadMessageBeginAsync(cancellationToken);
         if (tmp556.Type == TMessageType.Exception)
         {
@@ -239,11 +239,11 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
       public async global::System.Threading.Tasks.Task send_ExecuteStatement(global::Apache.Hive.Service.Rpc.Thrift.Reference.TExecuteStatementReq @req, CancellationToken cancellationToken = default)
       {
         await OutputProtocol.WriteMessageBeginAsync(new TMessage("ExecuteStatement", TMessageType.Call, SeqId), cancellationToken);
-        
+
         var tmp559 = new InternalStructs.ExecuteStatement_args() {
           Req = @req,
         };
-        
+
         await tmp559.WriteAsync(OutputProtocol, cancellationToken);
         await OutputProtocol.WriteMessageEndAsync(cancellationToken);
         await OutputProtocol.Transport.FlushAsync(cancellationToken);
@@ -251,7 +251,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
 
       public async global::System.Threading.Tasks.Task<global::Apache.Hive.Service.Rpc.Thrift.Reference.TExecuteStatementResp> recv_ExecuteStatement(CancellationToken cancellationToken = default)
       {
-        
+
         var tmp560 = await InputProtocol.ReadMessageBeginAsync(cancellationToken);
         if (tmp560.Type == TMessageType.Exception)
         {
@@ -279,11 +279,11 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
       public async global::System.Threading.Tasks.Task send_GetTypeInfo(global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetTypeInfoReq @req, CancellationToken cancellationToken = default)
       {
         await OutputProtocol.WriteMessageBeginAsync(new TMessage("GetTypeInfo", TMessageType.Call, SeqId), cancellationToken);
-        
+
         var tmp563 = new InternalStructs.GetTypeInfo_args() {
           Req = @req,
         };
-        
+
         await tmp563.WriteAsync(OutputProtocol, cancellationToken);
         await OutputProtocol.WriteMessageEndAsync(cancellationToken);
         await OutputProtocol.Transport.FlushAsync(cancellationToken);
@@ -291,7 +291,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
 
       public async global::System.Threading.Tasks.Task<global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetTypeInfoResp> recv_GetTypeInfo(CancellationToken cancellationToken = default)
       {
-        
+
         var tmp564 = await InputProtocol.ReadMessageBeginAsync(cancellationToken);
         if (tmp564.Type == TMessageType.Exception)
         {
@@ -319,11 +319,11 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
       public async global::System.Threading.Tasks.Task send_GetCatalogs(global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetCatalogsReq @req, CancellationToken cancellationToken = default)
       {
         await OutputProtocol.WriteMessageBeginAsync(new TMessage("GetCatalogs", TMessageType.Call, SeqId), cancellationToken);
-        
+
         var tmp567 = new InternalStructs.GetCatalogs_args() {
           Req = @req,
         };
-        
+
         await tmp567.WriteAsync(OutputProtocol, cancellationToken);
         await OutputProtocol.WriteMessageEndAsync(cancellationToken);
         await OutputProtocol.Transport.FlushAsync(cancellationToken);
@@ -331,7 +331,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
 
       public async global::System.Threading.Tasks.Task<global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetCatalogsResp> recv_GetCatalogs(CancellationToken cancellationToken = default)
       {
-        
+
         var tmp568 = await InputProtocol.ReadMessageBeginAsync(cancellationToken);
         if (tmp568.Type == TMessageType.Exception)
         {
@@ -359,11 +359,11 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
       public async global::System.Threading.Tasks.Task send_GetSchemas(global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetSchemasReq @req, CancellationToken cancellationToken = default)
       {
         await OutputProtocol.WriteMessageBeginAsync(new TMessage("GetSchemas", TMessageType.Call, SeqId), cancellationToken);
-        
+
         var tmp571 = new InternalStructs.GetSchemas_args() {
           Req = @req,
         };
-        
+
         await tmp571.WriteAsync(OutputProtocol, cancellationToken);
         await OutputProtocol.WriteMessageEndAsync(cancellationToken);
         await OutputProtocol.Transport.FlushAsync(cancellationToken);
@@ -371,7 +371,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
 
       public async global::System.Threading.Tasks.Task<global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetSchemasResp> recv_GetSchemas(CancellationToken cancellationToken = default)
       {
-        
+
         var tmp572 = await InputProtocol.ReadMessageBeginAsync(cancellationToken);
         if (tmp572.Type == TMessageType.Exception)
         {
@@ -399,11 +399,11 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
       public async global::System.Threading.Tasks.Task send_GetTables(global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetTablesReq @req, CancellationToken cancellationToken = default)
       {
         await OutputProtocol.WriteMessageBeginAsync(new TMessage("GetTables", TMessageType.Call, SeqId), cancellationToken);
-        
+
         var tmp575 = new InternalStructs.GetTables_args() {
           Req = @req,
         };
-        
+
         await tmp575.WriteAsync(OutputProtocol, cancellationToken);
         await OutputProtocol.WriteMessageEndAsync(cancellationToken);
         await OutputProtocol.Transport.FlushAsync(cancellationToken);
@@ -411,7 +411,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
 
       public async global::System.Threading.Tasks.Task<global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetTablesResp> recv_GetTables(CancellationToken cancellationToken = default)
       {
-        
+
         var tmp576 = await InputProtocol.ReadMessageBeginAsync(cancellationToken);
         if (tmp576.Type == TMessageType.Exception)
         {
@@ -439,11 +439,11 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
       public async global::System.Threading.Tasks.Task send_GetTableTypes(global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetTableTypesReq @req, CancellationToken cancellationToken = default)
       {
         await OutputProtocol.WriteMessageBeginAsync(new TMessage("GetTableTypes", TMessageType.Call, SeqId), cancellationToken);
-        
+
         var tmp579 = new InternalStructs.GetTableTypes_args() {
           Req = @req,
         };
-        
+
         await tmp579.WriteAsync(OutputProtocol, cancellationToken);
         await OutputProtocol.WriteMessageEndAsync(cancellationToken);
         await OutputProtocol.Transport.FlushAsync(cancellationToken);
@@ -451,7 +451,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
 
       public async global::System.Threading.Tasks.Task<global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetTableTypesResp> recv_GetTableTypes(CancellationToken cancellationToken = default)
       {
-        
+
         var tmp580 = await InputProtocol.ReadMessageBeginAsync(cancellationToken);
         if (tmp580.Type == TMessageType.Exception)
         {
@@ -479,11 +479,11 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
       public async global::System.Threading.Tasks.Task send_GetColumns(global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetColumnsReq @req, CancellationToken cancellationToken = default)
       {
         await OutputProtocol.WriteMessageBeginAsync(new TMessage("GetColumns", TMessageType.Call, SeqId), cancellationToken);
-        
+
         var tmp583 = new InternalStructs.GetColumns_args() {
           Req = @req,
         };
-        
+
         await tmp583.WriteAsync(OutputProtocol, cancellationToken);
         await OutputProtocol.WriteMessageEndAsync(cancellationToken);
         await OutputProtocol.Transport.FlushAsync(cancellationToken);
@@ -491,7 +491,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
 
       public async global::System.Threading.Tasks.Task<global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetColumnsResp> recv_GetColumns(CancellationToken cancellationToken = default)
       {
-        
+
         var tmp584 = await InputProtocol.ReadMessageBeginAsync(cancellationToken);
         if (tmp584.Type == TMessageType.Exception)
         {
@@ -519,11 +519,11 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
       public async global::System.Threading.Tasks.Task send_GetFunctions(global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetFunctionsReq @req, CancellationToken cancellationToken = default)
       {
         await OutputProtocol.WriteMessageBeginAsync(new TMessage("GetFunctions", TMessageType.Call, SeqId), cancellationToken);
-        
+
         var tmp587 = new InternalStructs.GetFunctions_args() {
           Req = @req,
         };
-        
+
         await tmp587.WriteAsync(OutputProtocol, cancellationToken);
         await OutputProtocol.WriteMessageEndAsync(cancellationToken);
         await OutputProtocol.Transport.FlushAsync(cancellationToken);
@@ -531,7 +531,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
 
       public async global::System.Threading.Tasks.Task<global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetFunctionsResp> recv_GetFunctions(CancellationToken cancellationToken = default)
       {
-        
+
         var tmp588 = await InputProtocol.ReadMessageBeginAsync(cancellationToken);
         if (tmp588.Type == TMessageType.Exception)
         {
@@ -559,11 +559,11 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
       public async global::System.Threading.Tasks.Task send_GetPrimaryKeys(global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetPrimaryKeysReq @req, CancellationToken cancellationToken = default)
       {
         await OutputProtocol.WriteMessageBeginAsync(new TMessage("GetPrimaryKeys", TMessageType.Call, SeqId), cancellationToken);
-        
+
         var tmp591 = new InternalStructs.GetPrimaryKeys_args() {
           Req = @req,
         };
-        
+
         await tmp591.WriteAsync(OutputProtocol, cancellationToken);
         await OutputProtocol.WriteMessageEndAsync(cancellationToken);
         await OutputProtocol.Transport.FlushAsync(cancellationToken);
@@ -571,7 +571,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
 
       public async global::System.Threading.Tasks.Task<global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetPrimaryKeysResp> recv_GetPrimaryKeys(CancellationToken cancellationToken = default)
       {
-        
+
         var tmp592 = await InputProtocol.ReadMessageBeginAsync(cancellationToken);
         if (tmp592.Type == TMessageType.Exception)
         {
@@ -599,11 +599,11 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
       public async global::System.Threading.Tasks.Task send_GetCrossReference(global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetCrossReferenceReq @req, CancellationToken cancellationToken = default)
       {
         await OutputProtocol.WriteMessageBeginAsync(new TMessage("GetCrossReference", TMessageType.Call, SeqId), cancellationToken);
-        
+
         var tmp595 = new InternalStructs.GetCrossReference_args() {
           Req = @req,
         };
-        
+
         await tmp595.WriteAsync(OutputProtocol, cancellationToken);
         await OutputProtocol.WriteMessageEndAsync(cancellationToken);
         await OutputProtocol.Transport.FlushAsync(cancellationToken);
@@ -611,7 +611,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
 
       public async global::System.Threading.Tasks.Task<global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetCrossReferenceResp> recv_GetCrossReference(CancellationToken cancellationToken = default)
       {
-        
+
         var tmp596 = await InputProtocol.ReadMessageBeginAsync(cancellationToken);
         if (tmp596.Type == TMessageType.Exception)
         {
@@ -639,11 +639,11 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
       public async global::System.Threading.Tasks.Task send_GetOperationStatus(global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetOperationStatusReq @req, CancellationToken cancellationToken = default)
       {
         await OutputProtocol.WriteMessageBeginAsync(new TMessage("GetOperationStatus", TMessageType.Call, SeqId), cancellationToken);
-        
+
         var tmp599 = new InternalStructs.GetOperationStatus_args() {
           Req = @req,
         };
-        
+
         await tmp599.WriteAsync(OutputProtocol, cancellationToken);
         await OutputProtocol.WriteMessageEndAsync(cancellationToken);
         await OutputProtocol.Transport.FlushAsync(cancellationToken);
@@ -651,7 +651,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
 
       public async global::System.Threading.Tasks.Task<global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetOperationStatusResp> recv_GetOperationStatus(CancellationToken cancellationToken = default)
       {
-        
+
         var tmp600 = await InputProtocol.ReadMessageBeginAsync(cancellationToken);
         if (tmp600.Type == TMessageType.Exception)
         {
@@ -679,11 +679,11 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
       public async global::System.Threading.Tasks.Task send_CancelOperation(global::Apache.Hive.Service.Rpc.Thrift.Reference.TCancelOperationReq @req, CancellationToken cancellationToken = default)
       {
         await OutputProtocol.WriteMessageBeginAsync(new TMessage("CancelOperation", TMessageType.Call, SeqId), cancellationToken);
-        
+
         var tmp603 = new InternalStructs.CancelOperation_args() {
           Req = @req,
         };
-        
+
         await tmp603.WriteAsync(OutputProtocol, cancellationToken);
         await OutputProtocol.WriteMessageEndAsync(cancellationToken);
         await OutputProtocol.Transport.FlushAsync(cancellationToken);
@@ -691,7 +691,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
 
       public async global::System.Threading.Tasks.Task<global::Apache.Hive.Service.Rpc.Thrift.Reference.TCancelOperationResp> recv_CancelOperation(CancellationToken cancellationToken = default)
       {
-        
+
         var tmp604 = await InputProtocol.ReadMessageBeginAsync(cancellationToken);
         if (tmp604.Type == TMessageType.Exception)
         {
@@ -719,11 +719,11 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
       public async global::System.Threading.Tasks.Task send_CloseOperation(global::Apache.Hive.Service.Rpc.Thrift.Reference.TCloseOperationReq @req, CancellationToken cancellationToken = default)
       {
         await OutputProtocol.WriteMessageBeginAsync(new TMessage("CloseOperation", TMessageType.Call, SeqId), cancellationToken);
-        
+
         var tmp607 = new InternalStructs.CloseOperation_args() {
           Req = @req,
         };
-        
+
         await tmp607.WriteAsync(OutputProtocol, cancellationToken);
         await OutputProtocol.WriteMessageEndAsync(cancellationToken);
         await OutputProtocol.Transport.FlushAsync(cancellationToken);
@@ -731,7 +731,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
 
       public async global::System.Threading.Tasks.Task<global::Apache.Hive.Service.Rpc.Thrift.Reference.TCloseOperationResp> recv_CloseOperation(CancellationToken cancellationToken = default)
       {
-        
+
         var tmp608 = await InputProtocol.ReadMessageBeginAsync(cancellationToken);
         if (tmp608.Type == TMessageType.Exception)
         {
@@ -759,11 +759,11 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
       public async global::System.Threading.Tasks.Task send_GetResultSetMetadata(global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetResultSetMetadataReq @req, CancellationToken cancellationToken = default)
       {
         await OutputProtocol.WriteMessageBeginAsync(new TMessage("GetResultSetMetadata", TMessageType.Call, SeqId), cancellationToken);
-        
+
         var tmp611 = new InternalStructs.GetResultSetMetadata_args() {
           Req = @req,
         };
-        
+
         await tmp611.WriteAsync(OutputProtocol, cancellationToken);
         await OutputProtocol.WriteMessageEndAsync(cancellationToken);
         await OutputProtocol.Transport.FlushAsync(cancellationToken);
@@ -771,7 +771,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
 
       public async global::System.Threading.Tasks.Task<global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetResultSetMetadataResp> recv_GetResultSetMetadata(CancellationToken cancellationToken = default)
       {
-        
+
         var tmp612 = await InputProtocol.ReadMessageBeginAsync(cancellationToken);
         if (tmp612.Type == TMessageType.Exception)
         {
@@ -799,11 +799,11 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
       public async global::System.Threading.Tasks.Task send_FetchResults(global::Apache.Hive.Service.Rpc.Thrift.Reference.TFetchResultsReq @req, CancellationToken cancellationToken = default)
       {
         await OutputProtocol.WriteMessageBeginAsync(new TMessage("FetchResults", TMessageType.Call, SeqId), cancellationToken);
-        
+
         var tmp615 = new InternalStructs.FetchResults_args() {
           Req = @req,
         };
-        
+
         await tmp615.WriteAsync(OutputProtocol, cancellationToken);
         await OutputProtocol.WriteMessageEndAsync(cancellationToken);
         await OutputProtocol.Transport.FlushAsync(cancellationToken);
@@ -811,7 +811,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
 
       public async global::System.Threading.Tasks.Task<global::Apache.Hive.Service.Rpc.Thrift.Reference.TFetchResultsResp> recv_FetchResults(CancellationToken cancellationToken = default)
       {
-        
+
         var tmp616 = await InputProtocol.ReadMessageBeginAsync(cancellationToken);
         if (tmp616.Type == TMessageType.Exception)
         {
@@ -839,11 +839,11 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
       public async global::System.Threading.Tasks.Task send_GetDelegationToken(global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetDelegationTokenReq @req, CancellationToken cancellationToken = default)
       {
         await OutputProtocol.WriteMessageBeginAsync(new TMessage("GetDelegationToken", TMessageType.Call, SeqId), cancellationToken);
-        
+
         var tmp619 = new InternalStructs.GetDelegationToken_args() {
           Req = @req,
         };
-        
+
         await tmp619.WriteAsync(OutputProtocol, cancellationToken);
         await OutputProtocol.WriteMessageEndAsync(cancellationToken);
         await OutputProtocol.Transport.FlushAsync(cancellationToken);
@@ -851,7 +851,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
 
       public async global::System.Threading.Tasks.Task<global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetDelegationTokenResp> recv_GetDelegationToken(CancellationToken cancellationToken = default)
       {
-        
+
         var tmp620 = await InputProtocol.ReadMessageBeginAsync(cancellationToken);
         if (tmp620.Type == TMessageType.Exception)
         {
@@ -879,11 +879,11 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
       public async global::System.Threading.Tasks.Task send_CancelDelegationToken(global::Apache.Hive.Service.Rpc.Thrift.Reference.TCancelDelegationTokenReq @req, CancellationToken cancellationToken = default)
       {
         await OutputProtocol.WriteMessageBeginAsync(new TMessage("CancelDelegationToken", TMessageType.Call, SeqId), cancellationToken);
-        
+
         var tmp623 = new InternalStructs.CancelDelegationToken_args() {
           Req = @req,
         };
-        
+
         await tmp623.WriteAsync(OutputProtocol, cancellationToken);
         await OutputProtocol.WriteMessageEndAsync(cancellationToken);
         await OutputProtocol.Transport.FlushAsync(cancellationToken);
@@ -891,7 +891,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
 
       public async global::System.Threading.Tasks.Task<global::Apache.Hive.Service.Rpc.Thrift.Reference.TCancelDelegationTokenResp> recv_CancelDelegationToken(CancellationToken cancellationToken = default)
       {
-        
+
         var tmp624 = await InputProtocol.ReadMessageBeginAsync(cancellationToken);
         if (tmp624.Type == TMessageType.Exception)
         {
@@ -919,11 +919,11 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
       public async global::System.Threading.Tasks.Task send_RenewDelegationToken(global::Apache.Hive.Service.Rpc.Thrift.Reference.TRenewDelegationTokenReq @req, CancellationToken cancellationToken = default)
       {
         await OutputProtocol.WriteMessageBeginAsync(new TMessage("RenewDelegationToken", TMessageType.Call, SeqId), cancellationToken);
-        
+
         var tmp627 = new InternalStructs.RenewDelegationToken_args() {
           Req = @req,
         };
-        
+
         await tmp627.WriteAsync(OutputProtocol, cancellationToken);
         await OutputProtocol.WriteMessageEndAsync(cancellationToken);
         await OutputProtocol.Transport.FlushAsync(cancellationToken);
@@ -931,7 +931,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
 
       public async global::System.Threading.Tasks.Task<global::Apache.Hive.Service.Rpc.Thrift.Reference.TRenewDelegationTokenResp> recv_RenewDelegationToken(CancellationToken cancellationToken = default)
       {
-        
+
         var tmp628 = await InputProtocol.ReadMessageBeginAsync(cancellationToken);
         if (tmp628.Type == TMessageType.Exception)
         {
@@ -959,11 +959,11 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
       public async global::System.Threading.Tasks.Task send_GetQueryId(global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetQueryIdReq @req, CancellationToken cancellationToken = default)
       {
         await OutputProtocol.WriteMessageBeginAsync(new TMessage("GetQueryId", TMessageType.Call, SeqId), cancellationToken);
-        
+
         var tmp631 = new InternalStructs.GetQueryId_args() {
           Req = @req,
         };
-        
+
         await tmp631.WriteAsync(OutputProtocol, cancellationToken);
         await OutputProtocol.WriteMessageEndAsync(cancellationToken);
         await OutputProtocol.Transport.FlushAsync(cancellationToken);
@@ -971,7 +971,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
 
       public async global::System.Threading.Tasks.Task<global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetQueryIdResp> recv_GetQueryId(CancellationToken cancellationToken = default)
       {
-        
+
         var tmp632 = await InputProtocol.ReadMessageBeginAsync(cancellationToken);
         if (tmp632.Type == TMessageType.Exception)
         {
@@ -999,11 +999,11 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
       public async global::System.Threading.Tasks.Task send_SetClientInfo(global::Apache.Hive.Service.Rpc.Thrift.Reference.TSetClientInfoReq @req, CancellationToken cancellationToken = default)
       {
         await OutputProtocol.WriteMessageBeginAsync(new TMessage("SetClientInfo", TMessageType.Call, SeqId), cancellationToken);
-        
+
         var tmp635 = new InternalStructs.SetClientInfo_args() {
           Req = @req,
         };
-        
+
         await tmp635.WriteAsync(OutputProtocol, cancellationToken);
         await OutputProtocol.WriteMessageEndAsync(cancellationToken);
         await OutputProtocol.Transport.FlushAsync(cancellationToken);
@@ -1011,7 +1011,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
 
       public async global::System.Threading.Tasks.Task<global::Apache.Hive.Service.Rpc.Thrift.Reference.TSetClientInfoResp> recv_SetClientInfo(CancellationToken cancellationToken = default)
       {
-        
+
         var tmp636 = await InputProtocol.ReadMessageBeginAsync(cancellationToken);
         if (tmp636.Type == TMessageType.Exception)
         {
@@ -1039,11 +1039,11 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
       public async global::System.Threading.Tasks.Task send_UploadData(global::Apache.Hive.Service.Rpc.Thrift.Reference.TUploadDataReq @req, CancellationToken cancellationToken = default)
       {
         await OutputProtocol.WriteMessageBeginAsync(new TMessage("UploadData", TMessageType.Call, SeqId), cancellationToken);
-        
+
         var tmp639 = new InternalStructs.UploadData_args() {
           Req = @req,
         };
-        
+
         await tmp639.WriteAsync(OutputProtocol, cancellationToken);
         await OutputProtocol.WriteMessageEndAsync(cancellationToken);
         await OutputProtocol.Transport.FlushAsync(cancellationToken);
@@ -1051,7 +1051,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
 
       public async global::System.Threading.Tasks.Task<global::Apache.Hive.Service.Rpc.Thrift.Reference.TUploadDataResp> recv_UploadData(CancellationToken cancellationToken = default)
       {
-        
+
         var tmp640 = await InputProtocol.ReadMessageBeginAsync(cancellationToken);
         if (tmp640.Type == TMessageType.Exception)
         {
@@ -1079,11 +1079,11 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
       public async global::System.Threading.Tasks.Task send_DownloadData(global::Apache.Hive.Service.Rpc.Thrift.Reference.TDownloadDataReq @req, CancellationToken cancellationToken = default)
       {
         await OutputProtocol.WriteMessageBeginAsync(new TMessage("DownloadData", TMessageType.Call, SeqId), cancellationToken);
-        
+
         var tmp643 = new InternalStructs.DownloadData_args() {
           Req = @req,
         };
-        
+
         await tmp643.WriteAsync(OutputProtocol, cancellationToken);
         await OutputProtocol.WriteMessageEndAsync(cancellationToken);
         await OutputProtocol.Transport.FlushAsync(cancellationToken);
@@ -1091,7 +1091,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
 
       public async global::System.Threading.Tasks.Task<global::Apache.Hive.Service.Rpc.Thrift.Reference.TDownloadDataResp> recv_DownloadData(CancellationToken cancellationToken = default)
       {
-        
+
         var tmp644 = await InputProtocol.ReadMessageBeginAsync(cancellationToken);
         if (tmp644.Type == TMessageType.Exception)
         {
@@ -1196,7 +1196,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
         try
         {
           tmp648.Success = await _iAsync.OpenSession(tmp647.Req, cancellationToken);
-          await oprot.WriteMessageBeginAsync(new TMessage("OpenSession", TMessageType.Reply, seqid), cancellationToken); 
+          await oprot.WriteMessageBeginAsync(new TMessage("OpenSession", TMessageType.Reply, seqid), cancellationToken);
           await tmp648.WriteAsync(oprot, cancellationToken);
         }
         catch (TTransportException)
@@ -1227,7 +1227,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
         try
         {
           tmp653.Success = await _iAsync.CloseSession(tmp652.Req, cancellationToken);
-          await oprot.WriteMessageBeginAsync(new TMessage("CloseSession", TMessageType.Reply, seqid), cancellationToken); 
+          await oprot.WriteMessageBeginAsync(new TMessage("CloseSession", TMessageType.Reply, seqid), cancellationToken);
           await tmp653.WriteAsync(oprot, cancellationToken);
         }
         catch (TTransportException)
@@ -1258,7 +1258,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
         try
         {
           tmp658.Success = await _iAsync.GetInfo(tmp657.Req, cancellationToken);
-          await oprot.WriteMessageBeginAsync(new TMessage("GetInfo", TMessageType.Reply, seqid), cancellationToken); 
+          await oprot.WriteMessageBeginAsync(new TMessage("GetInfo", TMessageType.Reply, seqid), cancellationToken);
           await tmp658.WriteAsync(oprot, cancellationToken);
         }
         catch (TTransportException)
@@ -1289,7 +1289,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
         try
         {
           tmp663.Success = await _iAsync.ExecuteStatement(tmp662.Req, cancellationToken);
-          await oprot.WriteMessageBeginAsync(new TMessage("ExecuteStatement", TMessageType.Reply, seqid), cancellationToken); 
+          await oprot.WriteMessageBeginAsync(new TMessage("ExecuteStatement", TMessageType.Reply, seqid), cancellationToken);
           await tmp663.WriteAsync(oprot, cancellationToken);
         }
         catch (TTransportException)
@@ -1320,7 +1320,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
         try
         {
           tmp668.Success = await _iAsync.GetTypeInfo(tmp667.Req, cancellationToken);
-          await oprot.WriteMessageBeginAsync(new TMessage("GetTypeInfo", TMessageType.Reply, seqid), cancellationToken); 
+          await oprot.WriteMessageBeginAsync(new TMessage("GetTypeInfo", TMessageType.Reply, seqid), cancellationToken);
           await tmp668.WriteAsync(oprot, cancellationToken);
         }
         catch (TTransportException)
@@ -1351,7 +1351,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
         try
         {
           tmp673.Success = await _iAsync.GetCatalogs(tmp672.Req, cancellationToken);
-          await oprot.WriteMessageBeginAsync(new TMessage("GetCatalogs", TMessageType.Reply, seqid), cancellationToken); 
+          await oprot.WriteMessageBeginAsync(new TMessage("GetCatalogs", TMessageType.Reply, seqid), cancellationToken);
           await tmp673.WriteAsync(oprot, cancellationToken);
         }
         catch (TTransportException)
@@ -1382,7 +1382,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
         try
         {
           tmp678.Success = await _iAsync.GetSchemas(tmp677.Req, cancellationToken);
-          await oprot.WriteMessageBeginAsync(new TMessage("GetSchemas", TMessageType.Reply, seqid), cancellationToken); 
+          await oprot.WriteMessageBeginAsync(new TMessage("GetSchemas", TMessageType.Reply, seqid), cancellationToken);
           await tmp678.WriteAsync(oprot, cancellationToken);
         }
         catch (TTransportException)
@@ -1413,7 +1413,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
         try
         {
           tmp683.Success = await _iAsync.GetTables(tmp682.Req, cancellationToken);
-          await oprot.WriteMessageBeginAsync(new TMessage("GetTables", TMessageType.Reply, seqid), cancellationToken); 
+          await oprot.WriteMessageBeginAsync(new TMessage("GetTables", TMessageType.Reply, seqid), cancellationToken);
           await tmp683.WriteAsync(oprot, cancellationToken);
         }
         catch (TTransportException)
@@ -1444,7 +1444,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
         try
         {
           tmp688.Success = await _iAsync.GetTableTypes(tmp687.Req, cancellationToken);
-          await oprot.WriteMessageBeginAsync(new TMessage("GetTableTypes", TMessageType.Reply, seqid), cancellationToken); 
+          await oprot.WriteMessageBeginAsync(new TMessage("GetTableTypes", TMessageType.Reply, seqid), cancellationToken);
           await tmp688.WriteAsync(oprot, cancellationToken);
         }
         catch (TTransportException)
@@ -1475,7 +1475,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
         try
         {
           tmp693.Success = await _iAsync.GetColumns(tmp692.Req, cancellationToken);
-          await oprot.WriteMessageBeginAsync(new TMessage("GetColumns", TMessageType.Reply, seqid), cancellationToken); 
+          await oprot.WriteMessageBeginAsync(new TMessage("GetColumns", TMessageType.Reply, seqid), cancellationToken);
           await tmp693.WriteAsync(oprot, cancellationToken);
         }
         catch (TTransportException)
@@ -1506,7 +1506,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
         try
         {
           tmp698.Success = await _iAsync.GetFunctions(tmp697.Req, cancellationToken);
-          await oprot.WriteMessageBeginAsync(new TMessage("GetFunctions", TMessageType.Reply, seqid), cancellationToken); 
+          await oprot.WriteMessageBeginAsync(new TMessage("GetFunctions", TMessageType.Reply, seqid), cancellationToken);
           await tmp698.WriteAsync(oprot, cancellationToken);
         }
         catch (TTransportException)
@@ -1537,7 +1537,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
         try
         {
           tmp703.Success = await _iAsync.GetPrimaryKeys(tmp702.Req, cancellationToken);
-          await oprot.WriteMessageBeginAsync(new TMessage("GetPrimaryKeys", TMessageType.Reply, seqid), cancellationToken); 
+          await oprot.WriteMessageBeginAsync(new TMessage("GetPrimaryKeys", TMessageType.Reply, seqid), cancellationToken);
           await tmp703.WriteAsync(oprot, cancellationToken);
         }
         catch (TTransportException)
@@ -1568,7 +1568,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
         try
         {
           tmp708.Success = await _iAsync.GetCrossReference(tmp707.Req, cancellationToken);
-          await oprot.WriteMessageBeginAsync(new TMessage("GetCrossReference", TMessageType.Reply, seqid), cancellationToken); 
+          await oprot.WriteMessageBeginAsync(new TMessage("GetCrossReference", TMessageType.Reply, seqid), cancellationToken);
           await tmp708.WriteAsync(oprot, cancellationToken);
         }
         catch (TTransportException)
@@ -1599,7 +1599,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
         try
         {
           tmp713.Success = await _iAsync.GetOperationStatus(tmp712.Req, cancellationToken);
-          await oprot.WriteMessageBeginAsync(new TMessage("GetOperationStatus", TMessageType.Reply, seqid), cancellationToken); 
+          await oprot.WriteMessageBeginAsync(new TMessage("GetOperationStatus", TMessageType.Reply, seqid), cancellationToken);
           await tmp713.WriteAsync(oprot, cancellationToken);
         }
         catch (TTransportException)
@@ -1630,7 +1630,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
         try
         {
           tmp718.Success = await _iAsync.CancelOperation(tmp717.Req, cancellationToken);
-          await oprot.WriteMessageBeginAsync(new TMessage("CancelOperation", TMessageType.Reply, seqid), cancellationToken); 
+          await oprot.WriteMessageBeginAsync(new TMessage("CancelOperation", TMessageType.Reply, seqid), cancellationToken);
           await tmp718.WriteAsync(oprot, cancellationToken);
         }
         catch (TTransportException)
@@ -1661,7 +1661,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
         try
         {
           tmp723.Success = await _iAsync.CloseOperation(tmp722.Req, cancellationToken);
-          await oprot.WriteMessageBeginAsync(new TMessage("CloseOperation", TMessageType.Reply, seqid), cancellationToken); 
+          await oprot.WriteMessageBeginAsync(new TMessage("CloseOperation", TMessageType.Reply, seqid), cancellationToken);
           await tmp723.WriteAsync(oprot, cancellationToken);
         }
         catch (TTransportException)
@@ -1692,7 +1692,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
         try
         {
           tmp728.Success = await _iAsync.GetResultSetMetadata(tmp727.Req, cancellationToken);
-          await oprot.WriteMessageBeginAsync(new TMessage("GetResultSetMetadata", TMessageType.Reply, seqid), cancellationToken); 
+          await oprot.WriteMessageBeginAsync(new TMessage("GetResultSetMetadata", TMessageType.Reply, seqid), cancellationToken);
           await tmp728.WriteAsync(oprot, cancellationToken);
         }
         catch (TTransportException)
@@ -1723,7 +1723,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
         try
         {
           tmp733.Success = await _iAsync.FetchResults(tmp732.Req, cancellationToken);
-          await oprot.WriteMessageBeginAsync(new TMessage("FetchResults", TMessageType.Reply, seqid), cancellationToken); 
+          await oprot.WriteMessageBeginAsync(new TMessage("FetchResults", TMessageType.Reply, seqid), cancellationToken);
           await tmp733.WriteAsync(oprot, cancellationToken);
         }
         catch (TTransportException)
@@ -1754,7 +1754,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
         try
         {
           tmp738.Success = await _iAsync.GetDelegationToken(tmp737.Req, cancellationToken);
-          await oprot.WriteMessageBeginAsync(new TMessage("GetDelegationToken", TMessageType.Reply, seqid), cancellationToken); 
+          await oprot.WriteMessageBeginAsync(new TMessage("GetDelegationToken", TMessageType.Reply, seqid), cancellationToken);
           await tmp738.WriteAsync(oprot, cancellationToken);
         }
         catch (TTransportException)
@@ -1785,7 +1785,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
         try
         {
           tmp743.Success = await _iAsync.CancelDelegationToken(tmp742.Req, cancellationToken);
-          await oprot.WriteMessageBeginAsync(new TMessage("CancelDelegationToken", TMessageType.Reply, seqid), cancellationToken); 
+          await oprot.WriteMessageBeginAsync(new TMessage("CancelDelegationToken", TMessageType.Reply, seqid), cancellationToken);
           await tmp743.WriteAsync(oprot, cancellationToken);
         }
         catch (TTransportException)
@@ -1816,7 +1816,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
         try
         {
           tmp748.Success = await _iAsync.RenewDelegationToken(tmp747.Req, cancellationToken);
-          await oprot.WriteMessageBeginAsync(new TMessage("RenewDelegationToken", TMessageType.Reply, seqid), cancellationToken); 
+          await oprot.WriteMessageBeginAsync(new TMessage("RenewDelegationToken", TMessageType.Reply, seqid), cancellationToken);
           await tmp748.WriteAsync(oprot, cancellationToken);
         }
         catch (TTransportException)
@@ -1847,7 +1847,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
         try
         {
           tmp753.Success = await _iAsync.GetQueryId(tmp752.Req, cancellationToken);
-          await oprot.WriteMessageBeginAsync(new TMessage("GetQueryId", TMessageType.Reply, seqid), cancellationToken); 
+          await oprot.WriteMessageBeginAsync(new TMessage("GetQueryId", TMessageType.Reply, seqid), cancellationToken);
           await tmp753.WriteAsync(oprot, cancellationToken);
         }
         catch (TTransportException)
@@ -1878,7 +1878,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
         try
         {
           tmp758.Success = await _iAsync.SetClientInfo(tmp757.Req, cancellationToken);
-          await oprot.WriteMessageBeginAsync(new TMessage("SetClientInfo", TMessageType.Reply, seqid), cancellationToken); 
+          await oprot.WriteMessageBeginAsync(new TMessage("SetClientInfo", TMessageType.Reply, seqid), cancellationToken);
           await tmp758.WriteAsync(oprot, cancellationToken);
         }
         catch (TTransportException)
@@ -1909,7 +1909,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
         try
         {
           tmp763.Success = await _iAsync.UploadData(tmp762.Req, cancellationToken);
-          await oprot.WriteMessageBeginAsync(new TMessage("UploadData", TMessageType.Reply, seqid), cancellationToken); 
+          await oprot.WriteMessageBeginAsync(new TMessage("UploadData", TMessageType.Reply, seqid), cancellationToken);
           await tmp763.WriteAsync(oprot, cancellationToken);
         }
         catch (TTransportException)
@@ -1940,7 +1940,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
         try
         {
           tmp768.Success = await _iAsync.DownloadData(tmp767.Req, cancellationToken);
-          await oprot.WriteMessageBeginAsync(new TMessage("DownloadData", TMessageType.Reply, seqid), cancellationToken); 
+          await oprot.WriteMessageBeginAsync(new TMessage("DownloadData", TMessageType.Reply, seqid), cancellationToken);
           await tmp768.WriteAsync(oprot, cancellationToken);
         }
         catch (TTransportException)
@@ -2034,7 +2034,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -2177,7 +2177,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -2324,7 +2324,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -2467,7 +2467,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -2614,7 +2614,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -2757,7 +2757,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -2904,7 +2904,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -3047,7 +3047,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -3194,7 +3194,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -3337,7 +3337,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -3484,7 +3484,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -3627,7 +3627,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -3774,7 +3774,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -3917,7 +3917,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -4064,7 +4064,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -4207,7 +4207,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -4354,7 +4354,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -4497,7 +4497,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -4644,7 +4644,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -4787,7 +4787,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -4934,7 +4934,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -5077,7 +5077,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -5224,7 +5224,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -5367,7 +5367,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -5514,7 +5514,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -5657,7 +5657,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -5804,7 +5804,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -5947,7 +5947,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -6094,7 +6094,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -6237,7 +6237,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -6384,7 +6384,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -6527,7 +6527,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -6674,7 +6674,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -6817,7 +6817,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -6964,7 +6964,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -7107,7 +7107,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -7254,7 +7254,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -7397,7 +7397,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -7544,7 +7544,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -7687,7 +7687,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -7834,7 +7834,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -7977,7 +7977,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -8124,7 +8124,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -8267,7 +8267,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -8414,7 +8414,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -8557,7 +8557,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -8704,7 +8704,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -8847,7 +8847,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -8994,7 +8994,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }
@@ -9137,7 +9137,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                     await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   }
                   break;
-                default: 
+                default:
                   await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
                   break;
               }

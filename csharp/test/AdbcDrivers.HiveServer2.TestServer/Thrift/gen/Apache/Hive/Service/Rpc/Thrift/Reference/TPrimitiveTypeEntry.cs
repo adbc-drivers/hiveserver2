@@ -49,7 +49,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
     private global::Apache.Hive.Service.Rpc.Thrift.Reference.TTypeQualifiers _typeQualifiers;
 
     /// <summary>
-    /// 
+    ///
     /// <seealso cref="global::Apache.Hive.Service.Rpc.Thrift.Reference.TTypeId"/>
     /// </summary>
     public global::Apache.Hive.Service.Rpc.Thrift.Reference.TTypeId Type { get; set; }
@@ -135,7 +135,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                 await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
               }
               break;
-            default: 
+            default:
               await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
               break;
           }

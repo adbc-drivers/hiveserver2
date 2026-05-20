@@ -50,7 +50,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
     public global::Apache.Hive.Service.Rpc.Thrift.Reference.TSessionHandle SessionHandle { get; set; }
 
     /// <summary>
-    /// 
+    ///
     /// <seealso cref="global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetInfoType"/>
     /// </summary>
     public global::Apache.Hive.Service.Rpc.Thrift.Reference.TGetInfoType InfoType { get; set; }
@@ -118,7 +118,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                 await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
               }
               break;
-            default: 
+            default:
               await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
               break;
           }

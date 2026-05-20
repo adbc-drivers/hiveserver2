@@ -52,7 +52,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
     private string _errorMessage;
 
     /// <summary>
-    /// 
+    ///
     /// <seealso cref="global::Apache.Hive.Service.Rpc.Thrift.Reference.TStatusCode"/>
     /// </summary>
     public global::Apache.Hive.Service.Rpc.Thrift.Reference.TStatusCode StatusCode { get; set; }
@@ -234,7 +234,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                 await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
               }
               break;
-            default: 
+            default:
               await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
               break;
           }

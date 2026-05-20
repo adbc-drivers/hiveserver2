@@ -27,9 +27,12 @@ repos:
   rev: 63c8f8312b7559622c0d82815639671ae42132ac  # v2.4.1
   hooks:
   - id: codespell
+    # *.thrift files are vendored upstream IDL (e.g. apache/hive); typos in
+    # the upstream source aren't ours to fix.
     exclude: >
         (?x)^(
             .*go\.sum
+            | .*\.thrift
         )$
 
 - repo: https://github.com/pre-commit/pre-commit-hooks

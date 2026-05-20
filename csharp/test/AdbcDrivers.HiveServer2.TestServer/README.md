@@ -57,6 +57,24 @@ The two warnings the generator prints about `byte` vs `i8` and
 `list<byte>` vs `binary` come from upstream IDL conventions and are safe to
 ignore.
 
+The netstd generator emits trailing whitespace on many lines (notably after
+`default:` in switch statements). The repo's `trailing-whitespace`
+pre-commit hook will fail on those, so after regenerating, strip trailing
+whitespace from the `gen/` tree before committing — e.g.:
+
+```powershell
+Get-ChildItem gen -Recurse -Filter '*.cs' | ForEach-Object {
+    $c = [System.IO.File]::ReadAllText($_.FullName)
+    $cleaned = ($c -split "(`r?`n)" | ForEach-Object {
+        if ($_ -match "^[`r`n]*$") { $_ } else { $_ -replace '[ \t]+$','' }
+    }) -join ''
+    if ($cleaned -ne $c) { [System.IO.File]::WriteAllText($_.FullName, $cleaned) }
+}
+```
+
+The driver's hand-edited Thrift tree had the same cleanup applied, so this
+keeps the two trees consistent.
+
 ## Why this project defines NETSTANDARD2_0_OR_GREATER
 
 The netstd-generator output is guarded by:

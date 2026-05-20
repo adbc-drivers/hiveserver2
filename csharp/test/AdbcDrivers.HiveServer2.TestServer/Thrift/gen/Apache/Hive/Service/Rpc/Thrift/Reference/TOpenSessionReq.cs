@@ -51,7 +51,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
     private Dictionary<string, string> _configuration;
 
     /// <summary>
-    /// 
+    ///
     /// <seealso cref="global::Apache.Hive.Service.Rpc.Thrift.Reference.TProtocolVersion"/>
     /// </summary>
     public global::Apache.Hive.Service.Rpc.Thrift.Reference.TProtocolVersion Client_protocol { get; set; }
@@ -207,7 +207,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                 await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
               }
               break;
-            default: 
+            default:
               await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
               break;
           }

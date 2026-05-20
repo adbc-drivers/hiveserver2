@@ -51,7 +51,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
     public global::Apache.Hive.Service.Rpc.Thrift.Reference.THandleIdentifier OperationId { get; set; }
 
     /// <summary>
-    /// 
+    ///
     /// <seealso cref="global::Apache.Hive.Service.Rpc.Thrift.Reference.TOperationType"/>
     /// </summary>
     public global::Apache.Hive.Service.Rpc.Thrift.Reference.TOperationType OperationType { get; set; }
@@ -170,7 +170,7 @@ namespace Apache.Hive.Service.Rpc.Thrift.Reference
                 await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
               }
               break;
-            default: 
+            default:
               await TProtocolUtil.SkipAsync(iprot, field.Type, cancellationToken);
               break;
           }
