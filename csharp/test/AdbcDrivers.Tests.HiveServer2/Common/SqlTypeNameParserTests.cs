@@ -26,7 +26,7 @@ using AdbcDrivers.HiveServer2.Hive2;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace AdbcDrivers.Tests.HiveServer2.Hive2
+namespace AdbcDrivers.Tests.HiveServer2.Common
 {
     public class SqlTypeNameParserTests(ITestOutputHelper outputHelper)
     {
