@@ -62,9 +62,15 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
 
         public void Dispose()
         {
-            try { Connection.Dispose(); } catch { }
-            try { Database.Dispose(); } catch { }
-            try { Driver.Dispose(); } catch { }
+            // Disposal order matters: tear down the ADBC stack first (which
+            // closes the open session against the server) before stopping the
+            // server itself. Exceptions are allowed to propagate so a teardown
+            // bug surfaces as a real test failure instead of a silent leak;
+            // the in-process listener is bound to an ephemeral loopback port,
+            // so the OS reclaims it when the test process exits anyway.
+            Connection.Dispose();
+            Database.Dispose();
+            Driver.Dispose();
             _server.Dispose();
         }
     }

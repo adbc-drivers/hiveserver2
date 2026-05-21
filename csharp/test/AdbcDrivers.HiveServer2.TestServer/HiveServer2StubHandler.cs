@@ -176,7 +176,7 @@ namespace AdbcDrivers.HiveServer2.TestServer
             var resp = new TGetOperationStatusResp(Ok())
             {
                 OperationState = isError ? TOperationState.ERROR_STATE : TOperationState.FINISHED_STATE,
-                HasResultSet = op?.Result.Batches.Count > 0,
+                HasResultSet = HasResultSet(op?.Result),
             };
             if (isError)
             {
@@ -244,14 +244,23 @@ namespace AdbcDrivers.HiveServer2.TestServer
 
         private TOperationHandle RegisterOperation(TOperationType type, MockResult result)
         {
-            bool hasResultSet = result.Batches.Count > 0 || result.Schema.Columns.Count > 0;
-            var handle = new TOperationHandle(NewHandleId(), type, hasResultSet);
+            var handle = new TOperationHandle(NewHandleId(), type, HasResultSet(result));
             _operations[GuidOf(handle)] = new OperationEntry(result);
             return handle;
         }
 
         private OperationEntry? LookupOperation(TOperationHandle handle) =>
             _operations.TryGetValue(GuidOf(handle), out var entry) ? entry : null;
+
+        /// <summary>
+        /// A registered result has a result set whenever it carries a schema —
+        /// the row count is irrelevant. This matches HiveServer2 semantics
+        /// (an empty SELECT still has a result set) and keeps the value
+        /// returned from <c>RegisterOperation</c> consistent with what
+        /// <c>GetOperationStatus</c> reports later.
+        /// </summary>
+        private static bool HasResultSet(MockResult? result) =>
+            result?.Schema.Columns.Count > 0;
 
         private static TStatus Ok() => new(TStatusCode.SUCCESS_STATUS);
 

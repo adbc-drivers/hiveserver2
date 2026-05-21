@@ -43,9 +43,14 @@ dotnet test \
 popd
 
 # coverlet writes coverage.cobertura.xml under a guid-named subdirectory; pick
-# the most recent one and copy it to a stable path so the artifact-upload step
-# doesn't have to guess the directory name.
-latest_xml=$(find "${coverage_out_dir}" -name 'coverage.cobertura.xml' -print | head -n 1)
+# the newest one by modification time and copy it to a stable path so the
+# artifact-upload step doesn't have to guess the directory name. Today we only
+# run one TFM (single XML); the mtime sort keeps this honest if that ever
+# changes.
+latest_xml=$(find "${coverage_out_dir}" -name 'coverage.cobertura.xml' -printf '%T@ %p\n' \
+  | sort -nr \
+  | head -n 1 \
+  | cut -d' ' -f2-)
 if [ -z "${latest_xml}" ]; then
   echo "No coverage.cobertura.xml produced." >&2
   exit 1

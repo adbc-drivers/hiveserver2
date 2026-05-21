@@ -81,16 +81,17 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
         }
 
         [Fact]
-        public async Task UnsupportedRpc_SurfacesAsAdbcException()
+        public async Task DefaultStub_HappyPathExecuteStillWorks()
         {
-            // GetTypeInfo isn't implemented by the stub; calling it from the
-            // driver path should produce a TApplicationException that the
-            // driver wraps into something AdbcException-like.
+            // Smoke test: with the default stub configuration — which leaves
+            // several RPCs (GetTypeInfo, delegation tokens, etc.) wired to
+            // throw NotImplementedException — the basic ExecuteStatement /
+            // FetchResults flow still completes. This guards against a
+            // regression where one unimplemented-but-uninvoked RPC accidentally
+            // breaks the rest of the session.
             using var scenario = new MockServerScenario();
             using var statement = scenario.NewStatement();
             statement.SqlQuery = "SELECT 1";
-            // Smoke test: the basic happy path still works even when other RPCs
-            // would fail. This ensures one bad RPC doesn't poison the whole session.
             var result = await statement.ExecuteQueryAsync();
             Assert.NotNull(result.Stream);
         }
