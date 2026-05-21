@@ -83,3 +83,40 @@ jobs:
         shell: bash
         run: |
           ./ci/scripts/csharp_test.sh "${{ github.workspace }}"
+
+  coverage:
+    name: "Driver coverage (report-only)"
+    runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.pull_request.title, 'WIP') }}
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Setup .NET 8.0.x
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Build
+        run: |
+          ./ci/scripts/csharp_build.sh "${{ github.workspace }}"
+
+      - name: Collect coverage
+        # Coverage is informational only — failures here should not block CI.
+        continue-on-error: true
+        run: |
+          ./ci/scripts/csharp_coverage.sh "${{ github.workspace }}"
+
+      - name: Upload cobertura report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: driver-coverage-cobertura
+          path: ${{ github.workspace }}/coverage/coverage.cobertura.xml
+          if-no-files-found: warn
