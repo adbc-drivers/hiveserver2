@@ -32,7 +32,7 @@ using Apache.Arrow.Types;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace AdbcDrivers.Tests.HiveServer2.Hive2
+namespace AdbcDrivers.Tests.HiveServer2.Common
 {
     /// <summary>
     /// Class for testing the Decimal Utilities tests.
@@ -57,6 +57,47 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2
             }
             SqlDecimal actualDecimal = GetSqlDecimal128(actual, 0, precision, scale);
             if (expectedDecimal != null) Assert.Equal(expectedDecimal, actualDecimal);
+        }
+
+        [Theory]
+        // Whitespace handling — covers the AsciiSpace branches in every ParseState.
+        [InlineData("  12  ", 2, 0, 16, new byte[] { 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 })]
+        [InlineData(" 0.5 ", 2, 1, 16, new byte[] { 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 })]
+        [InlineData("0.5e0 ", 2, 1, 16, new byte[] { 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 })]
+        [InlineData("0.5e+0", 2, 1, 16, new byte[] { 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 })]
+        // Explicit positive sign on the leading number.
+        [InlineData("+12", 2, 0, 16, new byte[] { 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 })]
+        // Bare decimal point with no leading integer.
+        [InlineData(".5", 2, 1, 16, new byte[] { 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 })]
+        // Leading + with bare decimal.
+        [InlineData("+.5", 2, 1, 16, new byte[] { 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 })]
+        public void TestCanConvertDecimal_EdgeCases(string stringValue, int precision, int scale, int byteWidth, byte[] expected)
+        {
+            ReadOnlySpan<byte> value = Encoding.UTF8.GetBytes(stringValue);
+            byte[] actual = new byte[byteWidth];
+            DecimalUtility.GetBytes(value, precision, scale, byteWidth, actual);
+            Assert.Equal(expected, actual);
+        }
+
+        [Theory]
+        // Each input exits via a different ParseState.Invalid branch — together
+        // these drive the `else state.CurrentState = ParseState.Invalid` lines
+        // in every state of the parser.
+        [InlineData("abc")]              // garbage in StartWhiteSpace
+        [InlineData("12abc")]            // garbage in DigitOrDecimalOrExponent
+        [InlineData("12.5abc")]          // garbage in FractionOrExponent
+        [InlineData("12eX")]             // garbage in ExpSignOrExpValue
+        [InlineData("12e5x")]            // garbage in ExpValue
+        [InlineData("12 abc")]           // garbage following EndWhiteSpace
+        [InlineData(" .")]               // bare decimal with no digits at all
+        public void TestInvalidInput_Throws(string stringValue)
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(stringValue);
+            byte[] actual = new byte[16];
+            bool threw = false;
+            try { DecimalUtility.GetBytes(bytes, 10, 0, 16, actual); }
+            catch { threw = true; }
+            Assert.True(threw, $"Expected an exception for input '{stringValue}'.");
         }
 
         [Fact(Skip = "Run manually to confirm equivalent performance")]
