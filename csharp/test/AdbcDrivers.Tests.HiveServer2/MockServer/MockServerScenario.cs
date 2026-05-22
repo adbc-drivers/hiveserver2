@@ -16,39 +16,41 @@
 
 using System;
 using System.Collections.Generic;
-using AdbcDrivers.HiveServer2.Hive2;
 using AdbcDrivers.HiveServer2.TestServer;
 using Apache.Arrow.Adbc;
 
-namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
+namespace AdbcDrivers.Tests.HiveServer2.MockServer
 {
     /// <summary>
     /// Boilerplate-collapsing setup for a single mock-server test: spins up
     /// the in-process HiveServer2 mock, builds an <see cref="AdbcConnection"/>
-    /// against it, and exposes the underlying <see cref="HiveServer2StubHandler"/>
-    /// so the test can configure per-RPC behavior.
+    /// against it using the supplied driver + parameters, and exposes the
+    /// underlying <see cref="HiveServer2StubHandler"/> so the test can
+    /// configure per-RPC behavior. Flavor-agnostic; flavor-specific entry
+    /// points (e.g. <c>HiveMockServer.Create()</c>) live alongside each
+    /// flavor's tests.
     /// </summary>
     internal sealed class MockServerScenario : IDisposable
     {
         private readonly HiveServer2TestServer _server;
 
-        public MockServerScenario() : this(new HiveServer2StubHandler()) { }
-
-        public MockServerScenario(HiveServer2StubHandler stub)
+        public MockServerScenario(
+            AdbcDriver driver,
+            IReadOnlyDictionary<string, string> connectionParameters,
+            HiveServer2StubHandler stub)
         {
             Stub = stub;
+            Driver = driver;
             _server = new HiveServer2TestServer(stub);
 
-            var parameters = new Dictionary<string, string>
-            {
-                { AdbcOptions.Uri, _server.Uri.AbsoluteUri },
-                { HiveServer2Parameters.TransportType, HiveServer2TransportTypeConstants.Http },
-                { HiveServer2Parameters.AuthType, HiveServer2AuthTypeConstants.Basic },
-                { AdbcOptions.Username, "mock-user" },
-                { AdbcOptions.Password, "mock-password" },
-            };
+            // Inject the mock server's URI into a fresh dict so the caller's
+            // parameter map stays untouched. (Constructed from an IEnumerable
+            // rather than a dictionary copy ctor — the IReadOnlyDictionary
+            // overload doesn't exist on net472.)
+            var parameters = new Dictionary<string, string>();
+            foreach (var kvp in connectionParameters) parameters[kvp.Key] = kvp.Value;
+            parameters[AdbcOptions.Uri] = _server.Uri.AbsoluteUri;
 
-            Driver = new HiveServer2Driver();
             Database = Driver.Open(parameters);
             Connection = Database.Connect(parameters);
         }

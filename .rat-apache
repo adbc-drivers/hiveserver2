@@ -220,6 +220,10 @@ csharp/test/AdbcDrivers.Tests.HiveServer2/Common/CommonTestEnvironment.cs
 csharp/test/AdbcDrivers.Tests.HiveServer2/Common/ComplexTypesValueTests.cs
 csharp/test/AdbcDrivers.Tests.HiveServer2/Common/DateTimeValueTests.cs
 csharp/test/AdbcDrivers.Tests.HiveServer2/Common/DriverTests.cs
+csharp/test/AdbcDrivers.Tests.HiveServer2/Common/HiveServer2ParametersTest.cs
+csharp/test/AdbcDrivers.Tests.HiveServer2/Common/HiveServer2ProxyConfiguratorTests.cs
+csharp/test/AdbcDrivers.Tests.HiveServer2/Common/HiveServer2ReaderTest.cs
+csharp/test/AdbcDrivers.Tests.HiveServer2/Common/HiveServer2TlsImplTest.cs
 csharp/test/AdbcDrivers.Tests.HiveServer2/Common/NumericValueTests.cs
 csharp/test/AdbcDrivers.Tests.HiveServer2/Common/SqlTypeNameParserTests.cs
 csharp/test/AdbcDrivers.Tests.HiveServer2/Common/StatementTests.cs
@@ -230,11 +234,7 @@ csharp/test/AdbcDrivers.Tests.HiveServer2/Hive2/ClientTests.cs
 csharp/test/AdbcDrivers.Tests.HiveServer2/Hive2/DateTimeValueTests.cs
 csharp/test/AdbcDrivers.Tests.HiveServer2/Hive2/DecimalUtilityTests.cs
 csharp/test/AdbcDrivers.Tests.HiveServer2/Hive2/DriverTests.cs
-csharp/test/AdbcDrivers.Tests.HiveServer2/Hive2/HiveServer2ParametersTest.cs
-csharp/test/AdbcDrivers.Tests.HiveServer2/Hive2/HiveServer2ProxyConfiguratorTests.cs
-csharp/test/AdbcDrivers.Tests.HiveServer2/Hive2/HiveServer2ReaderTest.cs
 csharp/test/AdbcDrivers.Tests.HiveServer2/Hive2/HiveServer2TestEnvironment.cs
-csharp/test/AdbcDrivers.Tests.HiveServer2/Hive2/HiveServer2TlsImplTest.cs
 csharp/test/AdbcDrivers.Tests.HiveServer2/Hive2/NumericValueTests.cs
 csharp/test/AdbcDrivers.Tests.HiveServer2/Hive2/Resources/HiveData.sql
 csharp/test/AdbcDrivers.Tests.HiveServer2/Hive2/StatementTests.cs

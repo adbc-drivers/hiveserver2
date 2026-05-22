@@ -36,7 +36,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
         [Fact]
         public async Task GetTableTypes_ReturnsConfiguredTypes()
         {
-            using var scenario = new MockServerScenario();
+            using var scenario = HiveMockServer.Create();
             scenario.Stub.OnGetTableTypes = _ => MockResult.Builder()
                 .String("TABLE_TYPE", "TABLE", "VIEW", "SYSTEM_TABLE")
                 .Build();
@@ -54,7 +54,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
         [Fact]
         public async Task GetObjects_Catalogs_ReturnsConfiguredCatalogs()
         {
-            using var scenario = new MockServerScenario();
+            using var scenario = HiveMockServer.Create();
             scenario.Stub.OnGetCatalogs = _ => MockResult.Builder()
                 .String("TABLE_CAT", "main", "samples")
                 .Build();
@@ -76,7 +76,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
         [Fact]
         public async Task GetObjects_DbSchemas_FetchesSchemas()
         {
-            using var scenario = new MockServerScenario();
+            using var scenario = HiveMockServer.Create();
             scenario.Stub.OnGetCatalogs = _ => MockResult.Builder()
                 .String("TABLE_CAT", "main")
                 .Build();
@@ -98,7 +98,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
         [Fact]
         public async Task GetObjects_Tables_ReturnsAllLevels()
         {
-            using var scenario = new MockServerScenario();
+            using var scenario = HiveMockServer.Create();
             scenario.Stub.OnGetCatalogs = _ => MockResult.Builder()
                 .String("TABLE_CAT", "main")
                 .Build();
@@ -130,7 +130,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
             // Default stub returns empty metadata for every RPC; GetObjects must
             // still complete without throwing. The exact shape of the resulting
             // batch isn't important for this test.
-            using var scenario = new MockServerScenario();
+            using var scenario = HiveMockServer.Create();
             using IArrowArrayStream stream = scenario.Connection.GetObjects(
                 depth: AdbcConnection.GetObjectsDepth.All,
                 catalogPattern: null, dbSchemaPattern: null, tableNamePattern: null,

@@ -19,7 +19,7 @@ using AdbcDrivers.HiveServer2.Hive2;
 using AdbcDrivers.HiveServer2.Spark;
 using Xunit;
 
-namespace AdbcDrivers.Tests.HiveServer2.Hive2
+namespace AdbcDrivers.Tests.HiveServer2.Common
 {
     /// <summary>
     /// Unit tests for HiveServer2Connection.GetBaseAddress, focusing on correct

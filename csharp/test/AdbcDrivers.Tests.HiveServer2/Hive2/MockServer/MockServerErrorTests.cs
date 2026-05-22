@@ -66,7 +66,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
         [Fact]
         public async Task OperationError_ReportsErrorStateOnGetOperationStatus()
         {
-            using var scenario = new MockServerScenario();
+            using var scenario = HiveMockServer.Create();
             scenario.Stub.OnExecuteStatement = _ => MockResult.OperationError(
                 MockSchema.Of(("v", TTypeId.STRING_TYPE)),
                 message: "syntax error near 'BANANA'",
@@ -89,7 +89,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
             // FetchResults flow still completes. This guards against a
             // regression where one unimplemented-but-uninvoked RPC accidentally
             // breaks the rest of the session.
-            using var scenario = new MockServerScenario();
+            using var scenario = HiveMockServer.Create();
             using var statement = scenario.NewStatement();
             statement.SqlQuery = "SELECT 1";
             var result = await statement.ExecuteQueryAsync();

@@ -36,7 +36,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
         [Fact]
         public async Task MultipleBatches_AreAllReturnedInOrder()
         {
-            using var scenario = new MockServerScenario();
+            using var scenario = HiveMockServer.Create();
             var schema = MockSchema.Of(("v", TTypeId.BIGINT_TYPE));
             var batch1 = MockResult.Builder().Bigint("v", 1, 2, 3).Build().Batches[0];
             var batch2 = MockResult.Builder().Bigint("v", 4, 5).Build().Batches[0];
@@ -68,7 +68,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
         public async Task StatementText_IsForwardedToServer()
         {
             string? captured = null;
-            using var scenario = new MockServerScenario();
+            using var scenario = HiveMockServer.Create();
             scenario.Stub.OnExecuteStatement = req =>
             {
                 captured = req.Statement;
@@ -84,7 +84,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
         [Fact]
         public async Task ConnectionLifecycle_CanCreateAndDisposeMultipleStatements()
         {
-            using var scenario = new MockServerScenario();
+            using var scenario = HiveMockServer.Create();
             for (int i = 0; i < 3; i++)
             {
                 using AdbcStatement statement = scenario.NewStatement();

@@ -25,7 +25,7 @@ using System.Collections.Generic;
 using AdbcDrivers.HiveServer2.Hive2;
 using Xunit;
 
-namespace AdbcDrivers.Tests.HiveServer2.Hive2
+namespace AdbcDrivers.Tests.HiveServer2.Common
 {
     public class HiveServer2ParametersTest
     {

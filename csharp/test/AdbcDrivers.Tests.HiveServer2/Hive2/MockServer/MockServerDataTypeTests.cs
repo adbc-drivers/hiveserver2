@@ -126,7 +126,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
         [Fact]
         public async Task VarcharAndCharColumns_ReadAsStringArray()
         {
-            using var scenario = new MockServerScenario();
+            using var scenario = HiveMockServer.Create();
             scenario.Stub.OnExecuteStatement = _ => MockResult.Builder()
                 .Varchar("v", "x", "yy")
                 .Char("c", length: 4, "abcd", "wxyz")
@@ -196,7 +196,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
         [Fact]
         public async Task MultiColumnResult_PreservesSchemaOrder()
         {
-            using var scenario = new MockServerScenario();
+            using var scenario = HiveMockServer.Create();
             scenario.Stub.OnExecuteStatement = _ => MockResult.Builder()
                 .Bigint("id", 10, 20)
                 .String("name", "a", "b")
@@ -226,7 +226,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
         [Fact]
         public async Task EmptyResultSet_ReturnsEndOfStream()
         {
-            using var scenario = new MockServerScenario();
+            using var scenario = HiveMockServer.Create();
             scenario.Stub.OnExecuteStatement = _ => MockResult.Builder().Bigint("v" /* no values */).Build();
 
             using var statement = scenario.NewStatement();
@@ -256,7 +256,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
         /// </summary>
         private static async Task RunAsync<T>(MockResult result, Action<T> assertions) where T : IArrowArray
         {
-            using var scenario = new MockServerScenario();
+            using var scenario = HiveMockServer.Create();
             scenario.Stub.OnExecuteStatement = _ => result;
 
             using var statement = scenario.NewStatement();
