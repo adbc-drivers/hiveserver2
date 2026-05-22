@@ -114,14 +114,24 @@ namespace AdbcDrivers.HiveServer2.TestServer
             ("FUNCTION_TYPE", TTypeId.INT_TYPE),
             ("SPECIFIC_NAME", TTypeId.STRING_TYPE));
 
+        // Note: "KEQ_SEQ" is a misspelling of "KEY_SEQ" that originates in
+        // upstream Apache Hive/Spark — see
+        // https://apache.googlesource.com/spark/+/refs/heads/master/sql/hive-thriftserver/src/main/java/org/apache/hive/service/cli/operation/GetPrimaryKeysOperation.java
+        // The driver's MetadataColumnNames.ForeignKeyFields looks up the
+        // column under that same misspelling. We preserve it here so the mock
+        // faithfully mirrors what real Hive/Spark/Impala servers send on the
+        // wire; "fixing" the typo would make the mock diverge from reality
+        // and break tests that drive GetPrimaryKeys / GetCrossReference
+        // end-to-end through the driver.
         public static TTableSchema GetPrimaryKeysSchema { get; } = Of(
             ("TABLE_CAT", TTypeId.STRING_TYPE),
             ("TABLE_SCHEM", TTypeId.STRING_TYPE),
             ("TABLE_NAME", TTypeId.STRING_TYPE),
             ("COLUMN_NAME", TTypeId.STRING_TYPE),
-            ("KEY_SEQ", TTypeId.INT_TYPE),
+            ("KEQ_SEQ", TTypeId.INT_TYPE),
             ("PK_NAME", TTypeId.STRING_TYPE));
 
+        // "KEQ_SEQ" — see comment on GetPrimaryKeysSchema above.
         public static TTableSchema GetCrossReferenceSchema { get; } = Of(
             ("PKTABLE_CAT", TTypeId.STRING_TYPE),
             ("PKTABLE_SCHEM", TTypeId.STRING_TYPE),
@@ -131,7 +141,7 @@ namespace AdbcDrivers.HiveServer2.TestServer
             ("FKTABLE_SCHEM", TTypeId.STRING_TYPE),
             ("FKTABLE_NAME", TTypeId.STRING_TYPE),
             ("FKCOLUMN_NAME", TTypeId.STRING_TYPE),
-            ("KEY_SEQ", TTypeId.INT_TYPE),
+            ("KEQ_SEQ", TTypeId.INT_TYPE),
             ("UPDATE_RULE", TTypeId.INT_TYPE),
             ("DELETE_RULE", TTypeId.INT_TYPE),
             ("FK_NAME", TTypeId.STRING_TYPE),

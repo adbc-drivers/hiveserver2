@@ -97,8 +97,15 @@ namespace AdbcDrivers.Tests.HiveServer2.Spark.MockServer
             Assert.NotNull(result.Stream);
         }
 
+        // The two tests below confirm the driver wires up the auth path
+        // without throwing when configured with Token / OAuth credentials.
+        // They do *not* assert the exact outgoing Authorization header
+        // value — the mock server doesn't capture it today. A follow-up
+        // could extend HiveServer2TestServer to expose the inbound headers
+        // so these can tighten into "Bearer X was sent" assertions.
+
         [Fact]
-        public async Task AuthType_Token_BearerHeader()
+        public async Task AuthType_Token_OpensConnection()
         {
             var parameters = new Dictionary<string, string>
             {
@@ -114,7 +121,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Spark.MockServer
         }
 
         [Fact]
-        public async Task AuthType_OAuth_AccessToken()
+        public async Task AuthType_OAuth_OpensConnection()
         {
             var parameters = new Dictionary<string, string>
             {
