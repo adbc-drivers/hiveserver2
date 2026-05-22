@@ -92,16 +92,15 @@ namespace AdbcDrivers.HiveServer2.TestServer
         {
             try
             {
-                using (client)
-                using (NetworkStream stream = client.GetStream())
-                {
-                    if (!await TryNegotiateSaslAsync(stream).ConfigureAwait(false))
-                    {
-                        return;
-                    }
+                using TcpClient owned = client;
+                using NetworkStream stream = owned.GetStream();
 
-                    await ProcessFramedThriftAsync(stream).ConfigureAwait(false);
+                if (!await TryNegotiateSaslAsync(stream).ConfigureAwait(false))
+                {
+                    return;
                 }
+
+                await ProcessFramedThriftAsync(stream).ConfigureAwait(false);
             }
             catch (Exception)
             {
