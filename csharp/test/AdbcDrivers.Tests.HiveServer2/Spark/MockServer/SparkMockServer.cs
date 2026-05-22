@@ -15,6 +15,7 @@
  */
 
 using System.Collections.Generic;
+using System.Globalization;
 using AdbcDrivers.HiveServer2.Spark;
 using AdbcDrivers.HiveServer2.TestServer;
 using AdbcDrivers.Tests.HiveServer2.MockServer;
@@ -23,14 +24,12 @@ using Apache.Arrow.Adbc;
 namespace AdbcDrivers.Tests.HiveServer2.Spark.MockServer
 {
     /// <summary>
-    /// Factory for a Spark-flavored <see cref="MockServerScenario"/>: HTTP
-    /// transport, basic auth, in-process mock server. Use a non-null
-    /// <paramref name="parameters"/> to exercise other auth modes (token,
-    /// OAuth, username_only).
+    /// Factories for a Spark-flavored <see cref="MockServerScenario"/>.
+    /// <see cref="Create"/> uses the HTTP mock, <see cref="CreateStandard"/>
+    /// uses the TCP + SASL PLAIN mock.
     /// </summary>
     internal static class SparkMockServer
     {
-        /// <summary>Default Spark HTTP+basic-auth parameters; URI is filled in by the scenario.</summary>
         public static IReadOnlyDictionary<string, string> DefaultParameters => new Dictionary<string, string>
         {
             { SparkParameters.Type, SparkServerTypeConstants.Http },
@@ -39,11 +38,44 @@ namespace AdbcDrivers.Tests.HiveServer2.Spark.MockServer
             { AdbcOptions.Password, "mock-password" },
         };
 
+        public static IReadOnlyDictionary<string, string> DefaultStandardParameters => new Dictionary<string, string>
+        {
+            { SparkParameters.Type, SparkServerTypeConstants.Standard },
+            { SparkParameters.AuthType, SparkAuthTypeConstants.Basic },
+            // TLS is on by default for the Standard transport; the mock speaks plain TCP.
+            { AdbcDrivers.HiveServer2.Hive2.StandardTlsOptions.IsTlsEnabled, "false" },
+            { AdbcOptions.Username, "mock-user" },
+            { AdbcOptions.Password, "mock-password" },
+        };
+
         public static MockServerScenario Create(
             HiveServer2StubHandler? stub = null,
-            IReadOnlyDictionary<string, string>? parameters = null) =>
-            new(new SparkDriver(),
-                parameters ?? DefaultParameters,
-                stub ?? new HiveServer2StubHandler());
+            IReadOnlyDictionary<string, string>? parameters = null)
+        {
+            stub ??= new HiveServer2StubHandler();
+            var server = new HiveServer2TestServer(stub);
+            var full = ToMutableDict(parameters ?? DefaultParameters);
+            full[AdbcOptions.Uri] = server.Uri.AbsoluteUri;
+            return new MockServerScenario(new SparkDriver(), server, full, stub);
+        }
+
+        public static MockServerScenario CreateStandard(
+            HiveServer2StubHandler? stub = null,
+            IReadOnlyDictionary<string, string>? parameters = null)
+        {
+            stub ??= new HiveServer2StubHandler();
+            var server = new HiveServer2StandardTestServer(stub);
+            var full = ToMutableDict(parameters ?? DefaultStandardParameters);
+            full[SparkParameters.HostName] = server.HostName;
+            full[SparkParameters.Port] = server.Port.ToString(CultureInfo.InvariantCulture);
+            return new MockServerScenario(new SparkDriver(), server, full, stub);
+        }
+
+        private static Dictionary<string, string> ToMutableDict(IReadOnlyDictionary<string, string> source)
+        {
+            var result = new Dictionary<string, string>();
+            foreach (var kvp in source) result[kvp.Key] = kvp.Value;
+            return result;
+        }
     }
 }
