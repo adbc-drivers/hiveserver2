@@ -22,37 +22,30 @@ using Apache.Arrow.Adbc;
 namespace AdbcDrivers.Tests.HiveServer2.MockServer
 {
     /// <summary>
-    /// Boilerplate-collapsing setup for a single mock-server test: spins up
-    /// the in-process HiveServer2 mock, builds an <see cref="AdbcConnection"/>
-    /// against it using the supplied driver + parameters, and exposes the
-    /// underlying <see cref="HiveServer2StubHandler"/> so the test can
-    /// configure per-RPC behavior. Flavor-agnostic; flavor-specific entry
-    /// points (e.g. <c>HiveMockServer.Create()</c>) live alongside each
-    /// flavor's tests.
+    /// Boilerplate-collapsing setup for a single mock-server test: holds an
+    /// in-process test server (HTTP or TCP+SASL), an <see cref="AdbcConnection"/>
+    /// against it, and the underlying <see cref="HiveServer2StubHandler"/>
+    /// so the test can configure per-RPC behavior. Flavor-agnostic; flavor-
+    /// and transport-specific entry points (e.g. <c>HiveMockServer.Create()</c>
+    /// / <c>HiveMockServer.CreateStandard()</c>) live alongside each flavor's
+    /// tests.
     /// </summary>
     internal sealed class MockServerScenario : IDisposable
     {
-        private readonly HiveServer2TestServer _server;
+        private readonly IDisposable _server;
 
         public MockServerScenario(
             AdbcDriver driver,
+            IDisposable server,
             IReadOnlyDictionary<string, string> connectionParameters,
             HiveServer2StubHandler stub)
         {
             Stub = stub;
             Driver = driver;
-            _server = new HiveServer2TestServer(stub);
+            _server = server;
 
-            // Inject the mock server's URI into a fresh dict so the caller's
-            // parameter map stays untouched. (Constructed from an IEnumerable
-            // rather than a dictionary copy ctor — the IReadOnlyDictionary
-            // overload doesn't exist on net472.)
-            var parameters = new Dictionary<string, string>();
-            foreach (var kvp in connectionParameters) parameters[kvp.Key] = kvp.Value;
-            parameters[AdbcOptions.Uri] = _server.Uri.AbsoluteUri;
-
-            Database = Driver.Open(parameters);
-            Connection = Database.Connect(parameters);
+            Database = Driver.Open(connectionParameters);
+            Connection = Database.Connect(connectionParameters);
         }
 
         public HiveServer2StubHandler Stub { get; }
@@ -61,6 +54,23 @@ namespace AdbcDrivers.Tests.HiveServer2.MockServer
         public AdbcConnection Connection { get; }
 
         public AdbcStatement NewStatement() => Connection.CreateStatement();
+
+        /// <summary>
+        /// Copy an <see cref="IReadOnlyDictionary{TKey, TValue}"/> into a
+        /// mutable <see cref="Dictionary{TKey, TValue}"/>. Used by per-flavor
+        /// factories to lay down a fresh parameter dict they can inject
+        /// transport-specific keys into without mutating the caller's input.
+        /// </summary>
+        /// <remarks>
+        /// The <c>Dictionary(IReadOnlyDictionary)</c> copy constructor only
+        /// exists from net6.0 onward; this helper works on net472 too.
+        /// </remarks>
+        public static Dictionary<string, string> CopyParameters(IReadOnlyDictionary<string, string> source)
+        {
+            var result = new Dictionary<string, string>(source.Count);
+            foreach (var kvp in source) result[kvp.Key] = kvp.Value;
+            return result;
+        }
 
         public void Dispose()
         {

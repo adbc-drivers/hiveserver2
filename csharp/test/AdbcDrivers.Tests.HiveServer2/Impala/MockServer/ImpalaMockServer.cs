@@ -15,6 +15,7 @@
  */
 
 using System.Collections.Generic;
+using System.Globalization;
 using AdbcDrivers.HiveServer2.Impala;
 using AdbcDrivers.HiveServer2.TestServer;
 using AdbcDrivers.Tests.HiveServer2.MockServer;
@@ -23,8 +24,9 @@ using Apache.Arrow.Adbc;
 namespace AdbcDrivers.Tests.HiveServer2.Impala.MockServer
 {
     /// <summary>
-    /// Factory for an Impala-flavored <see cref="MockServerScenario"/>: HTTP
-    /// transport, basic auth, in-process mock server.
+    /// Factories for an Impala-flavored <see cref="MockServerScenario"/>.
+    /// <see cref="Create"/> uses the HTTP mock, <see cref="CreateStandard"/>
+    /// uses the TCP + SASL PLAIN mock.
     /// </summary>
     internal static class ImpalaMockServer
     {
@@ -36,11 +38,37 @@ namespace AdbcDrivers.Tests.HiveServer2.Impala.MockServer
             { AdbcOptions.Password, "mock-password" },
         };
 
+        public static IReadOnlyDictionary<string, string> DefaultStandardParameters => new Dictionary<string, string>
+        {
+            { ImpalaParameters.Type, ImpalaServerTypeConstants.Standard },
+            { ImpalaParameters.AuthType, ImpalaAuthTypeConstants.Basic },
+            // TLS is on by default for the Standard transport; the mock speaks plain TCP.
+            { AdbcDrivers.HiveServer2.Hive2.StandardTlsOptions.IsTlsEnabled, "false" },
+            { AdbcOptions.Username, "mock-user" },
+            { AdbcOptions.Password, "mock-password" },
+        };
+
         public static MockServerScenario Create(
             HiveServer2StubHandler? stub = null,
-            IReadOnlyDictionary<string, string>? parameters = null) =>
-            new(new ImpalaDriver(),
-                parameters ?? DefaultParameters,
-                stub ?? new HiveServer2StubHandler());
+            IReadOnlyDictionary<string, string>? parameters = null)
+        {
+            stub ??= new HiveServer2StubHandler();
+            var server = new HiveServer2TestServer(stub);
+            var full = MockServerScenario.CopyParameters(parameters ?? DefaultParameters);
+            full[AdbcOptions.Uri] = server.Uri.AbsoluteUri;
+            return new MockServerScenario(new ImpalaDriver(), server, full, stub);
+        }
+
+        public static MockServerScenario CreateStandard(
+            HiveServer2StubHandler? stub = null,
+            IReadOnlyDictionary<string, string>? parameters = null)
+        {
+            stub ??= new HiveServer2StubHandler();
+            var server = new HiveServer2StandardTestServer(stub);
+            var full = MockServerScenario.CopyParameters(parameters ?? DefaultStandardParameters);
+            full[ImpalaParameters.HostName] = server.HostName;
+            full[ImpalaParameters.Port] = server.Port.ToString(CultureInfo.InvariantCulture);
+            return new MockServerScenario(new ImpalaDriver(), server, full, stub);
+        }
     }
 }
