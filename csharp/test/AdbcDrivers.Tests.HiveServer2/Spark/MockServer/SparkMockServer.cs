@@ -54,7 +54,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Spark.MockServer
         {
             stub ??= new HiveServer2StubHandler();
             var server = new HiveServer2TestServer(stub);
-            var full = ToMutableDict(parameters ?? DefaultParameters);
+            var full = MockServerScenario.CopyParameters(parameters ?? DefaultParameters);
             full[AdbcOptions.Uri] = server.Uri.AbsoluteUri;
             return new MockServerScenario(new SparkDriver(), server, full, stub);
         }
@@ -65,17 +65,10 @@ namespace AdbcDrivers.Tests.HiveServer2.Spark.MockServer
         {
             stub ??= new HiveServer2StubHandler();
             var server = new HiveServer2StandardTestServer(stub);
-            var full = ToMutableDict(parameters ?? DefaultStandardParameters);
+            var full = MockServerScenario.CopyParameters(parameters ?? DefaultStandardParameters);
             full[SparkParameters.HostName] = server.HostName;
             full[SparkParameters.Port] = server.Port.ToString(CultureInfo.InvariantCulture);
             return new MockServerScenario(new SparkDriver(), server, full, stub);
-        }
-
-        private static Dictionary<string, string> ToMutableDict(IReadOnlyDictionary<string, string> source)
-        {
-            var result = new Dictionary<string, string>();
-            foreach (var kvp in source) result[kvp.Key] = kvp.Value;
-            return result;
         }
     }
 }

@@ -55,6 +55,23 @@ namespace AdbcDrivers.Tests.HiveServer2.MockServer
 
         public AdbcStatement NewStatement() => Connection.CreateStatement();
 
+        /// <summary>
+        /// Copy an <see cref="IReadOnlyDictionary{TKey, TValue}"/> into a
+        /// mutable <see cref="Dictionary{TKey, TValue}"/>. Used by per-flavor
+        /// factories to lay down a fresh parameter dict they can inject
+        /// transport-specific keys into without mutating the caller's input.
+        /// </summary>
+        /// <remarks>
+        /// The <c>Dictionary(IReadOnlyDictionary)</c> copy constructor only
+        /// exists from net6.0 onward; this helper works on net472 too.
+        /// </remarks>
+        public static Dictionary<string, string> CopyParameters(IReadOnlyDictionary<string, string> source)
+        {
+            var result = new Dictionary<string, string>(source.Count);
+            foreach (var kvp in source) result[kvp.Key] = kvp.Value;
+            return result;
+        }
+
         public void Dispose()
         {
             // Disposal order matters: tear down the ADBC stack first (which

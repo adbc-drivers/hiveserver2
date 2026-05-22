@@ -15,7 +15,6 @@
  */
 
 using System.Threading.Tasks;
-using AdbcDrivers.HiveServer2.TestServer;
 using Apache.Arrow;
 using Apache.Arrow.Adbc;
 using Apache.Arrow.Ipc;

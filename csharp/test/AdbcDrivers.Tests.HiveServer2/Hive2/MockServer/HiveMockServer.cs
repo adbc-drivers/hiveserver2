@@ -61,7 +61,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
         {
             stub ??= new HiveServer2StubHandler();
             var server = new HiveServer2TestServer(stub);
-            var full = ToMutableDict(parameters ?? DefaultParameters);
+            var full = MockServerScenario.CopyParameters(parameters ?? DefaultParameters);
             full[AdbcOptions.Uri] = server.Uri.AbsoluteUri;
             return new MockServerScenario(new HiveServer2Driver(), server, full, stub);
         }
@@ -72,18 +72,10 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
         {
             stub ??= new HiveServer2StubHandler();
             var server = new HiveServer2StandardTestServer(stub);
-            var full = ToMutableDict(parameters ?? DefaultStandardParameters);
+            var full = MockServerScenario.CopyParameters(parameters ?? DefaultStandardParameters);
             full[HiveServer2Parameters.HostName] = server.HostName;
             full[HiveServer2Parameters.Port] = server.Port.ToString(CultureInfo.InvariantCulture);
             return new MockServerScenario(new HiveServer2Driver(), server, full, stub);
-        }
-
-        private static Dictionary<string, string> ToMutableDict(IReadOnlyDictionary<string, string> source)
-        {
-            // IReadOnlyDictionary→Dictionary copy ctor doesn't exist on net472.
-            var result = new Dictionary<string, string>();
-            foreach (var kvp in source) result[kvp.Key] = kvp.Value;
-            return result;
         }
     }
 }

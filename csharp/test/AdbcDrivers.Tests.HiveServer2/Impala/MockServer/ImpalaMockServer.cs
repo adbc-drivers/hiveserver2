@@ -54,7 +54,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Impala.MockServer
         {
             stub ??= new HiveServer2StubHandler();
             var server = new HiveServer2TestServer(stub);
-            var full = ToMutableDict(parameters ?? DefaultParameters);
+            var full = MockServerScenario.CopyParameters(parameters ?? DefaultParameters);
             full[AdbcOptions.Uri] = server.Uri.AbsoluteUri;
             return new MockServerScenario(new ImpalaDriver(), server, full, stub);
         }
@@ -65,17 +65,10 @@ namespace AdbcDrivers.Tests.HiveServer2.Impala.MockServer
         {
             stub ??= new HiveServer2StubHandler();
             var server = new HiveServer2StandardTestServer(stub);
-            var full = ToMutableDict(parameters ?? DefaultStandardParameters);
+            var full = MockServerScenario.CopyParameters(parameters ?? DefaultStandardParameters);
             full[ImpalaParameters.HostName] = server.HostName;
             full[ImpalaParameters.Port] = server.Port.ToString(CultureInfo.InvariantCulture);
             return new MockServerScenario(new ImpalaDriver(), server, full, stub);
-        }
-
-        private static Dictionary<string, string> ToMutableDict(IReadOnlyDictionary<string, string> source)
-        {
-            var result = new Dictionary<string, string>();
-            foreach (var kvp in source) result[kvp.Key] = kvp.Value;
-            return result;
         }
     }
 }

@@ -19,6 +19,7 @@ using System.Buffers.Binary;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Apache.Hive.Service.Rpc.Thrift.Reference;
@@ -112,15 +113,19 @@ namespace AdbcDrivers.HiveServer2.TestServer
         /// <summary>
         /// Read the client's two SASL messages (Start + mechanism name, then
         /// Ok + auth payload), send one Complete reply. PLAIN is single-step
-        /// and we don't validate credentials — the test fixture is mock.
+        /// and we don't validate credentials — the test fixture is mock —
+        /// but we DO assert the mechanism name is "PLAIN" so a future driver
+        /// change that switches mechanism doesn't silently negotiate
+        /// successfully against this fixture.
         /// </summary>
         private static async Task<bool> TryNegotiateSaslAsync(NetworkStream stream)
         {
             try
             {
-                // SASL message 1: status=Start, payload=mechanism name (e.g. "PLAIN")
-                var (status1, _) = await ReadSaslMessageAsync(stream).ConfigureAwait(false);
+                // SASL message 1: status=Start, payload=mechanism name.
+                var (status1, mechanismBytes) = await ReadSaslMessageAsync(stream).ConfigureAwait(false);
                 if (status1 != SaslStatusStart) return false;
+                if (Encoding.UTF8.GetString(mechanismBytes) != "PLAIN") return false;
 
                 // SASL message 2: status=Ok, payload=PLAIN auth "\0username\0password"
                 var (status2, _) = await ReadSaslMessageAsync(stream).ConfigureAwait(false);
@@ -132,6 +137,7 @@ namespace AdbcDrivers.HiveServer2.TestServer
             }
             catch (EndOfStreamException) { return false; }
             catch (IOException) { return false; }
+            catch (InvalidDataException) { return false; }
         }
 
         /// <summary>
@@ -171,12 +177,26 @@ namespace AdbcDrivers.HiveServer2.TestServer
         private const byte SaslStatusOk = 0x02;
         private const byte SaslStatusComplete = 0x05;
 
+        // Generous upper bounds — the real handshake/frame sizes are tiny.
+        // Hard caps turn a corrupted-length-from-the-wire (e.g. a misframed
+        // payload or an unexpected TLS ClientHello whose first byte happens
+        // to match a SASL status) into a clean negotiation failure instead
+        // of an OOM or a multi-minute hang trying to read bytes that will
+        // never arrive.
+        private const int MaxSaslPayloadBytes = 64 * 1024;        // SASL PLAIN auth is well under 1 KiB
+        private const int MaxFramedPayloadBytes = 16 * 1024 * 1024; // 16 MiB matches typical Thrift defaults
+
         private static async Task<(byte status, byte[] payload)> ReadSaslMessageAsync(NetworkStream stream)
         {
             byte[] header = new byte[5];
             await ReadExactAsync(stream, header, 0, 5).ConfigureAwait(false);
             byte status = header[0];
             int length = BinaryPrimitives.ReadInt32BigEndian(header.AsSpan(1, 4));
+            if (length < 0 || length > MaxSaslPayloadBytes)
+            {
+                throw new InvalidDataException(
+                    $"SASL payload length {length} out of range [0, {MaxSaslPayloadBytes}].");
+            }
             byte[] payload = new byte[length];
             if (length > 0) await ReadExactAsync(stream, payload, 0, length).ConfigureAwait(false);
             return (status, payload);
@@ -208,7 +228,11 @@ namespace AdbcDrivers.HiveServer2.TestServer
                 read += n;
             }
             int length = BinaryPrimitives.ReadInt32BigEndian(lengthBytes);
-            if (length <= 0) throw new IOException($"Invalid frame length {length}.");
+            if (length <= 0 || length > MaxFramedPayloadBytes)
+            {
+                throw new IOException(
+                    $"Frame length {length} out of range (1, {MaxFramedPayloadBytes}].");
+            }
             byte[] payload = new byte[length];
             await ReadExactAsync(stream, payload, 0, length).ConfigureAwait(false);
             return payload;
