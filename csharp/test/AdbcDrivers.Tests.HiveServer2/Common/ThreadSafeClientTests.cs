@@ -31,7 +31,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
     /// </summary>
     public class ThreadSafeClientTests
     {
-        private static ThreadSafeClient NewClient(StubClient? inner = null) =>
+        private static ThreadSafeClient NewClient(TCLIService.IAsync? inner = null) =>
             new ThreadSafeClient(inner ?? new StubClient());
 
         [Fact]
@@ -140,18 +140,21 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
         [Fact]
         public async Task ConcurrentCalls_AreSerialized()
         {
-            // The semaphore guarantees mutual exclusion on the inner client.
-            // A non-thread-safe inner that increments a plain int would
-            // miscount under contention if the wrapper let calls overlap.
-            var s = new StubClient();
+            // Track max-observed concurrency inside the inner client. If
+            // ThreadSafeClient's semaphore is doing its job we should never
+            // see more than one in-flight call; if the semaphore were removed
+            // the small delay below would let several execute simultaneously
+            // and MaxConcurrent would climb above 1.
+            var s = new ConcurrencyProbeClient(delayPerCall: TimeSpan.FromMilliseconds(5));
             using ThreadSafeClient c = NewClient(s);
-            var tasks = new Task[50];
+            var tasks = new Task[10];
             for (int i = 0; i < tasks.Length; i++)
             {
                 tasks[i] = c.ExecuteStatement(new TExecuteStatementReq { Statement = $"SELECT {i}" });
             }
             await Task.WhenAll(tasks);
-            Assert.Equal(50, s.ExecuteStatementCalls);
+            Assert.Equal(10, s.TotalCalls);
+            Assert.Equal(1, s.MaxConcurrent);
         }
 
         [Fact]
@@ -222,6 +225,67 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
             public Task<TSetClientInfoResp> SetClientInfo(TSetClientInfoReq req, CancellationToken ct = default) { Interlocked.Increment(ref SetClientInfoCalls); return Task.FromResult(new TSetClientInfoResp()); }
             public Task<TUploadDataResp> UploadData(TUploadDataReq req, CancellationToken ct = default) { Interlocked.Increment(ref UploadDataCalls); return Task.FromResult(new TUploadDataResp()); }
             public Task<TDownloadDataResp> DownloadData(TDownloadDataReq req, CancellationToken ct = default) { Interlocked.Increment(ref DownloadDataCalls); return Task.FromResult(new TDownloadDataResp()); }
+        }
+
+        /// <summary>
+        /// TCLIService.IAsync stub that records concurrent in-flight calls.
+        /// Only ExecuteStatement is instrumented (the only method the
+        /// concurrency test drives); the rest are unused. ExecuteStatement
+        /// awaits a small delay while holding the in-flight slot so callers
+        /// that bypass mutual exclusion will overlap and bump MaxConcurrent.
+        /// </summary>
+        private sealed class ConcurrencyProbeClient : TCLIService.IAsync
+        {
+            private readonly TimeSpan _delay;
+            private int _inFlight;
+            public int TotalCalls;
+            public int MaxConcurrent;
+
+            public ConcurrencyProbeClient(TimeSpan delayPerCall) => _delay = delayPerCall;
+
+            public async Task<TExecuteStatementResp> ExecuteStatement(TExecuteStatementReq req, CancellationToken ct = default)
+            {
+                int now = Interlocked.Increment(ref _inFlight);
+                // Climb MaxConcurrent if this call is the highest observed.
+                int observed;
+                do { observed = MaxConcurrent; } while (now > observed && Interlocked.CompareExchange(ref MaxConcurrent, now, observed) != observed);
+                try
+                {
+                    await Task.Delay(_delay, ct).ConfigureAwait(false);
+                    Interlocked.Increment(ref TotalCalls);
+                    return new TExecuteStatementResp();
+                }
+                finally
+                {
+                    Interlocked.Decrement(ref _inFlight);
+                }
+            }
+
+            // Unused — required by the interface but never called in this test.
+            public Task<TOpenSessionResp> OpenSession(TOpenSessionReq req, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<TCloseSessionResp> CloseSession(TCloseSessionReq req, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<TGetInfoResp> GetInfo(TGetInfoReq req, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<TGetTypeInfoResp> GetTypeInfo(TGetTypeInfoReq req, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<TGetCatalogsResp> GetCatalogs(TGetCatalogsReq req, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<TGetSchemasResp> GetSchemas(TGetSchemasReq req, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<TGetTablesResp> GetTables(TGetTablesReq req, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<TGetTableTypesResp> GetTableTypes(TGetTableTypesReq req, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<TGetColumnsResp> GetColumns(TGetColumnsReq req, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<TGetFunctionsResp> GetFunctions(TGetFunctionsReq req, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<TGetPrimaryKeysResp> GetPrimaryKeys(TGetPrimaryKeysReq req, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<TGetCrossReferenceResp> GetCrossReference(TGetCrossReferenceReq req, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<TGetOperationStatusResp> GetOperationStatus(TGetOperationStatusReq req, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<TCancelOperationResp> CancelOperation(TCancelOperationReq req, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<TCloseOperationResp> CloseOperation(TCloseOperationReq req, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<TGetResultSetMetadataResp> GetResultSetMetadata(TGetResultSetMetadataReq req, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<TFetchResultsResp> FetchResults(TFetchResultsReq req, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<TGetDelegationTokenResp> GetDelegationToken(TGetDelegationTokenReq req, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<TCancelDelegationTokenResp> CancelDelegationToken(TCancelDelegationTokenReq req, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<TRenewDelegationTokenResp> RenewDelegationToken(TRenewDelegationTokenReq req, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<TGetQueryIdResp> GetQueryId(TGetQueryIdReq req, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<TSetClientInfoResp> SetClientInfo(TSetClientInfoReq req, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<TUploadDataResp> UploadData(TUploadDataReq req, CancellationToken ct = default) => throw new NotSupportedException();
+            public Task<TDownloadDataResp> DownloadData(TDownloadDataReq req, CancellationToken ct = default) => throw new NotSupportedException();
         }
     }
 }
