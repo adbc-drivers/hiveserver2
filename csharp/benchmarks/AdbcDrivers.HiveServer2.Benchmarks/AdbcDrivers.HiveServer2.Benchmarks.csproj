@@ -13,10 +13,13 @@
     <PackageReference Include="BenchmarkDotNet" />
   </ItemGroup>
 
-  <!-- Referenced for the real Apache.Arrow ArrowBuffer.BitmapBuilder baseline
-       in the boolean-packing benchmark (Apache.Arrow flows transitively). -->
+  <!-- The driver supplies the real Apache.Arrow ArrowBuffer.BitmapBuilder baseline
+       for the boolean-packing benchmark (Apache.Arrow flows transitively); the
+       TestServer fixture supplies the in-process mock for the end-to-end
+       benchmark. -->
   <ItemGroup>
     <ProjectReference Include="..\..\src\AdbcDrivers.HiveServer2\AdbcDrivers.HiveServer2.csproj" />
+    <ProjectReference Include="..\..\test\AdbcDrivers.HiveServer2.TestServer\AdbcDrivers.HiveServer2.TestServer.csproj" />
   </ItemGroup>
 
 </Project>
