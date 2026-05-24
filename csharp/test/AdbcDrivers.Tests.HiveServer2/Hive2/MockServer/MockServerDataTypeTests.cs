@@ -49,6 +49,29 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
                 });
 
         [Fact]
+        public Task BooleanColumn_LargeBatch_ExercisesVectorPackPath()
+        {
+            // 50 rows pushes past the 32-byte SIMD block so the vectorized
+            // boolean packing path and its scalar tail are both exercised
+            // end-to-end, with interleaved nulls.
+            var expected = new bool?[50];
+            for (int i = 0; i < expected.Length; i++)
+            {
+                expected[i] = (i % 7 == 0) ? (bool?)null : (i % 3 == 0);
+            }
+
+            return RunAsync(MockResult.Builder().Bool("v", expected).Build(),
+                (BooleanArray c) =>
+                {
+                    Assert.Equal(expected.Length, c.Length);
+                    for (int i = 0; i < expected.Length; i++)
+                    {
+                        Assert.Equal(expected[i], c.GetValue(i));
+                    }
+                });
+        }
+
+        [Fact]
         public Task TinyintColumn_ReadsAsInt8Array() =>
             RunAsync(MockResult.Builder().Tinyint("v", 1, -1, null, sbyte.MaxValue).Build(),
                 (Int8Array c) =>
@@ -122,6 +145,81 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
                     Assert.True(c.IsNull(2));
                     Assert.Equal(string.Empty, c.GetString(3));
                 });
+
+        [Fact]
+        public async Task StringColumn_Empty_DecodesWithoutError()
+        {
+            // A zero-length string column must decode cleanly (the value buffer
+            // starts empty and is wrapped as a zero-length slice). The driver
+            // signals end-of-stream with a null or zero-row batch; both are fine.
+            using var scenario = HiveMockServer.Create();
+            scenario.Stub.OnExecuteStatement = _ => MockResult.Builder().String("v" /* no values */).Build();
+
+            using var statement = scenario.NewStatement();
+            statement.SqlQuery = "SELECT v FROM t WHERE false";
+            var result = await statement.ExecuteQueryAsync();
+            using var stream = result.Stream!;
+            using var batch = await stream.ReadNextRecordBatchAsync();
+            if (batch != null)
+            {
+                Assert.Equal(0, batch.Length);
+                var c = Assert.IsType<StringArray>(batch.Column(0));
+                Assert.Equal(0, c.Length);
+            }
+        }
+
+        [Fact]
+        public Task StringColumn_LargeBatch_GrowsValueBuffer()
+        {
+            // ~2,500 strings of varying length push the value buffer well past
+            // its 64 KB initial capacity, exercising the grow-and-wrap path with
+            // nulls and empty strings interleaved.
+            var expected = new string?[2500];
+            for (int i = 0; i < expected.Length; i++)
+            {
+                expected[i] = (i % 11 == 0) ? null
+                            : (i % 13 == 0) ? string.Empty
+                            : $"row-{i}-" + new string((char)('a' + (i % 26)), i % 60);
+            }
+
+            return RunAsync(MockResult.Builder().String("v", expected).Build(),
+                (StringArray c) =>
+                {
+                    Assert.Equal(expected.Length, c.Length);
+                    for (int i = 0; i < expected.Length; i++)
+                    {
+                        if (expected[i] == null)
+                        {
+                            Assert.True(c.IsNull(i));
+                        }
+                        else
+                        {
+                            Assert.Equal(expected[i], c.GetString(i));
+                        }
+                    }
+                });
+        }
+
+        [Fact]
+        public Task BinaryColumn_LargeElement_GrowsBeyondInitialCapacity()
+        {
+            // The second element (200 KB) is larger than twice the current
+            // capacity, exercising the "required size wins over doubling" branch.
+            var small = new byte[] { 9, 8, 7 };
+            var big = new byte[200_000];
+            for (int i = 0; i < big.Length; i++)
+            {
+                big[i] = (byte)(i % 251);
+            }
+
+            return RunAsync(MockResult.Builder().Binary("v", small, big, null).Build(),
+                (BinaryArray c) =>
+                {
+                    Assert.Equal(small, c.GetBytes(0).ToArray());
+                    Assert.Equal(big, c.GetBytes(1).ToArray());
+                    Assert.True(c.IsNull(2));
+                });
+        }
 
         [Fact]
         public async Task VarcharAndCharColumns_ReadAsStringArray()
