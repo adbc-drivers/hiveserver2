@@ -136,6 +136,30 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
                 });
 
         [Fact]
+        public Task FloatColumn_LargeBatch_NarrowsWithNulls()
+        {
+            // 50 values exercise the vectorized double->float narrow path plus
+            // the scalar tail, with interleaved nulls (the validity bitmap is
+            // reused from the double source). Float values promoted to double on
+            // the wire narrow back exactly.
+            var expected = new float?[50];
+            for (int i = 0; i < expected.Length; i++)
+            {
+                expected[i] = (i % 7 == 0) ? (float?)null : (i * 1.5f - 3.25f);
+            }
+
+            return RunAsync(MockResult.Builder().Float("v", expected).Build(),
+                (FloatArray c) =>
+                {
+                    Assert.Equal(expected.Length, c.Length);
+                    for (int i = 0; i < expected.Length; i++)
+                    {
+                        Assert.Equal(expected[i], c.GetValue(i));
+                    }
+                });
+        }
+
+        [Fact]
         public Task StringColumn_ReadsAsStringArray() =>
             RunAsync(MockResult.Builder().String("v", "alpha", "beta", null, "").Build(),
                 (StringArray c) =>
