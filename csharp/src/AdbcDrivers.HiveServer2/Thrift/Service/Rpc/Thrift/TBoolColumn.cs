@@ -95,7 +95,6 @@ namespace Apache.Hive.Service.Rpc.Thrift
                   length = _list133.Count;
 
                   byte[] buffer = new byte[length];
-                  var memory = buffer.AsMemory();
                   iprot.Transport.CheckReadBytesAvailable(buffer.Length);
                   await iprot.Transport.ReadExactlyAsync(buffer.AsMemory(0, length), cancellationToken);
 
