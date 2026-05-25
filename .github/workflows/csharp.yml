@@ -115,7 +115,7 @@ jobs:
 
       - name: Upload cobertura report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: driver-coverage-cobertura
           path: ${{ github.workspace }}/coverage/coverage.cobertura.xml
