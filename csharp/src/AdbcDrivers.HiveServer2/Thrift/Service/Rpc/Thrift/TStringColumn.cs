@@ -74,11 +74,11 @@ namespace Apache.Hive.Service.Rpc.Thrift
         bool isset_nulls = false;
         TField field;
 
-        ArrowBuffer.Builder<byte> values = null;
+        byte[] valueBuffer = null;
+        int valueLength = 0;
         byte[] nulls = null;
         byte[] offsetBuffer = null;
         int length = -1;
-        byte[] preAllocatedBuffer = new byte[65536];
 
         await iprot.ReadStructBeginAsync(cancellationToken);
         while (true)
@@ -98,34 +98,32 @@ namespace Apache.Hive.Service.Rpc.Thrift
                   var _list187 = await iprot.ReadListBeginAsync(cancellationToken);
                   length = _list187.Count;
 
-                  values = new ArrowBuffer.Builder<byte>();
-                  int offset = 0;
                   offsetBuffer = new byte[(length + 1) * 4];
-                  var memory = offsetBuffer.AsMemory();
+
+                  // Accumulate value bytes in a buffer we grow ourselves so each
+                  // element can be read straight off the transport (no per-element
+                  // temp copy) and the result handed to Arrow as an exact-length
+                  // slice (no final copy). valueLength doubles as the running
+                  // byte offset written into the offsets buffer.
+                  valueBuffer = System.Array.Empty<byte>();
 
                   for(int _i188 = 0; _i188 < length; ++_i188)
                   {
-                    BinaryPrimitives.WriteInt32LittleEndian(memory.Span.Slice(_i188 * 4), offset);
+                    BinaryPrimitives.WriteInt32LittleEndian(offsetBuffer.AsSpan(_i188 * 4), valueLength);
 
                     var size = await iprot.ReadI32Async(cancellationToken);
-                    offset += size;
-
                     iprot.Transport.CheckReadBytesAvailable(size);
 
-                    byte[] tmp;
-                    if (size <= preAllocatedBuffer.Length)
+                    if (valueLength + size > valueBuffer.Length)
                     {
-                      tmp = preAllocatedBuffer;
-                    }
-                    else
-                    {
-                      tmp = new byte[size];
+                      int newCapacity = System.Math.Max(valueBuffer.Length == 0 ? 65536 : valueBuffer.Length * 2, valueLength + size);
+                      System.Array.Resize(ref valueBuffer, newCapacity);
                     }
 
-                    await iprot.Transport.ReadExactlyAsync(tmp.AsMemory(0, size), cancellationToken);
-                    values.Append(tmp.AsMemory(0, size).Span);
+                    await iprot.Transport.ReadExactlyAsync(valueBuffer.AsMemory(valueLength, size), cancellationToken);
+                    valueLength += size;
                   }
-                  BinaryPrimitives.WriteInt32LittleEndian(memory.Span.Slice(length * 4), offset);
+                  BinaryPrimitives.WriteInt32LittleEndian(offsetBuffer.AsSpan(length * 4), valueLength);
 
                   await iprot.ReadListEndAsync(cancellationToken);
                 }
@@ -165,7 +163,7 @@ namespace Apache.Hive.Service.Rpc.Thrift
           throw new TProtocolException(TProtocolException.INVALID_DATA);
         }
         ArrowBuffer validityBitmapBuffer = BitmapUtilities.GetValidityBitmapBuffer(ref nulls, length, out int nullCount);
-        Values = new StringArray(length, new ArrowBuffer(offsetBuffer), values.Build(), validityBitmapBuffer, nullCount);
+        Values = new StringArray(length, new ArrowBuffer(offsetBuffer), new ArrowBuffer(valueBuffer.AsMemory(0, valueLength)), validityBitmapBuffer, nullCount);
       }
       finally
       {

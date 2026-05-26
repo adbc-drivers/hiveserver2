@@ -72,7 +72,7 @@ namespace Apache.Hive.Service.Rpc.Thrift
         bool isset_nulls = false;
         TField field;
 
-        ArrowBuffer.BitmapBuilder values = null;
+        byte[] packedValues = null;
         byte[] nulls = null;
         int length = -1;
 
@@ -95,15 +95,10 @@ namespace Apache.Hive.Service.Rpc.Thrift
                   length = _list133.Count;
 
                   byte[] buffer = new byte[length];
-                  var memory = buffer.AsMemory();
                   iprot.Transport.CheckReadBytesAvailable(buffer.Length);
                   await iprot.Transport.ReadExactlyAsync(buffer.AsMemory(0, length), cancellationToken);
 
-                  values = new ArrowBuffer.BitmapBuilder(length);
-                  for (int _i134 = 0; _i134 < length; ++_i134)
-                  {
-                    values.Append(buffer[_i134] == 1);
-                  }
+                  packedValues = BitmapUtilities.PackBooleanValues(buffer);
                   await iprot.ReadListEndAsync(cancellationToken);
                 }
                 isset_values = true;
@@ -143,7 +138,7 @@ namespace Apache.Hive.Service.Rpc.Thrift
         }
 
         ArrowBuffer validityBitmapBuffer = BitmapUtilities.GetValidityBitmapBuffer(ref nulls, length, out int nullCount);
-        Values = new BooleanArray(values.Build(), validityBitmapBuffer, length, nullCount, 0);
+        Values = new BooleanArray(new ArrowBuffer(packedValues), validityBitmapBuffer, length, nullCount, 0);
       }
       finally
       {

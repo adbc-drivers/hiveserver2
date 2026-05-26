@@ -100,10 +100,7 @@ namespace Apache.Hive.Service.Rpc.Thrift
                   iprot.Transport.CheckReadBytesAvailable(buffer.Length);
                   await iprot.Transport.ReadExactlyAsync(memory, cancellationToken);
                   var longs = MemoryMarshal.Cast<byte, long>(memory.Span);
-                  for (int _i179 = 0; _i179 < longs.Length; ++_i179)
-                  {
-                    longs[_i179] = BinaryPrimitives.ReverseEndianness(longs[_i179]);
-                  }
+                  EndiannessUtilities.ReverseEndianness(longs);
                   await iprot.ReadListEndAsync(cancellationToken);
                 }
                 isset_values = true;

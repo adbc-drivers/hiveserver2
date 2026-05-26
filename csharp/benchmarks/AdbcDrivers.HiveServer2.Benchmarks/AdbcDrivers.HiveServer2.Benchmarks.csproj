@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <!-- BenchmarkDotNet generates a bootstrap project that does not satisfy
+         the repo-wide warnings-as-errors policy; relax it here only. -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" />
+  </ItemGroup>
+
+  <!-- The driver supplies the real Apache.Arrow ArrowBuffer.BitmapBuilder baseline
+       for the boolean-packing benchmark (Apache.Arrow flows transitively); the
+       TestServer fixture supplies the in-process mock for the end-to-end
+       benchmark. -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\AdbcDrivers.HiveServer2\AdbcDrivers.HiveServer2.csproj" />
+    <ProjectReference Include="..\..\test\AdbcDrivers.HiveServer2.TestServer\AdbcDrivers.HiveServer2.TestServer.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -25,6 +25,10 @@ using System.Buffers.Text;
 using System.Collections.Generic;
 using System.Data.SqlTypes;
 using System.Globalization;
+using System.Runtime.InteropServices;
+#if NET8_0_OR_GREATER
+using System.Runtime.Intrinsics;
+#endif
 using System.Threading;
 using System.Threading.Tasks;
 using Apache.Arrow;
@@ -231,16 +235,54 @@ namespace AdbcDrivers.HiveServer2.Hive2
 
         internal static FloatArray ConvertToFloat(DoubleArray array, IArrowType _)
         {
+            // The wire sends FLOAT columns as doubles; narrow the whole value
+            // buffer in one pass and reuse the source validity bitmap, instead of
+            // a per-element Builder.Append(GetValue(i)) loop. Null slots are
+            // narrowed too, but the bitmap masks them so their value is unused.
             int length = array.Length;
-            var resultArray = new FloatArray
-                .Builder()
-                .Reserve(length);
-            for (int i = 0; i < length; i++)
-            {
-                resultArray.Append((float?)array.GetValue(i));
-            }
+            byte[] buffer = new byte[length * sizeof(float)];
+            NarrowToSingle(array.Values, MemoryMarshal.Cast<byte, float>(buffer.AsSpan()));
+            return new FloatArray(new ArrowBuffer(buffer), array.NullBitmapBuffer, length, array.NullCount, 0);
+        }
 
-            return resultArray.Build();
+        /// <summary>
+        /// Narrows each <see cref="double"/> in <paramref name="source"/> to a
+        /// <see cref="float"/> in <paramref name="destination"/>. On .NET 8+ this
+        /// uses <see cref="Vector256.Narrow(Vector256{double}, Vector256{double})"/>
+        /// (with a 128-bit path for narrower hardware), then a scalar tail;
+        /// down-level targets narrow one element at a time.
+        /// </summary>
+        private static void NarrowToSingle(ReadOnlySpan<double> source, Span<float> destination)
+        {
+            int i = 0;
+#if NET8_0_OR_GREATER
+            if (Vector256.IsHardwareAccelerated && source.Length >= Vector256<float>.Count)
+            {
+                ref double src = ref MemoryMarshal.GetReference(source);
+                ref float dst = ref MemoryMarshal.GetReference(destination);
+                for (; i + Vector256<float>.Count <= source.Length; i += Vector256<float>.Count)
+                {
+                    Vector256<double> lower = Vector256.LoadUnsafe(ref src, (nuint)i);
+                    Vector256<double> upper = Vector256.LoadUnsafe(ref src, (nuint)(i + Vector256<double>.Count));
+                    Vector256.Narrow(lower, upper).StoreUnsafe(ref dst, (nuint)i);
+                }
+            }
+            else if (Vector128.IsHardwareAccelerated && source.Length >= Vector128<float>.Count)
+            {
+                ref double src = ref MemoryMarshal.GetReference(source);
+                ref float dst = ref MemoryMarshal.GetReference(destination);
+                for (; i + Vector128<float>.Count <= source.Length; i += Vector128<float>.Count)
+                {
+                    Vector128<double> lower = Vector128.LoadUnsafe(ref src, (nuint)i);
+                    Vector128<double> upper = Vector128.LoadUnsafe(ref src, (nuint)(i + Vector128<double>.Count));
+                    Vector128.Narrow(lower, upper).StoreUnsafe(ref dst, (nuint)i);
+                }
+            }
+#endif
+            for (; i < source.Length; i++)
+            {
+                destination[i] = (float)source[i];
+            }
         }
 
         internal static bool TryParse(ReadOnlySpan<byte> date, out DateTime dateTime)
