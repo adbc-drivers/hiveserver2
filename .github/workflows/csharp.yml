@@ -139,13 +139,10 @@ jobs:
         include:
           - os: windows-2022
             rid: win-x64
-            lib_name: AdbcDrivers.HiveServer2.Native.dll
           - os: ubuntu-latest
             rid: linux-x64
-            lib_name: AdbcDrivers.HiveServer2.Native.so
           - os: macos-latest
             rid: osx-arm64
-            lib_name: AdbcDrivers.HiveServer2.Native.dylib
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -172,7 +169,7 @@ jobs:
       - name: Publish AOT driver and run interop tests
         shell: bash
         run: |
-          ./ci/scripts/csharp_aot.sh "${{ github.workspace }}" "${{ matrix.rid }}" "${{ matrix.lib_name }}"
+          ./ci/scripts/csharp_aot.sh "${{ github.workspace }}" "${{ matrix.rid }}"
 
       # Hand the per-RID native library to the pack job. Only reached when the
       # interop tests above pass, so a library that fails the C-ABI round-trip
@@ -181,7 +178,13 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: aot-native-${{ matrix.rid }}
-          path: ${{ github.workspace }}/csharp/artifacts/aot-fixture/${{ matrix.lib_name }}
+          # Upload the NativeAOT shared library whatever it's named
+          # (*.so/*.dylib/*.dll) — exactly one matches per OS — and leave debug
+          # symbols (.pdb/.dbg/.dSYM) out of the package.
+          path: |
+            ${{ github.workspace }}/csharp/artifacts/aot-fixture/*.so
+            ${{ github.workspace }}/csharp/artifacts/aot-fixture/*.dylib
+            ${{ github.workspace }}/csharp/artifacts/aot-fixture/*.dll
           if-no-files-found: error
 
   # Assembles the per-RID NativeAOT libraries built by csharp-aot into a single
