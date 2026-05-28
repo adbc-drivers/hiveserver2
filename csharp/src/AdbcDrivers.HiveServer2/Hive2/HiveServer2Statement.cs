@@ -239,7 +239,14 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 }
                 finally
                 {
-                    activity?.AddTag(SemanticConventions.Db.Response.ReturnedRows, affectedRows ?? -1);
+                    // Only tag when we have a real affected-row count. The `-1` sentinel
+                    // (Thrift returned no `num_affected_rows` column, e.g. DDL paths) is
+                    // misleading in APM dashboards — omit the tag entirely instead.
+                    // Backends naturally interpret absent-tag as "unknown".
+                    if (affectedRows.HasValue && affectedRows.Value >= 0)
+                    {
+                        activity?.AddTag(SemanticConventions.Db.Response.ReturnedRows, affectedRows.Value);
+                    }
                 }
             }, ClassName + "." + nameof(ExecuteUpdateAsyncInternal));
         }
