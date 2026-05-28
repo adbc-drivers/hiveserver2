@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using AdbcDrivers.HiveServer2.TestServer;
 using Apache.Arrow.Adbc;
@@ -123,6 +126,72 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
             // After completion the token source is disposed; Cancel() must
             // still be a no-op (CancelTokenSource handles the null case).
             statement.Cancel();
+        }
+
+        /// <summary>
+        /// Regression for adbc-drivers/databricks#484. When Thrift returns no
+        /// <c>num_affected_rows</c> column (e.g. DDL paths), the
+        /// <c>db.response.returned_rows</c> OTel tag must be OMITTED rather
+        /// than emitted with the -1 sentinel — the sentinel clutters APM
+        /// dashboards by sorting alongside legitimate row counts.
+        /// </summary>
+        [Fact]
+        public async Task ExecuteUpdateAsync_NoAffectedRowsColumn_OmitsReturnedRowsTag()
+        {
+            var captured = new ConcurrentBag<Activity>();
+            using var listener = new ActivityListener
+            {
+                ShouldListenTo = source => source.Name == "AdbcDrivers.HiveServer2",
+                Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+                ActivityStopped = activity => captured.Add(activity),
+            };
+            ActivitySource.AddActivityListener(listener);
+
+            using var scenario = HiveMockServer.Create();
+            scenario.Stub.OnExecuteStatement = _ => MockResult.SingleBigint(0, columnName: "ignored");
+
+            using var statement = scenario.NewStatement();
+            statement.SqlQuery = "CREATE TABLE t (x INT)";
+            UpdateResult result = await statement.ExecuteUpdateAsync();
+            Assert.Equal(-1, result.AffectedRows);
+
+            Activity? internalActivity = captured.FirstOrDefault(a => a.OperationName.EndsWith("ExecuteUpdateAsyncInternal"));
+            Assert.NotNull(internalActivity);
+            // The tag must be absent — backends interpret absent-tag as "unknown".
+            Assert.DoesNotContain(internalActivity!.TagObjects, t => t.Key == "db.response.returned_rows");
+        }
+
+        /// <summary>
+        /// Companion to <see cref="ExecuteUpdateAsync_NoAffectedRowsColumn_OmitsReturnedRowsTag"/>:
+        /// when the affected-row count IS known and non-negative, the OTel
+        /// tag must still be emitted with the real count.
+        /// </summary>
+        [Fact]
+        public async Task ExecuteUpdateAsync_WithAffectedRowsColumn_EmitsReturnedRowsTag()
+        {
+            var captured = new ConcurrentBag<Activity>();
+            using var listener = new ActivityListener
+            {
+                ShouldListenTo = source => source.Name == "AdbcDrivers.HiveServer2",
+                Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+                ActivityStopped = activity => captured.Add(activity),
+            };
+            ActivitySource.AddActivityListener(listener);
+
+            using var scenario = HiveMockServer.Create();
+            scenario.Stub.OnExecuteStatement = _ =>
+                MockResult.Builder().Bigint("num_affected_rows", 17L).Build();
+
+            using var statement = scenario.NewStatement();
+            statement.SqlQuery = "UPDATE t SET x = 1";
+            UpdateResult result = await statement.ExecuteUpdateAsync();
+            Assert.Equal(17, result.AffectedRows);
+
+            Activity? internalActivity = captured.FirstOrDefault(a => a.OperationName.EndsWith("ExecuteUpdateAsyncInternal"));
+            Assert.NotNull(internalActivity);
+            var tag = internalActivity!.TagObjects.FirstOrDefault(t => t.Key == "db.response.returned_rows");
+            Assert.Equal("db.response.returned_rows", tag.Key);
+            Assert.Equal(17L, tag.Value);
         }
     }
 }
