@@ -44,5 +44,37 @@ namespace AdbcDrivers.HiveServer2
             public const string MaxMessageSize = Key + ".max_message_size";
             public const string MaxFrameSize = Key + ".max_frame_size";
         }
+
+        /// <summary>
+        /// OTel-compatible classification of a failure on a Status=Error span.
+        /// See adbc-drivers/databricks#481. Dashboards group/filter on this
+        /// instead of parsing <c>exception.type</c>/<c>exception.message</c>.
+        /// </summary>
+        internal static class Db
+        {
+            public const string ErrorKind = "db.error.kind";
+
+            internal static class ErrorKindValues
+            {
+                /// <summary>Cancellation triggered by a CancelAfter timer on
+                /// the operation's CTS (driver-internal timeout fired).</summary>
+                public const string QueryTimeout = "query_timeout";
+
+                /// <summary>Transport-level: socket / IO / HTTP without an HTTP
+                /// status code / TTransportException with no Thrift status.</summary>
+                public const string Network = "network";
+
+                /// <summary>Thrift response carried <c>TStatus != SUCCESS</c>,
+                /// or HTTP 5xx.</summary>
+                public const string ServerError = "server_error";
+
+                /// <summary>HTTP 401 / 403.</summary>
+                public const string AuthFailed = "auth_failed";
+
+                /// <summary>Thrift framing exceptions, Arrow parsing errors,
+                /// schema mismatches.</summary>
+                public const string ProtocolError = "protocol_error";
+            }
+        }
     }
 }
