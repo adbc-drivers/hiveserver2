@@ -34,3 +34,7 @@ x64
 artifacts/
 TestResults/
 packages/
+
+# Per-RID NativeAOT libraries staged for packing AdbcDrivers.HiveServer2.Native
+# (see ci/scripts/csharp_aot_pack.sh). The .so/.dylib aren't covered above.
+runtimes/

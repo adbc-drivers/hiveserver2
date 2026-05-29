@@ -1,0 +1,69 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    The real HiveServer2 ADBC driver, NativeAOT-compiled into a shared library
+    that exports `AdbcDriverInit` (delegating to CAdbcDriverExporter wrapped
+    around a fresh HiveServer2Driver), and shipped as a native NuGet package
+    under runtimes/<rid>/native/.
+
+    Two distinct flows:
+      * `dotnet publish -c Release -r <rid>` produces the native shared library
+        for a single RID. A plain `dotnet build` only produces a managed stub.
+      * `dotnet pack -p:IsPackagingPipeline=true` gathers the per-RID native
+        libraries that CI has staged under runtimes/<rid>/native/ into one
+        multi-RID package. NativeAOT can't cross-compile, so each RID is
+        published on its own OS runner and the libraries are collected before
+        packing (see the csharp-aot / csharp-aot-pack jobs in csharp.yml).
+
+    The companion test project (AdbcDrivers.HiveServer2.Native.Tests) loads a
+    published library via CAdbcDriverImporter and drives it against the
+    in-process mock HiveServer2 over the C ABI.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PublishAot>true</PublishAot>
+    <IsAotCompatible>true</IsAotCompatible>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <!-- Strong-name signing isn't meaningful for a native shared library. -->
+    <SignAssembly>false</SignAssembly>
+    <!-- No managed assembly ships in this package, so SourceLink is moot. -->
+    <PublishRepositoryUrl>false</PublishRepositoryUrl>
+  </PropertyGroup>
+
+  <!--
+    Packaging is opt-in and only meaningful in CI, where the per-RID native
+    libraries have been staged under runtimes/. A normal solution-wide
+    `dotnet pack` leaves this project alone (IsPackable=false) rather than
+    emitting an empty native package.
+  -->
+  <PropertyGroup>
+    <IsPackagingPipeline Condition="'$(IsPackagingPipeline)' == ''">false</IsPackagingPipeline>
+    <IsPackable>$(IsPackagingPipeline)</IsPackable>
+    <!-- A native runtime package: ship only runtimes/<rid>/native/ — no managed lib, deps, or symbols. -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <Description>NativeAOT-compiled HiveServer2 ADBC driver, shipped as native shared libraries under runtimes/{rid}/native. Load it through the ADBC driver manager (C ABI).</Description>
+    <!-- NU5128: a native-only package intentionally has no lib/ref managed assembly. -->
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+  </PropertyGroup>
+
+  <!--
+    Pack whatever per-RID native libraries CI staged under runtimes/. The
+    %(RecursiveDir) metadata preserves the runtimes/<rid>/native/ layout that
+    NuGet's RID-based asset resolution expects.
+  -->
+  <ItemGroup Condition="'$(IsPackagingPipeline)' == 'true'">
+    <!-- Explicit per-file PackagePath: ending PackagePath in a directory makes
+         NuGet re-append the item's relative path, duplicating runtimes/<rid>. -->
+    <None Include="runtimes/**/*">
+      <Pack>true</Pack>
+      <PackagePath>runtimes/%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AdbcDrivers.HiveServer2\AdbcDrivers.HiveServer2.csproj" />
+  </ItemGroup>
+</Project>
