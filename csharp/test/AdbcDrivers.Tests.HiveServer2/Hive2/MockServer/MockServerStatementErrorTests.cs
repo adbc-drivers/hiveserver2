@@ -19,7 +19,6 @@ using System.Threading.Tasks;
 using AdbcDrivers.HiveServer2;
 using AdbcDrivers.HiveServer2.Hive2;
 using AdbcDrivers.HiveServer2.TestServer;
-using Apache.Arrow.Adbc;
 using Xunit;
 
 namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
@@ -27,9 +26,10 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
     /// <summary>
     /// Drives the <c>catch (Exception ex) when (ex is not HiveServer2Exception)</c>
     /// wrapping branches in HiveServer2Statement's execute and metadata
-    /// methods by making the corresponding RPC throw. The driver wraps the
-    /// raised exception in a HiveServer2Exception with a descriptive
-    /// message — what we assert.
+    /// methods by making the corresponding RPC throw. Each test asserts
+    /// the specific <see cref="HiveServer2Exception"/> wrapper — if a
+    /// future change ever lets the raw inner exception escape, that
+    /// catch arm would regress silently against <c>ThrowsAny</c>.
     /// </summary>
     [Trait("Category", "MockServer")]
     public class MockServerStatementErrorTests
@@ -41,7 +41,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
             scenario.Stub.OnExecuteStatement = _ => throw new InvalidOperationException("boom");
             using var statement = scenario.NewStatement();
             statement.SqlQuery = "SELECT 1";
-            await Assert.ThrowsAnyAsync<Exception>(() => statement.ExecuteQueryAsync().AsTask());
+            await Assert.ThrowsAsync<HiveServer2Exception>(() => statement.ExecuteQueryAsync().AsTask());
         }
 
         [Fact]
@@ -51,7 +51,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
             scenario.Stub.OnExecuteStatement = _ => throw new InvalidOperationException("boom");
             using var statement = scenario.NewStatement();
             statement.SqlQuery = "DELETE FROM t";
-            await Assert.ThrowsAnyAsync<Exception>(() => statement.ExecuteUpdateAsync());
+            await Assert.ThrowsAsync<HiveServer2Exception>(() => statement.ExecuteUpdateAsync());
         }
 
         [Fact]
@@ -62,7 +62,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
             using var statement = scenario.NewStatement();
             statement.SetOption(ApacheParameters.IsMetadataCommand, "true");
             statement.SqlQuery = "getcatalogs";
-            await Assert.ThrowsAnyAsync<Exception>(() => statement.ExecuteQueryAsync().AsTask());
+            await Assert.ThrowsAsync<HiveServer2Exception>(() => statement.ExecuteQueryAsync().AsTask());
         }
 
         [Fact]
@@ -73,7 +73,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
             using var statement = scenario.NewStatement();
             statement.SetOption(ApacheParameters.IsMetadataCommand, "true");
             statement.SqlQuery = "getschemas";
-            await Assert.ThrowsAnyAsync<Exception>(() => statement.ExecuteQueryAsync().AsTask());
+            await Assert.ThrowsAsync<HiveServer2Exception>(() => statement.ExecuteQueryAsync().AsTask());
         }
 
         [Fact]
@@ -84,7 +84,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
             using var statement = scenario.NewStatement();
             statement.SetOption(ApacheParameters.IsMetadataCommand, "true");
             statement.SqlQuery = "gettables";
-            await Assert.ThrowsAnyAsync<Exception>(() => statement.ExecuteQueryAsync().AsTask());
+            await Assert.ThrowsAsync<HiveServer2Exception>(() => statement.ExecuteQueryAsync().AsTask());
         }
 
         [Fact]
@@ -95,7 +95,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
             using var statement = scenario.NewStatement();
             statement.SetOption(ApacheParameters.IsMetadataCommand, "true");
             statement.SqlQuery = "getcolumns";
-            await Assert.ThrowsAnyAsync<Exception>(() => statement.ExecuteQueryAsync().AsTask());
+            await Assert.ThrowsAsync<HiveServer2Exception>(() => statement.ExecuteQueryAsync().AsTask());
         }
 
         [Fact]
@@ -109,7 +109,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
             statement.SetOption(ApacheParameters.SchemaName, "public");
             statement.SetOption(ApacheParameters.TableName, "t");
             statement.SqlQuery = "getprimarykeys";
-            await Assert.ThrowsAnyAsync<Exception>(() => statement.ExecuteQueryAsync().AsTask());
+            await Assert.ThrowsAsync<HiveServer2Exception>(() => statement.ExecuteQueryAsync().AsTask());
         }
 
         [Fact]
@@ -123,18 +123,17 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
             statement.SetOption(ApacheParameters.SchemaName, "public");
             statement.SetOption(ApacheParameters.TableName, "t");
             statement.SqlQuery = "getcrossreference";
-            await Assert.ThrowsAnyAsync<Exception>(() => statement.ExecuteQueryAsync().AsTask());
+            await Assert.ThrowsAsync<HiveServer2Exception>(() => statement.ExecuteQueryAsync().AsTask());
         }
 
         [Fact]
-        public async Task Connection_GetTableSchema_RpcThrows_Wraps()
+        public void Connection_GetTableSchema_RpcThrows_WrapsAsHiveServer2Exception()
         {
             // Connection.GetTableSchema has its own catch wrapper around
             // Client.GetColumns — separate from the Statement path.
             using var scenario = HiveMockServer.Create();
             scenario.Stub.OnGetColumns = _ => throw new InvalidOperationException("boom");
-            await Task.Yield();
-            Assert.ThrowsAny<Exception>(() => scenario.Connection.GetTableSchema("main", "public", "t"));
+            Assert.Throws<HiveServer2Exception>(() => scenario.Connection.GetTableSchema("main", "public", "t"));
         }
     }
 }

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System;
 using System.Collections.Generic;
 using AdbcDrivers.HiveServer2;
 using AdbcDrivers.HiveServer2.Hive2;
@@ -31,18 +30,19 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
     /// connection flavor. The mock server speaks plain TCP — the handshake
     /// will fail — but the test just needs <c>TTlsSocketTransport</c>
     /// construction and the cert-validator setup to fire before that
-    /// happens. We allow any exception (handshake failure, timeout, etc.).
+    /// happens. We assert a <see cref="HiveServer2Exception"/> specifically,
+    /// since that's what the driver's OpenAsync catch wraps the handshake
+    /// failure with — anything else (e.g. validation throwing before TLS
+    /// setup runs) would mean this test had stopped exercising the
+    /// transport-setup path.
     /// </summary>
     [Trait("Category", "MockServer")]
     public class MockServerStandardTlsTests
     {
-        private static void TryOpenAndConnect(AdbcDriver driver, IReadOnlyDictionary<string, string> props)
+        private static void ConnectAndAssertTlsFailure(AdbcDriver driver, IReadOnlyDictionary<string, string> props)
         {
-            // The Connect must fail because there's no TLS server on the
-            // other end; we only care that the TLS-transport construction
-            // path ran beforehand.
             using var database = driver.Open(props);
-            try { using var c = database.Connect(props); } catch { }
+            Assert.Throws<HiveServer2Exception>(() => database.Connect(props));
         }
 
         [Fact]
@@ -66,7 +66,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
                 { AdbcOptions.Username, "u" },
                 { AdbcOptions.Password, "p" },
             };
-            TryOpenAndConnect(driver, props);
+            ConnectAndAssertTlsFailure(driver, props);
         }
 
         [Fact]
@@ -88,7 +88,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
                 { AdbcOptions.Username, "u" },
                 { AdbcOptions.Password, "p" },
             };
-            TryOpenAndConnect(driver, props);
+            ConnectAndAssertTlsFailure(driver, props);
         }
 
         [Fact]
@@ -108,7 +108,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
                 { AdbcOptions.Username, "u" },
                 { AdbcOptions.Password, "p" },
             };
-            TryOpenAndConnect(driver, props);
+            ConnectAndAssertTlsFailure(driver, props);
         }
 
         [Fact]
@@ -128,7 +128,7 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
                 { AdbcOptions.Username, "u" },
                 { AdbcOptions.Password, "p" },
             };
-            TryOpenAndConnect(driver, props);
+            ConnectAndAssertTlsFailure(driver, props);
         }
     }
 }

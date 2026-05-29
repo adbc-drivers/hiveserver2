@@ -42,9 +42,10 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
             BuildSelfSigned(commonName, DateTimeOffset.UtcNow.AddDays(-30), DateTimeOffset.UtcNow.AddDays(-1));
 
         /// <summary>
-        /// Writes a self-signed cert to a temp .pfx file and returns the
-        /// path; the caller is responsible for deleting it. Used to drive
-        /// the <c>TrustedCertificatePath</c> branch of ValidateCertificate.
+        /// Writes a self-signed cert to a temp <c>.cer</c> file (DER-encoded
+        /// public cert, no private key) and returns the path; the caller is
+        /// responsible for deleting it. Used to drive the
+        /// <c>TrustedCertificatePath</c> branch of ValidateCertificate.
         /// </summary>
         public static string SelfSignedAsTempFile(string commonName = "trusted-root")
         {
