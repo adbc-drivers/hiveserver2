@@ -44,6 +44,19 @@ namespace AdbcDrivers.HiveServer2.TestServer
         private readonly CancellationTokenSource _shutdown = new();
         private readonly Task _acceptLoop;
         private readonly ITAsyncProcessor _processor;
+        private int _requestCount;
+
+        /// <summary>
+        /// Optional override that lets tests force a specific HTTP status on
+        /// individual requests (1-indexed). Returning <see cref="HttpStatusCode.OK"/>
+        /// (or returning <c>null</c>, i.e. leaving this property unset) means
+        /// "dispatch the Thrift request normally." Anything else short-circuits
+        /// the handler and writes the chosen status with an empty body — the
+        /// driver-side <c>THttpTransport</c> surfaces that as a
+        /// <c>TTransportException</c> wrapping an <c>HttpRequestException</c>,
+        /// which is what the OpenSession-fallback path looks for.
+        /// </summary>
+        public Func<int, HttpStatusCode>? StatusCodeOverride { get; set; }
 
         public HiveServer2TestServer(TCLIService.IAsync handler)
         {
@@ -111,6 +124,17 @@ namespace AdbcDrivers.HiveServer2.TestServer
                 {
                     response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
                     return;
+                }
+
+                int count = Interlocked.Increment(ref _requestCount);
+                if (StatusCodeOverride != null)
+                {
+                    HttpStatusCode overrideCode = StatusCodeOverride(count);
+                    if (overrideCode != HttpStatusCode.OK)
+                    {
+                        response.StatusCode = (int)overrideCode;
+                        return;
+                    }
                 }
 
                 using var requestBuffer = new MemoryStream();

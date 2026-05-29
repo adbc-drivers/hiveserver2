@@ -33,11 +33,28 @@ namespace AdbcDrivers.HiveServer2.TestServer
         private readonly List<TColumnDesc> _schemaColumns = new();
         private readonly List<TColumn> _columns = new();
         private int _rowCount = -1;
+        private int _positionBase = 1;
+
+        /// <summary>
+        /// Override the base index for column positions in the emitted
+        /// schema. Defaults to 1 (matches Hive/Spark, whose drivers use
+        /// <c>ColumnMapIndexOffset=1</c>). Set to 0 for Impala fixtures —
+        /// the Impala driver uses <c>ColumnMapIndexOffset=0</c>, so a
+        /// 1-indexed schema would yield off-by-one lookups when
+        /// PopulateColumnInfoAsync walks the column map.
+        /// </summary>
+        public MockResultBuilder WithPositionBase(int positionBase)
+        {
+            if (_schemaColumns.Count > 0)
+                throw new InvalidOperationException("WithPositionBase must be called before adding any columns.");
+            _positionBase = positionBase;
+            return this;
+        }
 
         public MockResultBuilder Bool(string name, params bool?[] values)
         {
             AssertRowCount(values.Length);
-            _schemaColumns.Add(MockSchema.SimpleColumn(name, TTypeId.BOOLEAN_TYPE, position: _schemaColumns.Count + 1));
+            _schemaColumns.Add(MockSchema.SimpleColumn(name, TTypeId.BOOLEAN_TYPE, position: _schemaColumns.Count + _positionBase));
             _columns.Add(new TColumn
             {
                 BoolVal = new TBoolColumn(
@@ -50,7 +67,7 @@ namespace AdbcDrivers.HiveServer2.TestServer
         public MockResultBuilder Tinyint(string name, params sbyte?[] values)
         {
             AssertRowCount(values.Length);
-            _schemaColumns.Add(MockSchema.SimpleColumn(name, TTypeId.TINYINT_TYPE, position: _schemaColumns.Count + 1));
+            _schemaColumns.Add(MockSchema.SimpleColumn(name, TTypeId.TINYINT_TYPE, position: _schemaColumns.Count + _positionBase));
             _columns.Add(new TColumn
             {
                 ByteVal = new TByteColumn(
@@ -63,7 +80,7 @@ namespace AdbcDrivers.HiveServer2.TestServer
         public MockResultBuilder Smallint(string name, params short?[] values)
         {
             AssertRowCount(values.Length);
-            _schemaColumns.Add(MockSchema.SimpleColumn(name, TTypeId.SMALLINT_TYPE, position: _schemaColumns.Count + 1));
+            _schemaColumns.Add(MockSchema.SimpleColumn(name, TTypeId.SMALLINT_TYPE, position: _schemaColumns.Count + _positionBase));
             _columns.Add(new TColumn
             {
                 I16Val = new TI16Column(
@@ -76,7 +93,7 @@ namespace AdbcDrivers.HiveServer2.TestServer
         public MockResultBuilder Int(string name, params int?[] values)
         {
             AssertRowCount(values.Length);
-            _schemaColumns.Add(MockSchema.SimpleColumn(name, TTypeId.INT_TYPE, position: _schemaColumns.Count + 1));
+            _schemaColumns.Add(MockSchema.SimpleColumn(name, TTypeId.INT_TYPE, position: _schemaColumns.Count + _positionBase));
             _columns.Add(new TColumn
             {
                 I32Val = new TI32Column(
@@ -89,7 +106,7 @@ namespace AdbcDrivers.HiveServer2.TestServer
         public MockResultBuilder Bigint(string name, params long?[] values)
         {
             AssertRowCount(values.Length);
-            _schemaColumns.Add(MockSchema.SimpleColumn(name, TTypeId.BIGINT_TYPE, position: _schemaColumns.Count + 1));
+            _schemaColumns.Add(MockSchema.SimpleColumn(name, TTypeId.BIGINT_TYPE, position: _schemaColumns.Count + _positionBase));
             _columns.Add(new TColumn
             {
                 I64Val = new TI64Column(
@@ -102,7 +119,7 @@ namespace AdbcDrivers.HiveServer2.TestServer
         public MockResultBuilder Float(string name, params float?[] values)
         {
             AssertRowCount(values.Length);
-            _schemaColumns.Add(MockSchema.SimpleColumn(name, TTypeId.FLOAT_TYPE, position: _schemaColumns.Count + 1));
+            _schemaColumns.Add(MockSchema.SimpleColumn(name, TTypeId.FLOAT_TYPE, position: _schemaColumns.Count + _positionBase));
             _columns.Add(new TColumn
             {
                 DoubleVal = new TDoubleColumn(
@@ -115,7 +132,7 @@ namespace AdbcDrivers.HiveServer2.TestServer
         public MockResultBuilder Double(string name, params double?[] values)
         {
             AssertRowCount(values.Length);
-            _schemaColumns.Add(MockSchema.SimpleColumn(name, TTypeId.DOUBLE_TYPE, position: _schemaColumns.Count + 1));
+            _schemaColumns.Add(MockSchema.SimpleColumn(name, TTypeId.DOUBLE_TYPE, position: _schemaColumns.Count + _positionBase));
             _columns.Add(new TColumn
             {
                 DoubleVal = new TDoubleColumn(
@@ -161,7 +178,7 @@ namespace AdbcDrivers.HiveServer2.TestServer
                 .Select(v => v?.ToString(CultureInfo.InvariantCulture))
                 .ToArray();
             AssertRowCount(encoded.Length);
-            _schemaColumns.Add(MockSchema.DecimalColumn(name, precision, scale, position: _schemaColumns.Count + 1));
+            _schemaColumns.Add(MockSchema.DecimalColumn(name, precision, scale, position: _schemaColumns.Count + _positionBase));
             _columns.Add(new TColumn
             {
                 StringVal = new TStringColumn(
@@ -174,7 +191,7 @@ namespace AdbcDrivers.HiveServer2.TestServer
         public MockResultBuilder Binary(string name, params byte[]?[] values)
         {
             AssertRowCount(values.Length);
-            _schemaColumns.Add(MockSchema.SimpleColumn(name, TTypeId.BINARY_TYPE, position: _schemaColumns.Count + 1));
+            _schemaColumns.Add(MockSchema.SimpleColumn(name, TTypeId.BINARY_TYPE, position: _schemaColumns.Count + _positionBase));
             _columns.Add(new TColumn
             {
                 BinaryVal = new TBinaryColumn(
@@ -205,7 +222,7 @@ namespace AdbcDrivers.HiveServer2.TestServer
             {
                 new() { PrimitiveEntry = primitive },
             });
-            _schemaColumns.Add(new TColumnDesc(name, typeDesc, _schemaColumns.Count + 1));
+            _schemaColumns.Add(new TColumnDesc(name, typeDesc, _schemaColumns.Count + _positionBase));
             _columns.Add(new TColumn
             {
                 StringVal = new TStringColumn(

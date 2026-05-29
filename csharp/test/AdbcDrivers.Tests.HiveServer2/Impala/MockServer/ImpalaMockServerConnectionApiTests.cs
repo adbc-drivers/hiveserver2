@@ -57,15 +57,70 @@ namespace AdbcDrivers.Tests.HiveServer2.Impala.MockServer
             Assert.IsType<Int64Type>(schema.FieldsList[2].DataType);
         }
 
-        // Note: a GetObjects depth=All test against the Impala mock would
-        // require building a TGetColumnsResp with 0-indexed column positions,
-        // but the shared MockResultBuilder emits 1-indexed positions (correct
-        // for Hive/Spark — which have ColumnMapIndexOffset=1 — but off by one
-        // for Impala's offset=0). Driving GetObjects all-depth on Impala is
-        // covered by the Spark variant in SparkMockServerConnectionApiTests;
-        // adding it here would mean teaching the mock fixture about
-        // flavor-specific column-position conventions, which is out of scope
-        // for this PR.
+        [Fact]
+        public async Task GetObjects_AllDepth_DrivesImpalaColumnMetadata()
+        {
+            // Impala's driver uses ColumnMapIndexOffset=0, so the mock's
+            // GetColumns response needs 0-indexed positions — WithPositionBase(0)
+            // tells the shared builder to emit those.
+            using var scenario = ImpalaMockServer.Create();
+            scenario.Stub.OnGetCatalogs = _ =>
+                MockResult.Builder().WithPositionBase(0).String("TABLE_CAT", "main").Build();
+            scenario.Stub.OnGetSchemas = _ =>
+                MockResult.Builder()
+                    .WithPositionBase(0)
+                    .String("TABLE_SCHEM", "public")
+                    .String("TABLE_CATALOG", "main")
+                    .Build();
+            scenario.Stub.OnGetTables = _ =>
+                MockResult.Builder()
+                    .WithPositionBase(0)
+                    .String("TABLE_CAT", "main")
+                    .String("TABLE_SCHEM", "public")
+                    .String("TABLE_NAME", "t")
+                    .String("TABLE_TYPE", "TABLE")
+                    .String("REMARKS", "")
+                    .Build();
+            scenario.Stub.OnGetColumns = _ =>
+                MockResult.Builder()
+                    .WithPositionBase(0)
+                    .String("TABLE_CAT", "main", "main")
+                    .String("TABLE_MD", "public", "public")
+                    .String("TABLE_NAME", "t", "t")
+                    .String("COLUMN_NAME", "amount", "id")
+                    .Int("DATA_TYPE", (int)SqlTypes.Decimal, (int)SqlTypes.Bigint)
+                    .String("TYPE_NAME", "DECIMAL(10,2)", "BIGINT")
+                    .Int("COLUMN_SIZE", 10, 19)
+                    .Tinyint("BUFFER_LENGTH", 10, 8)
+                    .Int("DECIMAL_DIGITS", 2, 0)
+                    .Int("NUM_PREC_RADIX", 10, 10)
+                    .Int("NULLABLE", 1, 1)
+                    .String("REMARKS", "", "")
+                    .String("COLUMN_DEF", "", "")
+                    .Int("SQL_DATA_TYPE", 0, 0)
+                    .Int("SQL_DATETIME_SUB", 0, 0)
+                    .Int("CHAR_OCTET_LENGTH", 0, 0)
+                    .Int("ORDINAL_POSITION", 1, 2)
+                    .String("IS_NULLABLE", "YES", "YES")
+                    .String("SCOPE_CATALOG", "", "")
+                    .String("SCOPE_SCHEMA", "", "")
+                    .String("SCOPE_TABLE", "", "")
+                    .Smallint("SOURCE_DATA_TYPE", 0, 0)
+                    .String("IS_AUTO_INCREMENT", "NO", "NO")
+                    .Build();
+            using IArrowArrayStream stream = scenario.Connection.GetObjects(
+                depth: AdbcConnection.GetObjectsDepth.All,
+                catalogPattern: null,
+                dbSchemaPattern: null,
+                tableNamePattern: null,
+                tableTypes: null,
+                columnNamePattern: null);
+            while (true)
+            {
+                using RecordBatch? batch = await stream.ReadNextRecordBatchAsync();
+                if (batch == null) break;
+            }
+        }
 
         [Fact]
         public async Task GetInfo_ReturnsImpalaVendorIdentity()
