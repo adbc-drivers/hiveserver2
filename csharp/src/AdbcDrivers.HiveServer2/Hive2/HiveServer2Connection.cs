@@ -392,6 +392,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                     catch (TTransportException transportEx)
                         when (ApacheUtility.ContainsException(transportEx, out HttpRequestException? httpEx) && IsUnauthorized(httpEx!))
                     {
+                        ErrorKindClassifier.Tag(activity, HiveServer2.ActivityKeys.Db.ErrorKindValues.AuthFailed);
                         throw new HiveServer2Exception(transportEx.Message, AdbcStatusCode.Unauthorized, transportEx);
                     }
                     catch (Exception)
@@ -409,11 +410,16 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 }
                 catch (Exception ex) when (ExceptionHelper.IsOperationCanceledOrCancellationRequested(ex, cancellationToken))
                 {
+                    // The CTS in scope was created from ConnectTimeoutMilliseconds
+                    // via ApacheUtility.GetCancellationToken — a CancelAfter timer
+                    // is the only thing that can fire it here, so this is a timeout.
+                    ErrorKindClassifier.Tag(activity, HiveServer2.ActivityKeys.Db.ErrorKindValues.QueryTimeout);
                     throw new TimeoutException("The operation timed out while attempting to open a session. Please try increasing connect timeout.", ex);
                 }
                 catch (Exception ex) when (ex is not HiveServer2Exception)
                 {
                     // Handle other exceptions if necessary
+                    ErrorKindClassifier.Tag(activity, ex);
                     throw new HiveServer2Exception($"An unexpected error occurred while opening the session. '{ApacheUtility.FormatExceptionMessage(ex)}'", ex);
                 }
             }, ClassName + "." + nameof(OpenAsync)).ConfigureAwait(false);
@@ -450,11 +456,13 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 }
                 catch (Exception ex) when (ExceptionHelper.IsOperationCanceledOrCancellationRequested(ex, cancellationToken))
                 {
+                    ErrorKindClassifier.Tag(Activity.Current, HiveServer2.ActivityKeys.Db.ErrorKindValues.QueryTimeout);
                     throw new TimeoutException("The operation timed out while attempting to open a session. Please try increasing connect timeout.", ex);
                 }
                 catch (TTransportException transportEx)
                     when (ApacheUtility.ContainsException(transportEx, out HttpRequestException? httpEx) && IsUnauthorized(httpEx!))
                 {
+                    ErrorKindClassifier.Tag(Activity.Current, HiveServer2.ActivityKeys.Db.ErrorKindValues.AuthFailed);
                     throw new HiveServer2Exception(transportEx.Message, AdbcStatusCode.Unauthorized, transportEx);
                 }
                 catch (Exception ex)
@@ -463,7 +471,13 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 }
             }
 
-            throw lastException ?? new HiveServer2Exception("Error occurred while opening the session. All protocol fallback attempts failed.");
+            if (lastException != null)
+            {
+                ErrorKindClassifier.Tag(Activity.Current, lastException);
+                throw lastException;
+            }
+            ErrorKindClassifier.Tag(Activity.Current, HiveServer2.ActivityKeys.Db.ErrorKindValues.ServerError);
+            throw new HiveServer2Exception("Error occurred while opening the session. All protocol fallback attempts failed.");
         }
 
         private void ResetConnection()
@@ -486,6 +500,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
             // Explicitly check the session status
             if (session == null)
             {
+                ErrorKindClassifier.Tag(activity, HiveServer2.ActivityKeys.Db.ErrorKindValues.ServerError);
                 throw new HiveServer2Exception("Unable to open session. Unknown error.");
             }
             HandleThriftResponse(session.Status, activity);
@@ -553,10 +568,12 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 }
                 catch (Exception ex) when (ExceptionHelper.IsOperationCanceledOrCancellationRequested(ex, cancellationToken))
                 {
+                    ErrorKindClassifier.Tag(Activity.Current, HiveServer2.ActivityKeys.Db.ErrorKindValues.QueryTimeout);
                     throw new TimeoutException("The metadata query execution timed out. Consider increasing the query timeout value.", ex);
                 }
                 catch (Exception ex) when (ex is not HiveServer2Exception)
                 {
+                    ErrorKindClassifier.Tag(Activity.Current, ex);
                     throw new HiveServer2Exception($"An unexpected error occurred while running metadata query. '{ApacheUtility.FormatExceptionMessage(ex)}'", ex);
                 }
             }, ClassName + "." + nameof(GetObjects)).ConfigureAwait(false);
@@ -727,10 +744,12 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 }
                 catch (Exception ex) when (ExceptionHelper.IsOperationCanceledOrCancellationRequested(ex, cancellationToken))
                 {
+                    ErrorKindClassifier.Tag(Activity.Current, HiveServer2.ActivityKeys.Db.ErrorKindValues.QueryTimeout);
                     throw new TimeoutException("The metadata query execution timed out. Consider increasing the query timeout value.", ex);
                 }
                 catch (Exception ex) when (ex is not HiveServer2Exception)
                 {
+                    ErrorKindClassifier.Tag(Activity.Current, ex);
                     throw new HiveServer2Exception($"An unexpected error occurred while running metadata query. '{ApacheUtility.FormatExceptionMessage(ex)}'", ex);
                 }
             }, ClassName + "." + nameof(GetTableTypes)).ConfigureAwait(false);
@@ -760,6 +779,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 // Must be in the finished state to be valid. If not, typically a server error or timeout has occurred.
                 if (statusResponse.OperationState != TOperationState.FINISHED_STATE)
                 {
+                    ErrorKindClassifier.Tag(activity, HiveServer2.ActivityKeys.Db.ErrorKindValues.ServerError);
 #pragma warning disable CS0618 // Type or member is obsolete
                     throw new HiveServer2Exception(statusResponse.ErrorMessage, AdbcStatusCode.InvalidState)
                         .SetSqlState(statusResponse.SqlState)
@@ -789,10 +809,12 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 }
                 catch (Exception ex) when (ExceptionHelper.IsOperationCanceledOrCancellationRequested(ex, cancellationToken))
                 {
+                    ErrorKindClassifier.Tag(Activity.Current, HiveServer2.ActivityKeys.Db.ErrorKindValues.QueryTimeout);
                     throw new TimeoutException("The metadata query execution timed out. Consider increasing the query timeout value.", ex);
                 }
                 catch (Exception ex) when (ex is not HiveServer2Exception)
                 {
+                    ErrorKindClassifier.Tag(Activity.Current, ex);
                     throw new HiveServer2Exception($"An unexpected error occurred while running metadata query. '{ApacheUtility.FormatExceptionMessage(ex)}'", ex);
                 }
             }, nameof(HiveServer2Connection) + "." + nameof(GetInfoTypeStringValue)).ConfigureAwait(false);
@@ -1242,10 +1264,12 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 }
                 catch (Exception ex) when (ExceptionHelper.IsOperationCanceledOrCancellationRequested(ex, cancellationToken))
                 {
+                    ErrorKindClassifier.Tag(Activity.Current, HiveServer2.ActivityKeys.Db.ErrorKindValues.QueryTimeout);
                     throw new TimeoutException("The metadata query execution timed out. Consider increasing the query timeout value.", ex);
                 }
                 catch (Exception ex) when (ex is not HiveServer2Exception)
                 {
+                    ErrorKindClassifier.Tag(Activity.Current, ex);
                     throw new HiveServer2Exception($"An unexpected error occurred while running metadata query. '{ApacheUtility.FormatExceptionMessage(ex)}'", ex);
                 }
             }, ClassName + "." + nameof(GetTableSchema)).ConfigureAwait(false);
@@ -1392,9 +1416,9 @@ namespace AdbcDrivers.HiveServer2.Hive2
 
         private static IReadOnlyDictionary<TStatusCode, Action<TStatus, Activity?>> ErrorHandlers => new Dictionary<TStatusCode, Action<TStatus, Activity?>>()
         {
-            [TStatusCode.ERROR_STATUS] = (status, _) => ThrowErrorResponse(status),
-            [TStatusCode.INVALID_HANDLE_STATUS] = (status, _) => ThrowErrorResponse(status),
-            [TStatusCode.STILL_EXECUTING_STATUS] = (status, _) => ThrowErrorResponse(status, AdbcStatusCode.InvalidState),
+            [TStatusCode.ERROR_STATUS] = (status, activity) => ThrowErrorResponse(status, activity),
+            [TStatusCode.INVALID_HANDLE_STATUS] = (status, activity) => ThrowErrorResponse(status, activity),
+            [TStatusCode.STILL_EXECUTING_STATUS] = (status, activity) => ThrowErrorResponse(status, activity, AdbcStatusCode.InvalidState),
             [TStatusCode.SUCCESS_STATUS] = (status, activity) => activity?.AddTag(SemanticConventions.Db.Response.StatusCode, status.StatusCode),
             [TStatusCode.SUCCESS_WITH_INFO_STATUS] = (status, activity) =>
             {
@@ -1403,10 +1427,16 @@ namespace AdbcDrivers.HiveServer2.Hive2
             },
         };
 
-        private static void ThrowErrorResponse(TStatus status, AdbcStatusCode adbcStatusCode = AdbcStatusCode.InternalError) =>
+        private static void ThrowErrorResponse(TStatus status, Activity? activity, AdbcStatusCode adbcStatusCode = AdbcStatusCode.InternalError)
+        {
+            // Tag the originating Activity before throwing so the OTel
+            // db.error.kind classification lives on the span where the
+            // failure actually occurred. See adbc-drivers/databricks#481.
+            ErrorKindClassifier.Tag(activity, HiveServer2.ActivityKeys.Db.ErrorKindValues.ServerError);
             throw new HiveServer2Exception(status.ErrorMessage, adbcStatusCode)
                 .SetSqlState(status.SqlState)
                 .SetNativeError(status.ErrorCode);
+        }
 
         protected TConfiguration GetTconfiguration()
         {
