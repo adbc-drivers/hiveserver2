@@ -55,3 +55,13 @@ repos:
   rev: 8f218b6c808702a8b7e25f6fd6db5e85dbeeae8d
   hooks:
   - id: rat
+
+- repo: local
+  hooks:
+  - id: dotnet-format
+    name: C# Format
+    language: system
+    entry: |
+      dotnet format csharp/AdbcDrivers.HiveServer2.sln --verify-no-changes
+    always_run: true
+    pass_filenames: false

@@ -38,7 +38,7 @@ namespace AdbcDrivers.HiveServer2
             public const string AuthScheme = Key + ".auth_scheme";
         }
 
-        internal static class  Thrift
+        internal static class Thrift
         {
             public const string Key = "thrift";
             public const string MaxMessageSize = Key + ".max_message_size";
