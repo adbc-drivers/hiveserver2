@@ -212,7 +212,7 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Download per-RID native libraries
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           pattern: aot-native-*
           path: ${{ github.workspace }}/native-artifacts
