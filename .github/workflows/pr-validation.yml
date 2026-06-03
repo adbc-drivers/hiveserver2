@@ -74,6 +74,13 @@ jobs:
         with:
           script: |
             const pr = context.payload.pull_request;
+
+            // Skip all checks for Dependabot PRs
+            if (pr.user?.login === 'dependabot[bot]') {
+              core.info('Dependabot PR detected — skipping PR description checks.');
+              return;
+            }
+
             const body = pr.body || '';
 
             // Check if PR description contains "Closes #" or "Fixes #" followed by a number
