@@ -35,6 +35,7 @@ jobs:
     steps:
       - name: Validate PR title follows Conventional Commits
         uses: amannn/action-semantic-pull-request@v6
+        if: ${{ github.actor == 'dependabot[bot]' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
