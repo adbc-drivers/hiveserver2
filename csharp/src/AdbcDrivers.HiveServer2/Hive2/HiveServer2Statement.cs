@@ -611,6 +611,21 @@ namespace AdbcDrivers.HiveServer2.Hive2
             int columnSizeIndex = columnMap["COLUMN_SIZE"];
             int decimalDigitsIndex = columnMap["DECIMAL_DIGITS"];
 
+            // These three JDBC/ODBC-derived columns (see the ODBC SQLColumns spec) are
+            // defined by the standard but left unpopulated by the HiveServer2 server, so
+            // the raw GetColumns response returns null for them. Compute them here from the
+            // column type — the same enrichment already done for COLUMN_SIZE/DECIMAL_DIGITS —
+            // so the driver honors the contract instead of passing through server nulls.
+            //   SQL_DATA_TYPE     = the SQL type code (same as DATA_TYPE)
+            //   BUFFER_LENGTH     = in-memory transfer size in bytes for the type
+            //   CHAR_OCTET_LENGTH = max byte length for char/binary types, null otherwise
+            columnMap.TryGetValue("SQL_DATA_TYPE", out int sqlDataTypeIndex);
+            columnMap.TryGetValue("BUFFER_LENGTH", out int bufferLengthIndex);
+            columnMap.TryGetValue("CHAR_OCTET_LENGTH", out int charOctetLengthIndex);
+            bool hasSqlDataType = columnMap.ContainsKey("SQL_DATA_TYPE");
+            bool hasBufferLength = columnMap.ContainsKey("BUFFER_LENGTH");
+            bool hasCharOctetLength = columnMap.ContainsKey("CHAR_OCTET_LENGTH");
+
             StringArray typeNames = (StringArray)originalData[typeNameIndex];
             Int32Array originalColumnSizes = (Int32Array)originalData[columnSizeIndex];
             Int32Array originalDecimalDigits = (Int32Array)originalData[decimalDigitsIndex];
@@ -624,6 +639,9 @@ namespace AdbcDrivers.HiveServer2.Hive2
             var baseTypeNames = new List<string>(length);
             var columnSizeValues = new List<int>(length);
             var decimalDigitsValues = new List<int>(length);
+            var sqlDataTypeValues = new List<int?>(length);
+            var bufferLengthValues = new List<int?>(length);
+            var charOctetLengthValues = new List<int?>(length);
 
             for (int i = 0; i < length; i++)
             {
@@ -640,15 +658,26 @@ namespace AdbcDrivers.HiveServer2.Hive2
                         ? tableInfo.BaseTypeName[0] ?? typeName
                         : typeName);
 
-                columnSizeValues.Add(
-                    tableInfo.Precision.Count > 0
-                        ? tableInfo.Precision[0].GetValueOrDefault(columnSize)
-                        : columnSize);
+                int effectiveColumnSize = tableInfo.Precision.Count > 0
+                    ? tableInfo.Precision[0].GetValueOrDefault(columnSize)
+                    : columnSize;
+                columnSizeValues.Add(effectiveColumnSize);
 
                 decimalDigitsValues.Add(
                     tableInfo.Scale.Count > 0
                         ? tableInfo.Scale[0].GetValueOrDefault((short)decimalDigits)
                         : decimalDigits);
+
+                // SQL_DATA_TYPE mirrors DATA_TYPE (the SQL type code).
+                sqlDataTypeValues.Add(colType);
+                // BUFFER_LENGTH: byte size for the type.
+                bufferLengthValues.Add(GetBufferLengthForType(colType, effectiveColumnSize));
+                // CHAR_OCTET_LENGTH: max bytes for char/binary types only (when the size is
+                // known; the server sends a non-positive size for unbounded types).
+                charOctetLengthValues.Add(
+                    IsCharacterOrBinaryType(colType) && effectiveColumnSize > 0
+                        ? effectiveColumnSize
+                        : (int?)null);
             }
 
             StringArray baseTypeNameArray = new StringArray.Builder().AppendRange(baseTypeNames).Build();
@@ -658,9 +687,118 @@ namespace AdbcDrivers.HiveServer2.Hive2
             var enhancedData = new List<IArrowArray>(originalData);
             enhancedData[columnSizeIndex] = columnSizeArray;
             enhancedData[decimalDigitsIndex] = decimalDigitsArray;
+            if (hasSqlDataType)
+            {
+                enhancedData[sqlDataTypeIndex] = BuildIntArrayMatching(originalData[sqlDataTypeIndex], sqlDataTypeValues);
+            }
+            if (hasBufferLength)
+            {
+                enhancedData[bufferLengthIndex] = BuildIntArrayMatching(originalData[bufferLengthIndex], bufferLengthValues);
+            }
+            if (hasCharOctetLength)
+            {
+                enhancedData[charOctetLengthIndex] = BuildIntArrayMatching(originalData[charOctetLengthIndex], charOctetLengthValues);
+            }
             enhancedData.Add(baseTypeNameArray);
 
             return new QueryResult(rowCount, new HiveInfoArrowStream(enhancedSchema, enhancedData));
+        }
+
+        // BUFFER_LENGTH — the in-memory byte size used to transfer a value of the given
+        // SQL type. Values follow the JDBC/ODBC convention; character/binary types use the
+        // (already type-parsed) column size. Returns null when the size is not defined for
+        // the type, matching the "null for other data types" contract.
+        private static int? GetBufferLengthForType(short sqlType, int columnSize)
+        {
+            switch ((HiveServer2Connection.ColumnTypeId)sqlType)
+            {
+                case HiveServer2Connection.ColumnTypeId.BOOLEAN:
+                case HiveServer2Connection.ColumnTypeId.TINYINT:
+                    return 1;
+                case HiveServer2Connection.ColumnTypeId.SMALLINT:
+                    return 2;
+                case HiveServer2Connection.ColumnTypeId.INTEGER:
+                case HiveServer2Connection.ColumnTypeId.REAL:
+                case HiveServer2Connection.ColumnTypeId.FLOAT:
+                    return 4;
+                case HiveServer2Connection.ColumnTypeId.BIGINT:
+                case HiveServer2Connection.ColumnTypeId.DOUBLE:
+                case HiveServer2Connection.ColumnTypeId.DATE:
+                case HiveServer2Connection.ColumnTypeId.TIMESTAMP:
+                    return 8;
+                case HiveServer2Connection.ColumnTypeId.CHAR:
+                case HiveServer2Connection.ColumnTypeId.VARCHAR:
+                case HiveServer2Connection.ColumnTypeId.LONGVARCHAR:
+                case HiveServer2Connection.ColumnTypeId.NCHAR:
+                case HiveServer2Connection.ColumnTypeId.NVARCHAR:
+                case HiveServer2Connection.ColumnTypeId.LONGNVARCHAR:
+                case HiveServer2Connection.ColumnTypeId.BINARY:
+                case HiveServer2Connection.ColumnTypeId.VARBINARY:
+                case HiveServer2Connection.ColumnTypeId.LONGVARBINARY:
+                    // Char/binary size is only meaningful when known; the server sends a
+                    // non-positive size (e.g. -1) for unbounded types like STRING.
+                    return columnSize > 0 ? columnSize : (int?)null;
+                default:
+                    return null;
+            }
+        }
+
+        // CHAR_OCTET_LENGTH applies only to character and binary types.
+        private static bool IsCharacterOrBinaryType(short sqlType)
+        {
+            switch ((HiveServer2Connection.ColumnTypeId)sqlType)
+            {
+                case HiveServer2Connection.ColumnTypeId.CHAR:
+                case HiveServer2Connection.ColumnTypeId.VARCHAR:
+                case HiveServer2Connection.ColumnTypeId.LONGVARCHAR:
+                case HiveServer2Connection.ColumnTypeId.NCHAR:
+                case HiveServer2Connection.ColumnTypeId.NVARCHAR:
+                case HiveServer2Connection.ColumnTypeId.LONGNVARCHAR:
+                case HiveServer2Connection.ColumnTypeId.BINARY:
+                case HiveServer2Connection.ColumnTypeId.VARBINARY:
+                case HiveServer2Connection.ColumnTypeId.LONGVARBINARY:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        // Builds an integer array of nullable values whose Arrow type matches the original
+        // column's type (the HiveServer2 GetColumns schema types BUFFER_LENGTH as Int8 but
+        // SQL_DATA_TYPE / CHAR_OCTET_LENGTH as Int32), so replacing the column preserves the
+        // result-set schema.
+        private static IArrowArray BuildIntArrayMatching(IArrowArray original, List<int?> values)
+        {
+            switch (original)
+            {
+                case Int8Array:
+                {
+                    var b = new Int8Array.Builder();
+                    foreach (var v in values)
+                    {
+                        if (v.HasValue) b.Append((sbyte)v.Value); else b.AppendNull();
+                    }
+                    return b.Build();
+                }
+                case Int16Array:
+                {
+                    var b = new Int16Array.Builder();
+                    foreach (var v in values)
+                    {
+                        if (v.HasValue) b.Append((short)v.Value); else b.AppendNull();
+                    }
+                    return b.Build();
+                }
+                default:
+                {
+                    var b = new Int32Array.Builder();
+                    foreach (var v in values)
+                    {
+                        if (v.HasValue) b.Append(v.Value); else b.AppendNull();
+                    }
+                    return b.Build();
+                }
+            }
         }
 
         // Helper method to read all batches from a stream
