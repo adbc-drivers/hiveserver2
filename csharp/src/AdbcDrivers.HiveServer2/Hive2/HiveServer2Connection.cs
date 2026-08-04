@@ -631,6 +631,18 @@ namespace AdbcDrivers.HiveServer2.Hive2
         async Task<IReadOnlyList<(string catalog, string schema, string table, string tableType)>> IGetObjectsDataProvider.GetTablesAsync(
             string? catalogPattern, string? schemaPattern, string? tableNamePattern, IReadOnlyList<string>? tableTypes, CancellationToken cancellationToken)
         {
+            // METADATA-035: an EMPTY (non-null) tableTypes filter matches NO table
+            // types (zero rows) — short-circuit without an RPC, mirroring
+            // databricks-jdbc's listTables. This is required because the Thrift server
+            // treats an empty TGetTablesReq.TableTypes list as "unset" and returns ALL
+            // rows, so it cannot enforce empty→none itself. A null filter (no filter →
+            // all) and a non-empty filter (server-side filtered via TableTypes) both
+            // fall through to the normal RPC below.
+            if (tableTypes != null && tableTypes.Count == 0)
+            {
+                return System.Array.Empty<(string, string, string, string)>();
+            }
+
             TGetTablesResp getTablesResp = await GetTablesAsync(
                 catalogPattern, schemaPattern, tableNamePattern,
                 tableTypes?.ToList(), cancellationToken).ConfigureAwait(false);
@@ -644,27 +656,9 @@ namespace AdbcDrivers.HiveServer2.Hive2
             IReadOnlyList<string> tableList = rowSet.Columns[columnMap[TableName]].StringVal.Values;
             IReadOnlyList<string> tableTypeList = rowSet.Columns[columnMap[TableType]].StringVal.Values;
 
-            // Filter by table type CLIENT-SIDE, mirroring databricks-jdbc's
-            // MetadataResultSetBuilder.getTablesResult. A null tableTypes means "no
-            // filter" (all types); a non-null list keeps only rows whose type is in
-            // the set — so an EMPTY (non-null) list matches NO types (zero rows),
-            // per the JDBC/getTables contract (METADATA-035). This does not rely on
-            // the server honoring TGetTablesReq.TableTypes: the Thrift server treats
-            // an empty TableTypes list as "unset" (returns all), so client-side
-            // filtering is required to make an empty filter match none. Case-sensitive
-            // exact match against the server's type names (TABLE/VIEW/...), matching
-            // JDBC and the SEA path.
-            HashSet<string>? allowedTableTypes = tableTypes != null
-                ? new HashSet<string>(tableTypes, StringComparer.Ordinal)
-                : null;
-
             var result = new List<(string, string, string, string)>();
             for (int i = 0; i < catalogList.Count; i++)
             {
-                if (allowedTableTypes != null && !allowedTableTypes.Contains(tableTypeList[i]))
-                {
-                    continue;
-                }
                 result.Add((catalogList[i], schemaList[i], tableList[i], tableTypeList[i]));
             }
             return result;
