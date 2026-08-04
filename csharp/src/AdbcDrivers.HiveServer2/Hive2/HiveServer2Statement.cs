@@ -547,7 +547,9 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 return MetadataSchemaFactory.CreateEmptyTablesResult();
             }
 
-            List<string>? tableTypesList = string.IsNullOrEmpty(this.TableTypes) ? null : this.TableTypes!.Split(',').ToList();
+            // TableTypes is now either null (no filter → all) or non-empty. The empty
+            // case is handled by the short-circuit above.
+            List<string>? tableTypesList = this.TableTypes?.Split(',').ToList();
             IResponse response = await Connection.GetTablesAsync(
                 EscapePatternWildcardsInName(CatalogName),
                 EscapePatternWildcardsInName(SchemaName),
