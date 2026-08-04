@@ -644,9 +644,27 @@ namespace AdbcDrivers.HiveServer2.Hive2
             IReadOnlyList<string> tableList = rowSet.Columns[columnMap[TableName]].StringVal.Values;
             IReadOnlyList<string> tableTypeList = rowSet.Columns[columnMap[TableType]].StringVal.Values;
 
+            // Filter by table type CLIENT-SIDE, mirroring databricks-jdbc's
+            // MetadataResultSetBuilder.getTablesResult. A null tableTypes means "no
+            // filter" (all types); a non-null list keeps only rows whose type is in
+            // the set — so an EMPTY (non-null) list matches NO types (zero rows),
+            // per the JDBC/getTables contract (METADATA-035). This does not rely on
+            // the server honoring TGetTablesReq.TableTypes: the Thrift server treats
+            // an empty TableTypes list as "unset" (returns all), so client-side
+            // filtering is required to make an empty filter match none. Case-sensitive
+            // exact match against the server's type names (TABLE/VIEW/...), matching
+            // JDBC and the SEA path.
+            HashSet<string>? allowedTableTypes = tableTypes != null
+                ? new HashSet<string>(tableTypes, StringComparer.Ordinal)
+                : null;
+
             var result = new List<(string, string, string, string)>();
             for (int i = 0; i < catalogList.Count; i++)
             {
+                if (allowedTableTypes != null && !allowedTableTypes.Contains(tableTypeList[i]))
+                {
+                    continue;
+                }
                 result.Add((catalogList[i], schemaList[i], tableList[i], tableTypeList[i]));
             }
             return result;
