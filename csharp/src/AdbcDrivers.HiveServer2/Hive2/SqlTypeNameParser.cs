@@ -108,18 +108,58 @@ namespace AdbcDrivers.HiveServer2.Hive2
         /// <summary>
         /// Parses the input type name string and produces a result.
         /// When a matching parser is found that successfully parses the type name string, the result of that parse is returned.
-        /// If no parser is able to successfully match the input type name,
-        /// then a <see cref="NotSupportedException"/> is thrown.
+        /// If no registered parser matches, a generic result carrying the base type name is returned rather than
+        /// throwing, so that a type name the driver does not model explicitly (e.g. GEOMETRY, GEOGRAPHY, or any type
+        /// the server adds in the future) still yields usable metadata instead of failing the whole operation. This
+        /// mirrors the reference drivers, which map an unrecognized SQL type to a generic "other" type rather than
+        /// erroring (JDBC's <c>Types.OTHER</c>, the Rust kernel's <c>JDBC_OTHER</c> fallback).
+        ///
+        /// The fallback base type name is the leading identifier upper-cased with any parametric (<c>(...)</c>) or
+        /// nested (<c>&lt;...&gt;</c>) sub-clause stripped — e.g. <c>"geometry(0)"</c> → <c>"GEOMETRY"</c>. This is the
+        /// same normalization the recognized parsers apply (a <c>decimal(10,2)</c> column reports
+        /// <see cref="BaseTypeName"/> <c>"DECIMAL"</c>, not <c>"DECIMAL(10,2)"</c>) and the same rule the JDBC
+        /// reference driver's <c>stripBaseTypeName</c> uses (cut at the first <c>&lt;</c>, else the first <c>(</c>).
+        /// A follow-up in the Databricks driver makes the SEA metadata path's
+        /// <c>ColumnMetadataHelper.GetBaseTypeName</c> delegate to this method, so an unrecognized type reports the
+        /// SAME stripped <c>BASE_TYPE_NAME</c> on both the Thrift and SEA metadata paths.
+        ///
+        /// Callers requesting a specialized result type (e.g. decimal/varchar) still get an
+        /// <see cref="InvalidCastException"/> if the generic fallback cannot satisfy that type, so a
+        /// genuinely-malformed decimal is not silently accepted.
         /// </summary>
         /// <param name="input">The type name string to parse</param>
         /// <param name="columnTypeIdHint">If provided, the column type id is used as a hint to find the most likely matching parser.</param>
         /// <returns>
-        /// A parser result, from a successful match and parse.
+        /// A parser result, from a successful match and parse, or a generic stripped-base-name fallback when no parser matches.
         /// </returns>
         public static T Parse(string input, int? columnTypeIdHint = null) =>
             SqlTypeNameParser<T>.TryParse(input, out SqlTypeNameParserResult? result, columnTypeIdHint) && result != null
                 ? CastResultOrThrow(input, result)
-                : throw new NotSupportedException($"Unsupported SQL type name: '{input}'");
+                // The motivating unmodeled types are GEOMETRY/GEOGRAPHY (reported as e.g. "geometry(0)").
+                // A general stripped-base-name fallback is used rather than dedicated GEOMETRY/GEOGRAPHY
+                // parsers on purpose: it yields the same base name ("GEOMETRY"/"GEOGRAPHY") while also
+                // covering every other type the registry does not model (VARIANT is registered; OBJECT and
+                // any future server type are not), so none of them abort GetColumns by throwing.
+                : CastResultOrThrow(input, new SqlTypeNameParserResult(input, StripBaseTypeName(input)));
+
+        /// <summary>
+        /// Extracts the base type name from an unrecognized SQL type name: the leading identifier upper-cased, with
+        /// any parametric (<c>(...)</c>) or nested (<c>&lt;...&gt;</c>) sub-clause and surrounding whitespace removed.
+        /// Cuts at the first <c>&lt;</c> (composite tail, checked first to handle e.g. <c>MAP&lt;STRING,INT&gt;</c>),
+        /// otherwise at the first <c>(</c> (parameter tail). Matches the JDBC reference driver's
+        /// <c>stripBaseTypeName</c> and the recognized parsers' sub-clause-free <see cref="BaseTypeName"/>.
+        /// </summary>
+        private static string StripBaseTypeName(string input)
+        {
+            string trimmed = input.Trim();
+            int cut = trimmed.IndexOf('<');
+            if (cut < 0)
+            {
+                cut = trimmed.IndexOf('(');
+            }
+            string baseName = cut >= 0 ? trimmed.Substring(0, cut) : trimmed;
+            return baseName.Trim().ToUpperInvariant();
+        }
 
         /// <summary>
         /// Gets the <see cref="Regex"/> expression to parse the SQL type name
