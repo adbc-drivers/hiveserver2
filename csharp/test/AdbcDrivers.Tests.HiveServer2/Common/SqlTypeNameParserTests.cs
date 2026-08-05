@@ -267,6 +267,41 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
             _outputHelper.WriteLine(Assert.Throws<InvalidCastException>(testCode).Message);
         }
 
+        // A type name that no registered parser models (geospatial types, and any type the server may add
+        // later) must NOT fail the parse: Parse falls back to a generic result carrying the base type name.
+        // GetColumns relies on this — an unmodeled column type previously threw NotSupportedException and
+        // aborted the whole metadata call. The reference drivers behave the same way (JDBC maps to
+        // Types.OTHER, the Rust kernel to JDBC_OTHER) rather than erroring.
+        //
+        // The fallback base name is the leading identifier upper-cased with any (...) / <...> sub-clause
+        // stripped (so "geometry(0)" -> "GEOMETRY", NOT "GEOMETRY(0)"). This is the same normalization the
+        // recognized parsers apply (decimal(10,2) -> "DECIMAL") and matches the JDBC reference driver's
+        // stripBaseTypeName (cut at first '<', else first '('). TypeName keeps the original input verbatim.
+        [Theory()]
+        [InlineData("geometry(0)", "GEOMETRY")]
+        [InlineData("geography(4326)", "GEOGRAPHY")]
+        [InlineData("GEOMETRY", "GEOMETRY")]
+        [InlineData("  geography(3857)  ", "GEOGRAPHY")]
+        [InlineData("some_future_type", "SOME_FUTURE_TYPE")]
+        [InlineData("weird<nested(9)>", "WEIRD")]
+        internal void UnrecognizedTypeNameFallsBackToStrippedBaseName(string testTypeName, string expectedBaseTypeName)
+        {
+            SqlTypeNameParserResult result = SqlTypeNameParser<SqlTypeNameParserResult>.Parse(testTypeName);
+            Assert.NotNull(result);
+            Assert.Equal(testTypeName, result.TypeName);
+            Assert.Equal(expectedBaseTypeName, result.BaseTypeName);
+        }
+
+        // The fallback only applies to the generic result type. A caller asking for a specialized result
+        // (e.g. decimal) from an unrecognized type name still gets an InvalidCastException, so a genuinely
+        // malformed value is never silently coerced into a decimal.
+        [Fact()]
+        internal void UnrecognizedTypeNameStillThrowsForSpecializedResultType()
+        {
+            Func<object?> testCode = () => SqlTypeNameParser<SqlDecimalParserResult>.Parse("geometry(0)");
+            Assert.Throws<InvalidCastException>(testCode);
+        }
+
         public static IEnumerable<object[]> GenerateCharTestData(string typeName)
         {
             int?[] lengths = [1, 10, int.MaxValue,];
