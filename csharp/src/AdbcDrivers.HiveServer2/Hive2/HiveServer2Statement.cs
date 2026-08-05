@@ -536,7 +536,20 @@ namespace AdbcDrivers.HiveServer2.Hive2
 
         protected virtual async Task<QueryResult> GetTablesAsync(CancellationToken cancellationToken = default)
         {
-            List<string>? tableTypesList = string.IsNullOrEmpty(this.TableTypes) ? null : this.TableTypes!.Split(',').ToList();
+            // Distinguish an UNSET types filter (null → all types) from an EMPTY one
+            // (empty string → match NO types). An empty, non-null filter short-circuits
+            // to an empty result without an RPC — mirroring databricks-jdbc's
+            // listTables — because the Thrift server treats an empty TableTypes list as
+            // "unset" (returns all), so it cannot enforce empty→none itself. Follows
+            // java.sql.DatabaseMetaData.getTables (null = all types).
+            if (this.TableTypes != null && this.TableTypes.Length == 0)
+            {
+                return MetadataSchemaFactory.CreateEmptyTablesResult();
+            }
+
+            // TableTypes is now either null (no filter → all) or non-empty. The empty
+            // case is handled by the short-circuit above.
+            List<string>? tableTypesList = this.TableTypes?.Split(',').ToList();
             IResponse response = await Connection.GetTablesAsync(
                 EscapePatternWildcardsInName(CatalogName),
                 EscapePatternWildcardsInName(SchemaName),
