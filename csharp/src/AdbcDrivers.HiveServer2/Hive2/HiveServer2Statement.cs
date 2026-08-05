@@ -536,12 +536,12 @@ namespace AdbcDrivers.HiveServer2.Hive2
 
         protected virtual async Task<QueryResult> GetTablesAsync(CancellationToken cancellationToken = default)
         {
-            // METADATA-035: distinguish an UNSET types filter (null → all types) from
-            // an EMPTY one (empty string → match NO types). An empty, non-null filter
-            // short-circuits to an empty result without an RPC — mirroring
-            // databricks-jdbc's listTables — because the Thrift server treats an empty
-            // TableTypes list as "unset" (returns all), so it cannot enforce
-            // empty→none itself.
+            // Distinguish an UNSET types filter (null → all types) from an EMPTY one
+            // (empty string → match NO types). An empty, non-null filter short-circuits
+            // to an empty result without an RPC — mirroring databricks-jdbc's
+            // listTables — because the Thrift server treats an empty TableTypes list as
+            // "unset" (returns all), so it cannot enforce empty→none itself. Follows
+            // java.sql.DatabaseMetaData.getTables (null = all types).
             if (this.TableTypes != null && this.TableTypes.Length == 0)
             {
                 return MetadataSchemaFactory.CreateEmptyTablesResult();
