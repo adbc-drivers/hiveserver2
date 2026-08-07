@@ -369,7 +369,13 @@ namespace AdbcDrivers.HiveServer2.Hive2
                     if (!string.IsNullOrEmpty(response.DirectResults.OperationStatus.DisplayMessage))
                     {
                         ErrorKindClassifier.Tag(activity, HiveServer2.ActivityKeys.Db.ErrorKindValues.ServerError);
-                        throw new HiveServer2Exception(response.DirectResults.OperationStatus.DisplayMessage)
+                        // Pass InternalError explicitly: this is a server-side execution failure,
+                        // the same class as HandleThriftResponse's ThrowErrorResponse (which
+                        // defaults to InternalError). Omitting the status left it at the base
+                        // AdbcException default (UnknownError), making this DirectResults path the
+                        // only server-error throw that disagreed — both with the other Thrift path
+                        // and with the SEA path (DatabricksException(..., InternalError)).
+                        throw new HiveServer2Exception(response.DirectResults.OperationStatus.DisplayMessage, AdbcStatusCode.InternalError)
                             .SetSqlState(response.DirectResults.OperationStatus.SqlState)
                             .SetNativeError(response.DirectResults.OperationStatus.ErrorCode);
                     }
