@@ -369,7 +369,13 @@ namespace AdbcDrivers.HiveServer2.Hive2
                     if (!string.IsNullOrEmpty(response.DirectResults.OperationStatus.DisplayMessage))
                     {
                         ErrorKindClassifier.Tag(activity, HiveServer2.ActivityKeys.Db.ErrorKindValues.ServerError);
-                        throw new HiveServer2Exception(response.DirectResults.OperationStatus.DisplayMessage)
+                        // Pass InternalError explicitly: this is a server-side execution failure,
+                        // the same class as HandleThriftResponse's ThrowErrorResponse (which
+                        // defaults to InternalError). Omitting the status left it at the base
+                        // AdbcException default (UnknownError), making this DirectResults path the
+                        // only server-error throw that disagreed — both with the other Thrift path
+                        // and with the SEA path (DatabricksException(..., InternalError)).
+                        throw new HiveServer2Exception(response.DirectResults.OperationStatus.DisplayMessage, AdbcStatusCode.InternalError)
                             .SetSqlState(response.DirectResults.OperationStatus.SqlState)
                             .SetNativeError(response.DirectResults.OperationStatus.ErrorCode);
                     }
@@ -536,6 +542,19 @@ namespace AdbcDrivers.HiveServer2.Hive2
 
         protected virtual async Task<QueryResult> GetTablesAsync(CancellationToken cancellationToken = default)
         {
+            // Distinguish an UNSET types filter (null → all types) from an EMPTY one
+            // (empty string → match NO types). An empty, non-null filter short-circuits
+            // to an empty result without an RPC — mirroring databricks-jdbc's
+            // listTables — because the Thrift server treats an empty TableTypes list as
+            // "unset" (returns all), so it cannot enforce empty→none itself. Follows
+            // java.sql.DatabaseMetaData.getTables (null = all types).
+            if (this.TableTypes != null && this.TableTypes.Length == 0)
+            {
+                return MetadataSchemaFactory.CreateEmptyTablesResult();
+            }
+
+            // TableTypes is now either null (no filter → all) or non-empty. The empty
+            // case is handled by the short-circuit above.
             List<string>? tableTypesList = this.TableTypes?.Split(',').ToList();
             IResponse response = await Connection.GetTablesAsync(
                 EscapePatternWildcardsInName(CatalogName),

@@ -631,6 +631,19 @@ namespace AdbcDrivers.HiveServer2.Hive2
         async Task<IReadOnlyList<(string catalog, string schema, string table, string tableType)>> IGetObjectsDataProvider.GetTablesAsync(
             string? catalogPattern, string? schemaPattern, string? tableNamePattern, IReadOnlyList<string>? tableTypes, CancellationToken cancellationToken)
         {
+            // An EMPTY (non-null) tableTypes filter matches NO table types (zero rows)
+            // — short-circuit without an RPC. This is required because the Thrift
+            // server treats an empty TGetTablesReq.TableTypes list as "unset" and
+            // returns ALL rows, so it cannot enforce empty→none itself. A null filter
+            // (no filter → all) and a non-empty filter (server-side filtered via
+            // TableTypes) both fall through to the normal RPC below. Distinguishing an
+            // empty list from null follows java.sql.DatabaseMetaData.getTables (null =
+            // all types) and databricks-jdbc's listTables (empty = none).
+            if (tableTypes != null && tableTypes.Count == 0)
+            {
+                return System.Array.Empty<(string, string, string, string)>();
+            }
+
             TGetTablesResp getTablesResp = await GetTablesAsync(
                 catalogPattern, schemaPattern, tableNamePattern,
                 tableTypes?.ToList(), cancellationToken).ConfigureAwait(false);
