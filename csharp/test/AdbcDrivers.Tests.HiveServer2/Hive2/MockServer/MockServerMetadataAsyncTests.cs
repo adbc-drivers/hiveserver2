@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using AdbcDrivers.HiveServer2;
+using AdbcDrivers.HiveServer2.Hive2;
 using AdbcDrivers.HiveServer2.TestServer;
 using AdbcDrivers.Tests.HiveServer2.MockServer;
 using Apache.Arrow;
@@ -147,6 +148,88 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
 
             // A cancellable caller token that never fires: the timeout must still
             // win, and must not be misreported as a caller cancellation.
+            using var cts = new CancellationTokenSource();
+            try
+            {
+                await Assert.ThrowsAsync<TimeoutException>(() => Invoke(scenario.Connection, call, cts.Token));
+            }
+            finally
+            {
+                gate.Release();
+            }
+        }
+
+        // Over the Standard (TCP) transport, cancelling an in-flight RPC closes the
+        // socket (ThreadSafeClient can't otherwise guarantee the framed stream is
+        // intact), so the connection is unusable afterwards. Caller cancellation of a
+        // metadata call now reaches the RPC, so it has the same effect as
+        // Statement.Cancel() does for queries.
+
+        [Theory]
+        [InlineData(MetadataCall.GetObjects)]
+        [InlineData(MetadataCall.GetTableSchema)]
+        [InlineData(MetadataCall.GetTableTypes)]
+        public async Task Standard_CallerCancellation_InterruptsCallAndInvalidatesConnection(MetadataCall call)
+        {
+            using var scenario = HiveMockServer.CreateStandard();
+            using var gate = new ServerGate();
+            ConfigureStub(scenario.Stub, gate);
+
+            using var cts = new CancellationTokenSource();
+            Task operation = Invoke(scenario.Connection, call, cts.Token);
+            try
+            {
+                Assert.True(await gate.WaitForRequestAsync(), "The server never received the metadata request.");
+                cts.Cancel();
+                Assert.Same(operation, await Task.WhenAny(operation, Task.Delay(s_waitLimit)));
+                OperationCanceledException ex = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => operation);
+                Assert.Equal(cts.Token, ex.CancellationToken);
+            }
+            finally
+            {
+                gate.Release();
+            }
+
+            gate.Blocking = false;
+            int requestsBefore = gate.RequestCount;
+            HiveServer2Exception error = await Assert.ThrowsAsync<HiveServer2Exception>(
+                () => Invoke(scenario.Connection, call, CancellationToken.None));
+            Assert.Equal(AdbcStatusCode.InvalidState, error.Status);
+            Assert.Equal(requestsBefore, gate.RequestCount);
+        }
+
+        [Theory]
+        [InlineData(MetadataCall.GetObjects)]
+        [InlineData(MetadataCall.GetTableSchema)]
+        [InlineData(MetadataCall.GetTableTypes)]
+        public async Task Standard_PreCancelledToken_LeavesConnectionUsable(MetadataCall call)
+        {
+            using var scenario = HiveMockServer.CreateStandard();
+            using var gate = new ServerGate { Blocking = false };
+            ConfigureStub(scenario.Stub, gate);
+
+            using var cts = new CancellationTokenSource();
+            cts.Cancel();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => Invoke(scenario.Connection, call, cts.Token));
+            Assert.Equal(0, gate.RequestCount);
+
+            // Nothing was written to the socket, so there is nothing to invalidate.
+            await Invoke(scenario.Connection, call, CancellationToken.None);
+            Assert.Equal(1, gate.RequestCount);
+        }
+
+        [Theory]
+        [InlineData(MetadataCall.GetObjects)]
+        [InlineData(MetadataCall.GetTableSchema)]
+        [InlineData(MetadataCall.GetTableTypes)]
+        public async Task Standard_QueryTimeout_IsReportedAsTimeoutNotCancellation(MetadataCall call)
+        {
+            var parameters = MockServerScenario.CopyParameters(HiveMockServer.DefaultStandardParameters);
+            parameters[ApacheParameters.QueryTimeoutSeconds] = "1";
+            using var scenario = HiveMockServer.CreateStandard(parameters: parameters);
+            using var gate = new ServerGate();
+            ConfigureStub(scenario.Stub, gate);
+
             using var cts = new CancellationTokenSource();
             try
             {

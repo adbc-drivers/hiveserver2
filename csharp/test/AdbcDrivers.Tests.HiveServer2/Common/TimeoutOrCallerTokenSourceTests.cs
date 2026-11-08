@@ -96,6 +96,62 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
             Assert.False(source.IsCancelledByCaller);
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void DisposeFromInsideCancellationCallback_DoesNotThrowOrDeadlock(bool callerFires)
+        {
+            // Cancelling a token can run an awaiting operation's continuation inline, so
+            // the operation can finish and dispose the source while Fire is still on the
+            // stack. That re-entrant dispose must neither deadlock (waiting on its own
+            // callback) nor throw out of Cancel().
+            using var caller = new CancellationTokenSource();
+            var source = new TimeoutOrCallerTokenSource(callerFires ? s_long : TimeSpan.FromMilliseconds(1), caller.Token);
+            var disposed = new ManualResetEventSlim(false);
+            source.Token.Register(() =>
+            {
+                source.Dispose();
+                disposed.Set();
+            });
+
+            if (callerFires)
+            {
+                caller.Cancel();
+            }
+
+            Assert.True(disposed.Wait(TimeSpan.FromSeconds(10)), "Re-entrant dispose did not complete.");
+            if (!callerFires)
+            {
+                caller.Cancel();
+            }
+        }
+
+        [Fact]
+        public void RacingCallerAndTimeout_CauseNeverChangesOnceObserved()
+        {
+            // Stress the race Copilot flagged: whichever source wins, the cause seen by
+            // an observer of the token must be the cause reported afterwards.
+            for (int i = 0; i < 500; i++)
+            {
+                using var caller = new CancellationTokenSource();
+                using var source = new TimeoutOrCallerTokenSource(TimeSpan.FromMilliseconds(1), caller.Token);
+                bool? observed = null;
+                var seen = new ManualResetEventSlim(false);
+                using CancellationTokenRegistration _ = source.Token.Register(() =>
+                {
+                    observed = source.IsCancelledByCaller;
+                    seen.Set();
+                });
+
+                ThreadPool.QueueUserWorkItem(_ => caller.Cancel());
+
+                Assert.True(seen.Wait(TimeSpan.FromSeconds(10)));
+                Assert.Equal(observed, source.IsCancelledByCaller);
+                SpinWait.SpinUntil(() => caller.IsCancellationRequested, TimeSpan.FromSeconds(10));
+                Assert.Equal(observed, source.IsCancelledByCaller);
+            }
+        }
+
         [Fact]
         public void CallerCancelAfterDispose_DoesNotThrow()
         {
