@@ -569,7 +569,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                     throw new InvalidOperationException("Invalid session");
                 }
 
-                using CancellationTokenSource cts = ApacheUtility.GetCancellationTokenSource(QueryTimeoutSeconds, ApacheUtility.TimeUnit.Seconds, cancellationToken);
+                using TimeoutOrCallerTokenSource cts = ApacheUtility.GetTimeoutOrCallerTokenSource(QueryTimeoutSeconds, ApacheUtility.TimeUnit.Seconds, cancellationToken);
                 try
                 {
                     if (GetObjectsPatternsRequireLowerCase)
@@ -585,7 +585,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                         tableNamePattern, tableTypes, columnNamePattern,
                         cts.Token).ConfigureAwait(false);
                 }
-                catch (Exception ex) when (IsCancelledByCaller(ex, cts.Token, cancellationToken))
+                catch (Exception ex) when (IsCancelledByCaller(ex, cts))
                 {
                     throw MetadataQueryCancelled(ex, cancellationToken);
                 }
@@ -605,9 +605,11 @@ namespace AdbcDrivers.HiveServer2.Hive2
         /// <summary>
         /// True when a metadata call failed because the caller's token was cancelled, as
         /// opposed to the driver's own <see cref="QueryTimeoutSeconds"/> timer firing.
+        /// Uses the cause recorded by <paramref name="cts"/> rather than the caller token's
+        /// current state, so a cancel that arrives after the timeout is not misreported.
         /// </summary>
-        private static bool IsCancelledByCaller(Exception ex, CancellationToken combinedToken, CancellationToken callerToken) =>
-            callerToken.IsCancellationRequested && ExceptionHelper.IsOperationCanceledOrCancellationRequested(ex, combinedToken);
+        private static bool IsCancelledByCaller(Exception ex, TimeoutOrCallerTokenSource cts) =>
+            cts.IsCancelledByCaller && ExceptionHelper.IsOperationCanceledOrCancellationRequested(ex, cts.Token);
 
         private static OperationCanceledException MetadataQueryCancelled(Exception ex, CancellationToken callerToken) =>
             new OperationCanceledException("The metadata query was cancelled.", ex, callerToken);
@@ -769,7 +771,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 };
                 TrySetGetDirectResults(req);
 
-                using CancellationTokenSource cts = ApacheUtility.GetCancellationTokenSource(QueryTimeoutSeconds, ApacheUtility.TimeUnit.Seconds, cancellationToken);
+                using TimeoutOrCallerTokenSource cts = ApacheUtility.GetTimeoutOrCallerTokenSource(QueryTimeoutSeconds, ApacheUtility.TimeUnit.Seconds, cancellationToken);
                 try
                 {
                     TGetTableTypesResp resp = await Client.GetTableTypes(req, cts.Token).ConfigureAwait(false);
@@ -790,7 +792,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
 
                     return (IArrowArrayStream)new HiveInfoArrowStream(StandardSchemas.TableTypesSchema, dataArrays);
                 }
-                catch (Exception ex) when (IsCancelledByCaller(ex, cts.Token, cancellationToken))
+                catch (Exception ex) when (IsCancelledByCaller(ex, cts))
                 {
                     throw MetadataQueryCancelled(ex, cancellationToken);
                 }
@@ -1297,7 +1299,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 getColumnsReq.TableName = tableName;
                 TrySetGetDirectResults(getColumnsReq);
 
-                using CancellationTokenSource cts = ApacheUtility.GetCancellationTokenSource(QueryTimeoutSeconds, ApacheUtility.TimeUnit.Seconds, cancellationToken);
+                using TimeoutOrCallerTokenSource cts = ApacheUtility.GetTimeoutOrCallerTokenSource(QueryTimeoutSeconds, ApacheUtility.TimeUnit.Seconds, cancellationToken);
                 try
                 {
                     var columnsResponse = await Client.GetColumns(getColumnsReq, cts.Token).ConfigureAwait(false);
@@ -1323,7 +1325,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                     }
                     return new Schema(fields, null);
                 }
-                catch (Exception ex) when (IsCancelledByCaller(ex, cts.Token, cancellationToken))
+                catch (Exception ex) when (IsCancelledByCaller(ex, cts))
                 {
                     throw MetadataQueryCancelled(ex, cancellationToken);
                 }
