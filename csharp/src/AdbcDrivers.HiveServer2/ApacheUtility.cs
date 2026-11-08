@@ -45,6 +45,23 @@ namespace AdbcDrivers.HiveServer2
             return new CancellationTokenSource(timeSpan);
         }
 
+        /// <summary>
+        /// Creates a token source that is cancelled either when <paramref name="timeout"/>
+        /// elapses or when <paramref name="linkedToken"/> is cancelled, whichever comes first.
+        /// Callers can tell the two apart by checking <c>linkedToken.IsCancellationRequested</c>.
+        /// </summary>
+        public static CancellationTokenSource GetCancellationTokenSource(int timeout, TimeUnit timeUnit, CancellationToken linkedToken)
+        {
+            if (!linkedToken.CanBeCanceled)
+            {
+                return GetCancellationTokenSource(timeout, timeUnit);
+            }
+
+            CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(linkedToken);
+            cts.CancelAfter(CalculateTimeSpan(timeout, timeUnit));
+            return cts;
+        }
+
         public static CancellationToken GetCancellationToken(int timeout, TimeUnit timeUnit)
         {
             TimeSpan timeSpan = CalculateTimeSpan(timeout, timeUnit);
