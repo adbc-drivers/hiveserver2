@@ -44,7 +44,7 @@ namespace AdbcDrivers.HiveServer2.Hive2
                 TTypeId.TINYINT_TYPE => Int8Type.Default,
                 TTypeId.DATE_TYPE => convertScalar ? Date32Type.Default : StringType.Default,
                 TTypeId.DECIMAL_TYPE => convertScalar ? NewDecima128Type(thriftType) : StringType.Default,
-                TTypeId.TIMESTAMP_TYPE => convertScalar ? TimestampType.Default : StringType.Default,
+                TTypeId.TIMESTAMP_TYPE => convertScalar ? new TimestampType(TimeUnit.Microsecond, timezone: (string?)null) : StringType.Default,
                 TTypeId.CHAR_TYPE
                 or TTypeId.NULL_TYPE
                 or TTypeId.STRING_TYPE
