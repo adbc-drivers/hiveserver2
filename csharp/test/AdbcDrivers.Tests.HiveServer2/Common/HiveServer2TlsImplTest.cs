@@ -87,6 +87,11 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
             // RevocationMode invalid value throws exception
             yield return new object?[] { new Dictionary<string, string> { { HttpTlsOptions.RevocationMode, "invalid" } }, null, typeof(ArgumentException) };
             yield return new object?[] { new Dictionary<string, string> { { HttpTlsOptions.RevocationMode, "3" } }, null, typeof(ArgumentException) };
+            // AcceptUndeterminedRevocation - default is false
+            yield return new object?[] { new Dictionary<string, string> { { HttpTlsOptions.AcceptUndeterminedRevocation, "true" } }, new TlsProperties { IsTlsEnabled = true, AcceptUndeterminedRevocation = true } };
+            yield return new object?[] { new Dictionary<string, string> { { HttpTlsOptions.AcceptUndeterminedRevocation, "False" } }, new TlsProperties { IsTlsEnabled = true, AcceptUndeterminedRevocation = false } };
+            yield return new object?[] { new Dictionary<string, string> { { HttpTlsOptions.AcceptUndeterminedRevocation, "abc" } }, new TlsProperties { IsTlsEnabled = true, AcceptUndeterminedRevocation = false } };
+            yield return new object?[] { new Dictionary<string, string> { { HttpTlsOptions.RevocationMode, RevocationModeConstants.Online }, { HttpTlsOptions.AcceptUndeterminedRevocation, "True" } }, new TlsProperties { IsTlsEnabled = true, RevocationMode = X509RevocationMode.Online, AcceptUndeterminedRevocation = true } };
         }
 
         public static IEnumerable<object?[]> GetStandardTlsOptionsTestData()
@@ -121,6 +126,11 @@ namespace AdbcDrivers.Tests.HiveServer2.Common
             // RevocationMode invalid value throws exception
             yield return new object?[] { new Dictionary<string, string> { { StandardTlsOptions.RevocationMode, "invalid" } }, null, typeof(ArgumentException) };
             yield return new object?[] { new Dictionary<string, string> { { StandardTlsOptions.RevocationMode, "3" } }, null, typeof(ArgumentException) };
+            // AcceptUndeterminedRevocation - default is false
+            yield return new object?[] { new Dictionary<string, string> { { StandardTlsOptions.AcceptUndeterminedRevocation, "true" } }, new TlsProperties { IsTlsEnabled = true, AcceptUndeterminedRevocation = true } };
+            yield return new object?[] { new Dictionary<string, string> { { StandardTlsOptions.AcceptUndeterminedRevocation, "False" } }, new TlsProperties { IsTlsEnabled = true, AcceptUndeterminedRevocation = false } };
+            yield return new object?[] { new Dictionary<string, string> { { StandardTlsOptions.AcceptUndeterminedRevocation, "abc" } }, new TlsProperties { IsTlsEnabled = true, AcceptUndeterminedRevocation = false } };
+            yield return new object?[] { new Dictionary<string, string> { { StandardTlsOptions.RevocationMode, RevocationModeConstants.Online }, { StandardTlsOptions.AcceptUndeterminedRevocation, "True" } }, new TlsProperties { IsTlsEnabled = true, RevocationMode = X509RevocationMode.Online, AcceptUndeterminedRevocation = true } };
         }
     }
 }
