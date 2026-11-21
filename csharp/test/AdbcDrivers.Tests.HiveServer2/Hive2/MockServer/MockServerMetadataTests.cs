@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using AdbcDrivers.HiveServer2.TestServer;
 using Apache.Arrow;
 using Apache.Arrow.Adbc;
+using Apache.Arrow.Adbc.Tests.Metadata;
 using Apache.Arrow.Ipc;
 using Xunit;
 
@@ -123,6 +125,71 @@ namespace AdbcDrivers.Tests.HiveServer2.Hive2.MockServer
             Assert.NotNull(batch);
             Assert.True(batch.Length > 0);
         }
+
+        [Fact]
+        public async Task GetObjects_All_SkipsColumnsOfTablesNotReturnedByGetTables()
+        {
+            // GetTables honours the tableTypes filter but GetColumns does not, so
+            // the server returns columns for base table "t" even though only view
+            // "v" was listed. Those orphan columns must be dropped, not throw.
+            using var scenario = HiveMockServer.Create();
+            scenario.Stub.OnGetCatalogs = _ => MockResult.Builder()
+                .String("TABLE_CAT", "main")
+                .Build();
+            scenario.Stub.OnGetSchemas = _ => MockResult.Builder()
+                .String("TABLE_SCHEM", "public")
+                .String("TABLE_CATALOG", "main")
+                .Build();
+            scenario.Stub.OnGetTables = _ => MockResult.Builder()
+                .String("TABLE_CAT", "main")
+                .String("TABLE_SCHEM", "public")
+                .String("TABLE_NAME", "v")
+                .String("TABLE_TYPE", "VIEW")
+                .String("REMARKS", "")
+                .Build();
+            scenario.Stub.OnGetColumns = _ => MockResult.Builder()
+                .String("TABLE_CAT", "main", "main", "main")
+                .String("TABLE_SCHEM", "public", "public", "public")
+                .String("TABLE_NAME", "t", "v", "t")
+                .String("COLUMN_NAME", "orphan_a", "id", "orphan_b")
+                .Int("DATA_TYPE", BigintSqlType, BigintSqlType, BigintSqlType)
+                .String("TYPE_NAME", "BIGINT", "BIGINT", "BIGINT")
+                .Int("COLUMN_SIZE", 19, 19, 19)
+                .Tinyint("BUFFER_LENGTH", 8, 8, 8)
+                .Int("DECIMAL_DIGITS", 0, 0, 0)
+                .Int("NUM_PREC_RADIX", 10, 10, 10)
+                .Int("NULLABLE", 1, 1, 1)
+                .String("REMARKS", "", "", "")
+                .String("COLUMN_DEF", "", "", "")
+                .Int("SQL_DATA_TYPE", 0, 0, 0)
+                .Int("SQL_DATETIME_SUB", 0, 0, 0)
+                .Int("CHAR_OCTET_LENGTH", 0, 0, 0)
+                .Int("ORDINAL_POSITION", 1, 1, 2)
+                .String("IS_NULLABLE", "YES", "YES", "YES")
+                .String("SCOPE_CATALOG", "", "", "")
+                .String("SCOPE_SCHEMA", "", "", "")
+                .String("SCOPE_TABLE", "", "", "")
+                .Smallint("SOURCE_DATA_TYPE", 0, 0, 0)
+                .String("IS_AUTO_INCREMENT", "NO", "NO", "NO")
+                .Build();
+
+            using IArrowArrayStream stream = scenario.Connection.GetObjects(
+                depth: AdbcConnection.GetObjectsDepth.All,
+                catalogPattern: null, dbSchemaPattern: null, tableNamePattern: null,
+                tableTypes: new[] { "VIEW" }, columnNamePattern: null);
+
+            using RecordBatch? batch = await stream.ReadNextRecordBatchAsync();
+            Assert.NotNull(batch);
+            List<AdbcCatalog> catalogs = GetObjectsParser.ParseCatalog(batch, null);
+            AdbcCatalog catalog = Assert.Single(catalogs);
+            AdbcDbSchema schema = Assert.Single(catalog.DbSchemas!);
+            AdbcTable table = Assert.Single(schema.Tables!);
+            Assert.Equal("v", table.Name);
+            AdbcColumn column = Assert.Single(table.Columns!);
+            Assert.Equal("id", column.Name);
+        }
+
+        private const int BigintSqlType = -5;
 
         [Fact]
         public async Task GetObjects_DefaultEmptyStub_CompletesWithoutError()
